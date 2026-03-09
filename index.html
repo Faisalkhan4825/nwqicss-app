@@ -18,21 +18,20 @@
     ::-webkit-scrollbar-track { background: #0f1d33; }
     ::-webkit-scrollbar-thumb { background: #1a2d4a; border-radius: 3px; }
     select, input, textarea, button { font-family: inherit; }
-    #loading { display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:16px; }
     .spinner { width:40px;height:40px;border:3px solid #1a2d4a;border-top-color:#4a9eff;border-radius:50%;animation:spin 0.8s linear infinite; }
     @keyframes spin { to { transform:rotate(360deg); } }
   </style>
 </head>
 <body>
   <div id="root">
-    <div id="loading">
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:16px">
       <div class="spinner"></div>
       <div style="color:#e2eaf6;font-size:16px">Loading NWQICSS Portal...</div>
     </div>
   </div>
   <script>
     window.onerror = function(msg, src, line) {
-      document.getElementById('root').innerHTML = '<div style="padding:40px;color:#ff6b6b;font-family:sans-serif"><h2>Error loading app</h2><p style="margin-top:12px;font-size:14px">' + msg + '</p><p style="margin-top:8px;color:#888;font-size:12px">Line: ' + line + '</p></div>';
+      document.getElementById('root').innerHTML = '<div style="padding:40px;color:#ff6b6b;font-family:sans-serif"><h2>Error</h2><p style="margin-top:12px">' + msg + ' (line ' + line + ')</p></div>';
     };
   </script>
   <script type="text/babel" data-presets="react">
@@ -1067,67 +1066,50 @@ const ReportTab = ({records,assets}) => {
 // ─────────────────────────────────────────────────────────────
 //  ADMIN TAB
 // ─────────────────────────────────────────────────────────────
-// ─── Admin authorised users ───────────────────────────────────
-const ADMIN_USERS = {
-  "fkhan@nwqicss.org":  "NWQICSS2026!",
-  "hr@nwqicss.org":     "NWQICSS2026!",
-};
-
-const AdminLoginGate = ({onUnlock}) => {
-  const [email,setEmail]   = useState("");
-  const [pin,setPin]       = useState("");
-  const [err,setErr]       = useState("");
-  const [show,setShow]     = useState(false);
-  const attempt = () => {
-    const key = email.trim().toLowerCase();
-    if(ADMIN_USERS[key] && ADMIN_USERS[key]===pin){
-      onUnlock();
-    } else {
-      setErr("Incorrect email or password. Access denied.");
-      setPin("");
-    }
-  };
-  return (
-    <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"60vh"}}>
-      <div style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:20,padding:36,width:"100%",maxWidth:380}}>
-        <div style={{textAlign:"center",marginBottom:24}}>
-          <div style={{fontSize:40,marginBottom:8}}>🔐</div>
-          <div style={{fontSize:18,fontWeight:700,color:T.white}}>Admin Access</div>
-          <div style={{fontSize:13,color:T.muted,marginTop:4}}>Authorised personnel only</div>
-        </div>
-        <div style={{marginBottom:14}}>
-          <div style={{fontSize:12,color:T.muted,marginBottom:6,fontWeight:600}}>EMAIL ADDRESS</div>
-          <input style={{...inputSt}} type="email" placeholder="your@nwqicss.org"
-            value={email} onChange={e=>{setEmail(e.target.value);setErr("");}}
-            onKeyDown={e=>e.key==="Enter"&&attempt()}/>
-        </div>
-        <div style={{marginBottom:20}}>
-          <div style={{fontSize:12,color:T.muted,marginBottom:6,fontWeight:600}}>PASSWORD</div>
-          <div style={{position:"relative"}}>
-            <input style={{...inputSt,paddingRight:44}} type={show?"text":"password"} placeholder="Enter password"
-              value={pin} onChange={e=>{setPin(e.target.value);setErr("");}}
-              onKeyDown={e=>e.key==="Enter"&&attempt()}/>
-            <button onClick={()=>setShow(s=>!s)} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:"none",border:"none",color:T.muted,cursor:"pointer",fontSize:16}}>
-              {show?"🙈":"👁️"}
-            </button>
-          </div>
-        </div>
-        {err&&<div style={{background:T.red+"22",border:`1px solid ${T.red}44`,borderRadius:8,padding:"10px 14px",fontSize:13,color:T.red,marginBottom:14}}>{err}</div>}
-        <button onClick={attempt} style={{background:T.accent,color:T.bg,border:"none",borderRadius:10,padding:"13px",fontSize:15,fontWeight:700,cursor:"pointer",width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-          🔓 Unlock Admin Panel
-        </button>
-      </div>
-    </div>
-  );
-};
-
 const AdminTab = ({staffList,setStaffList,assets,setAssets}) => {
   const [unlocked,setUnlocked] = useState(false);
+  const [adminEmail,setAdminEmail] = useState("");
+  const [adminPass,setAdminPass]   = useState("");
+  const [adminErr,setAdminErr]     = useState("");
   const [activeSection,setSection] = useState("staff");
   const [newStaff,setNewStaff]   = useState({name:"",role:"",email:"",phone:""});
   const [newAsset,setNewAsset]   = useState({type:"Vehicle",name:"",rego:"",serial:""});
   const [pasteText,setPasteText] = useState("");
-  if(!unlocked) return <AdminLoginGate onUnlock={()=>setUnlocked(true)}/>;
+  const ADMIN_USERS = {"fkhan@nwqicss.org":"NWQICSS2026!","hr@nwqicss.org":"NWQICSS2026!"};
+  const tryLogin = () => {
+    const k = adminEmail.trim().toLowerCase();
+    if(ADMIN_USERS[k] && ADMIN_USERS[k]===adminPass){ setUnlocked(true); }
+    else { setAdminErr("Incorrect email or password."); setAdminPass(""); }
+  };
+  if(!unlocked) return (
+    <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"60vh"}}>
+      <div style={{background:T.card,border:"1px solid #1a2d4a",borderRadius:20,padding:36,width:"100%",maxWidth:380}}>
+        <div style={{textAlign:"center",marginBottom:24}}>
+          <div style={{fontSize:40,marginBottom:8}}>&#128274;</div>
+          <div style={{fontSize:18,fontWeight:700,color:"#fff"}}>Admin Access</div>
+          <div style={{fontSize:13,color:T.muted,marginTop:4}}>Authorised personnel only</div>
+        </div>
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:12,color:T.muted,marginBottom:6,fontWeight:600}}>EMAIL</div>
+          <input style={{width:"100%",padding:"11px 12px",background:T.surface,border:"1.5px solid #1a2d4a",borderRadius:10,color:"#e2eaf6",fontSize:14,outline:"none",boxSizing:"border-box"}}
+            type="email" placeholder="your@nwqicss.org" value={adminEmail}
+            onChange={e=>{setAdminEmail(e.target.value);setAdminErr("");}}
+            onKeyDown={e=>e.key==="Enter"&&tryLogin()}/>
+        </div>
+        <div style={{marginBottom:20}}>
+          <div style={{fontSize:12,color:T.muted,marginBottom:6,fontWeight:600}}>PASSWORD</div>
+          <input style={{width:"100%",padding:"11px 12px",background:T.surface,border:"1.5px solid #1a2d4a",borderRadius:10,color:"#e2eaf6",fontSize:14,outline:"none",boxSizing:"border-box"}}
+            type="password" placeholder="Enter password" value={adminPass}
+            onChange={e=>{setAdminPass(e.target.value);setAdminErr("");}}
+            onKeyDown={e=>e.key==="Enter"&&tryLogin()}/>
+        </div>
+        {adminErr&&<div style={{background:"#ff444422",border:"1px solid #ff444444",borderRadius:8,padding:"10px 14px",fontSize:13,color:"#ff6b6b",marginBottom:14}}>{adminErr}</div>}
+        <button onClick={tryLogin} style={{background:"#4a9eff",color:"#07101f",border:"none",borderRadius:10,padding:"13px",fontSize:15,fontWeight:700,cursor:"pointer",width:"100%"}}>
+          Unlock Admin Panel
+        </button>
+      </div>
+    </div>
+  );
 
   const addStaff = () => {
     if(!newStaff.name) return;

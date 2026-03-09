@@ -8,8 +8,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="apple-mobile-web-app-title" content="NWQICSS"/>
   <title>NWQICSS Compliance Portal</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -18,10 +18,22 @@
     ::-webkit-scrollbar-track { background: #0f1d33; }
     ::-webkit-scrollbar-thumb { background: #1a2d4a; border-radius: 3px; }
     select, input, textarea, button { font-family: inherit; }
+    .spinner { width:40px;height:40px;border:3px solid #1a2d4a;border-top-color:#4a9eff;border-radius:50%;animation:spin 0.8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
   </style>
 </head>
 <body>
-  <div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#e2eaf6;font-family:sans-serif;font-size:18px;">Loading NWQICSS...</div></div>
+  <div id="root">
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:16px">
+      <div class="spinner"></div>
+      <div style="color:#e2eaf6;font-size:16px">Loading NWQICSS Portal...</div>
+    </div>
+  </div>
+  <script>
+    window.onerror = function(msg, src, line) {
+      document.getElementById('root').innerHTML = '<div style="padding:40px;color:#ff6b6b;font-family:sans-serif"><h2>Error</h2><p style="margin-top:12px">' + msg + ' (line ' + line + ')</p></div>';
+    };
+  </script>
   <script type="text/babel" data-presets="react">
 const { useState, useEffect, useRef } = React;
 
@@ -360,8 +372,7 @@ const VisitorsTab = ({records,onSignOut,location}) => {
     const rows=[["Name","Phone","Program","Purpose","Notes","Location","Sign In","Sign Out","Status"],
       ...shown.map(r=>[r.name,r.phone||"",r.program,r.visit_purpose||"",r.purpose||"",r.location,r.sign_in_time,r.sign_out_time||"On Site",r.status])];
     const a=document.createElement("a");
-    a.href="data:text/csv;charset=utf-8,"+encodeURI(rows.map(r=>r.map(c=>`"${c}"`).join(",")).join("
-"));
+    a.href="data:text/csv;charset=utf-8,"+encodeURI(rows.map(r=>r.map(c=>`"${c}"`).join(",")).join("\n"));
     a.download=`visitors_${todayISO()}.csv`;a.click();
   };
 
@@ -691,8 +702,7 @@ const VehiclesTab = ({assets,setAssets,staffList,location}) => {
     const rows=[["Vehicle","Rego","Driver","Date","Out","Returned","Destination","Purpose","Odo Out","Odo In"],
       ...history.map(h=>[h.vehicle,h.rego||"",h.driver,h.date,h.out,h.returned||"Still Out",h.destination||"",h.purpose||"",h.odometer_out||"",h.odometer_in||""])];
     const a=document.createElement("a");
-    a.href="data:text/csv;charset=utf-8,"+encodeURI(rows.map(r=>r.join(",")).join("
-"));
+    a.href="data:text/csv;charset=utf-8,"+encodeURI(rows.map(r=>r.join(",")).join("\n"));
     a.download=`vehicle_log_${todayISO()}.csv`;a.click();
   };
 
@@ -883,8 +893,7 @@ const ReportTab = ({records,assets}) => {
     } else {
       lines.push(`✓  All persons signed out.`);
     }
-    return lines.join("
-");
+    return lines.join("\n");
   };
 
   const buildProgramReport = (prog) => {
@@ -910,8 +919,7 @@ const ReportTab = ({records,assets}) => {
         lines.push(``);
       });
     }
-    return lines.join("
-");
+    return lines.join("\n");
   };
 
   const emailCombined = () => {
@@ -933,8 +941,7 @@ const ReportTab = ({records,assets}) => {
     const rows=[["Type","Name","Program","Purpose","Notes","Location","Sign In","Sign Out","Status"],
       ...today.map(r=>[r.type,r.name||r.company||r.staff_name,r.program||"",r.visit_purpose||"",r.purpose||r.outreach_purpose||"",r.location,r.sign_in_time,r.sign_out_time||"On Site",r.status])];
     const a=document.createElement("a");
-    a.href="data:text/csv;charset=utf-8,"+encodeURI(rows.map(r=>r.map(c=>`"${c||""}"`).join(",")).join("
-"));
+    a.href="data:text/csv;charset=utf-8,"+encodeURI(rows.map(r=>r.map(c=>`"${c||""}"`).join(",")).join("\n"));
     a.download=`NWQICSS_Report_${todayISO()}.csv`;a.click();
   };
 
@@ -1055,17 +1062,11 @@ const ReportTab = ({records,assets}) => {
 //  ADMIN TAB
 // ─────────────────────────────────────────────────────────────
 const AdminTab = ({staffList,setStaffList,assets,setAssets}) => {
-  const [unlocked,setUnlocked] = useState(false);
-  const [ae,setAe] = useState("");
-  const [ap,setAp] = useState("");
-  const [aerr,setAerr] = useState("");
   const [activeSection,setSection] = useState("staff");
   const [newStaff,setNewStaff]   = useState({name:"",role:"",email:"",phone:""});
   const [newAsset,setNewAsset]   = useState({type:"Vehicle",name:"",rego:"",serial:""});
   const [pasteText,setPasteText] = useState("");
-  const au = {"fkhan@nwqicss.org":"NWQICSS2026!","hr@nwqicss.org":"NWQICSS2026!"};
-  const doLogin = () => { if(au[ae.trim().toLowerCase()]===ap){setUnlocked(true);}else{setAerr("Access denied.");setAp("");} };
-  if(!unlocked) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"60vh"}}><div style={{background:"#0f1d33",border:"1px solid #1a2d4a",borderRadius:16,padding:32,width:320}}><div style={{fontSize:32,textAlign:"center",marginBottom:12}}>&#x1F512;</div><div style={{fontWeight:700,fontSize:16,color:"#fff",textAlign:"center",marginBottom:4}}>Admin Access</div><div style={{fontSize:12,color:"#7a90b0",textAlign:"center",marginBottom:20}}>Authorised users only</div><div style={{fontSize:11,color:"#7a90b0",marginBottom:4}}>EMAIL</div><input value={ae} onChange={e=>{setAe(e.target.value);setAerr("");}} onKeyDown={e=>e.key==="Enter"&&doLogin()} type="email" placeholder="your@nwqicss.org" style={{width:"100%",padding:"10px",background:"#07101f",border:"1px solid #1a2d4a",borderRadius:8,color:"#e2eaf6",fontSize:13,outline:"none",marginBottom:10}}/><div style={{fontSize:11,color:"#7a90b0",marginBottom:4}}>PASSWORD</div><input value={ap} onChange={e=>{setAp(e.target.value);setAerr("");}} onKeyDown={e=>e.key==="Enter"&&doLogin()} type="password" placeholder="Password" style={{width:"100%",padding:"10px",background:"#07101f",border:"1px solid #1a2d4a",borderRadius:8,color:"#e2eaf6",fontSize:13,outline:"none",marginBottom:10}}/>{aerr&&<div style={{color:"#ff6b6b",fontSize:12,marginBottom:8}}>{aerr}</div>}<button onClick={doLogin} style={{width:"100%",padding:"11px",background:"#4a9eff",color:"#07101f",border:"none",borderRadius:8,fontWeight:700,fontSize:14,cursor:"pointer"}}>Unlock</button></div></div>;
+
   const addStaff = () => {
     if(!newStaff.name) return;
     setStaffList(p=>[...p,{...newStaff,id:Date.now()}]);
@@ -1080,8 +1081,7 @@ const AdminTab = ({staffList,setStaffList,assets,setAssets}) => {
   const removeAsset = id => setAssets(p=>p.filter(a=>a.id!==id));
 
   const importPasteList = () => {
-    const lines=pasteText.split("
-").filter(l=>l.trim());
+    const lines=pasteText.split("\n").filter(l=>l.trim());
     const imported=lines.map((line,i)=>{
       const parts=line.split(",").map(p=>p.trim());
       return {id:Date.now()+i,name:parts[0]||"",role:parts[1]||"",email:parts[2]||"",phone:parts[3]||""};
@@ -1096,11 +1096,10 @@ const AdminTab = ({staffList,setStaffList,assets,setAssets}) => {
     const reader=new FileReader();
     reader.onload=evt=>{
       const text=evt.target.result;
-      const lines=text.split("
-").filter(l=>l.trim());
+      const lines=text.split("\n").filter(l=>l.trim());
       const dataLines=lines[0].toLowerCase().includes("name")?lines.slice(1):lines;
       const imported=dataLines.map((line,i)=>{
-        const parts=line.includes("	")?line.split("	"):line.split(",");
+        const parts=line.includes("\t")?line.split("\t"):line.split(",");
         const clean=parts.map(p=>p.replace(/^"|"$/g,"").trim());
         return {id:Date.now()+i,name:clean[0]||"",role:clean[1]||"",email:clean[2]||"",phone:clean[3]||""};
       }).filter(s=>s.name);
@@ -1115,11 +1114,10 @@ const AdminTab = ({staffList,setStaffList,assets,setAssets}) => {
     const reader=new FileReader();
     reader.onload=evt=>{
       const text=evt.target.result;
-      const lines=text.split("
-").filter(l=>l.trim());
+      const lines=text.split("\n").filter(l=>l.trim());
       const dataLines=lines[0].toLowerCase().includes("type")?lines.slice(1):lines;
       const imported=dataLines.map((line,i)=>{
-        const parts=line.includes("	")?line.split("	"):line.split(",");
+        const parts=line.includes("\t")?line.split("\t"):line.split(",");
         const clean=parts.map(p=>p.replace(/^"|"$/g,"").trim());
         return {id:Date.now()+i,type:clean[0]||"Equipment",name:clean[1]||"",rego:clean[2]||"",serial:clean[3]||"",status:"available",assigned_to:null,checked_out:null};
       }).filter(a=>a.name);
@@ -1131,11 +1129,8 @@ const AdminTab = ({staffList,setStaffList,assets,setAssets}) => {
 
   const downloadTemplate = type => {
     const content=type==="staff"
-      ?"Name,Role,Email,Phone
-Faisal Khan,CEO,ceo@nwqicss.org,0400000001"
-      :"Type,Name,Rego,Serial
-Vehicle,Toyota Hilux,123ABC,
-Duress Alarm,Duress Alarm #1,,DA001";
+      ?"Name,Role,Email,Phone\nFaisal Khan,CEO,ceo@nwqicss.org,0400000001"
+      :"Type,Name,Rego,Serial\nVehicle,Toyota Hilux,123ABC,\nDuress Alarm,Duress Alarm #1,,DA001";
     const a=document.createElement("a");
     a.href="data:text/csv;charset=utf-8,"+encodeURIComponent(content);
     a.download=type==="staff"?"staff_template.csv":"assets_template.csv";a.click();
@@ -1184,8 +1179,7 @@ Duress Alarm,Duress Alarm #1,,DA001";
           <Section title="📋 Paste a List">
             <div style={{fontSize:12,color:T.muted,marginBottom:8}}>One per line, or: <code style={{color:T.accent}}>Name, Role, Email, Phone</code></div>
             <textarea value={pasteText} onChange={e=>setPasteText(e.target.value)} rows={4}
-              placeholder={"John Smith, Field Officer, john@nwqicss.org, 0400000000
-Jane Doe, Admin"}
+              placeholder={"John Smith, Field Officer, john@nwqicss.org, 0400000000\nJane Doe, Admin"}
               style={{width:"100%",padding:"10px 12px",background:T.surface,border:`1.5px solid ${T.border}`,borderRadius:10,color:T.text,fontSize:13,outline:"none",boxSizing:"border-box",resize:"vertical",marginBottom:10}}/>
             <Btn onClick={importPasteList} color={T.accent} small>Import List</Btn>
           </Section>
@@ -1293,6 +1287,19 @@ Jane Doe, Admin"}
 // ─────────────────────────────────────────────────────────────
 function App() {
   const [tab,setTab]         = useState("dashboard");
+  const [adminUnlocked,setAdminUnlocked] = useState(false);
+  const [adminEmail,setAdminEmail] = useState("");
+  const [adminPass,setAdminPass]   = useState("");
+  const [adminErr,setAdminErr]     = useState("");
+  const ADMIN_USERS = {"fkhan@nwqicss.org":"NWQICSS2026!","hr@nwqicss.org":"NWQICSS2026!"};
+  const doAdminLogin = () => {
+    if(ADMIN_USERS[adminEmail.trim().toLowerCase()]===adminPass){
+      setAdminUnlocked(true);
+    } else {
+      setAdminErr("Incorrect email or password.");
+      setAdminPass("");
+    }
+  };
   const [location,setLoc]    = useState("Mount Isa");
   const [records,setRecs]    = useState(DEMO_RECORDS);
   const [assets,setAssets]   = useState(DEFAULT_ASSETS);
@@ -1435,13 +1442,38 @@ function App() {
         {tab==="vehicles"    &&<VehiclesTab assets={assets} setAssets={setAssets} staffList={staffList} location={location}/>}
         {tab==="report"      &&<ReportTab records={records} assets={assets}/>}
         {tab==="emergency"   &&<EmergencyTab records={records} location={location}/>}
-        {tab==="admin"       &&<AdminTab staffList={staffList} setStaffList={setStaff} assets={assets} setAssets={setAssets}/>}
+        {tab==="admin" && !adminUnlocked && (
+          <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"60vh"}}>
+            <div style={{background:"#0f1d33",border:"1px solid #1a2d4a",borderRadius:16,padding:32,width:"100%",maxWidth:340}}>
+              <div style={{fontSize:32,textAlign:"center",marginBottom:12}}>&#128274;</div>
+              <div style={{fontWeight:700,fontSize:16,color:"#fff",textAlign:"center",marginBottom:4}}>Admin Access</div>
+              <div style={{fontSize:12,color:"#7a90b0",textAlign:"center",marginBottom:20}}>Authorised personnel only</div>
+              <div style={{fontSize:11,color:"#7a90b0",marginBottom:4}}>EMAIL</div>
+              <input value={adminEmail} onChange={e=>{setAdminEmail(e.target.value);setAdminErr("");}}
+                onKeyDown={e=>e.key==="Enter"&&doAdminLogin()}
+                type="email" placeholder="your@nwqicss.org"
+                style={{width:"100%",padding:"10px",background:"#07101f",border:"1px solid #1a2d4a",borderRadius:8,color:"#e2eaf6",fontSize:13,outline:"none",marginBottom:10,boxSizing:"border-box"}}/>
+              <div style={{fontSize:11,color:"#7a90b0",marginBottom:4}}>PASSWORD</div>
+              <input value={adminPass} onChange={e=>{setAdminPass(e.target.value);setAdminErr("");}}
+                onKeyDown={e=>e.key==="Enter"&&doAdminLogin()}
+                type="password" placeholder="Password"
+                style={{width:"100%",padding:"10px",background:"#07101f",border:"1px solid #1a2d4a",borderRadius:8,color:"#e2eaf6",fontSize:13,outline:"none",marginBottom:10,boxSizing:"border-box"}}/>
+              {adminErr&&<div style={{color:"#ff6b6b",fontSize:12,marginBottom:8}}>{adminErr}</div>}
+              <button onClick={doAdminLogin}
+                style={{width:"100%",padding:"11px",background:"#4a9eff",color:"#07101f",border:"none",borderRadius:8,fontWeight:700,fontSize:14,cursor:"pointer"}}>
+                Unlock Admin Panel
+              </button>
+            </div>
+          </div>
+        )}
+        {tab==="admin" && adminUnlocked && <AdminTab staffList={staffList} setStaffList={setStaff} assets={assets} setAssets={setAssets}/>}
       </div>
 
       {modal&&<SignInModal type={modal} location={location} staffList={staffList} onClose={()=>setModal(null)} onSubmit={handleSignIn}/>}
     </div>
   );
 }
+
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<App />);
   </script>

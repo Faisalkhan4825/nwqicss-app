@@ -18,9 +18,8 @@
     ::-webkit-scrollbar-track { background: #0f1d33; }
     ::-webkit-scrollbar-thumb { background: #1a2d4a; border-radius: 3px; }
     select, input, textarea, button { font-family: inherit; }
-    #loading { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; gap:16px; }
-    #loading .spinner { width:40px; height:40px; border:3px solid #1a2d4a; border-top-color:#4a9eff; border-radius:50%; animation:spin 0.8s linear infinite; }
-    #loading .txt { color:#e2eaf6; font-size:16px; }
+    #loading { display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:16px; }
+    .spinner { width:40px;height:40px;border:3px solid #1a2d4a;border-top-color:#4a9eff;border-radius:50%;animation:spin 0.8s linear infinite; }
     @keyframes spin { to { transform:rotate(360deg); } }
   </style>
 </head>
@@ -28,11 +27,11 @@
   <div id="root">
     <div id="loading">
       <div class="spinner"></div>
-      <div class="txt">Loading NWQICSS Portal...</div>
+      <div style="color:#e2eaf6;font-size:16px">Loading NWQICSS Portal...</div>
     </div>
   </div>
   <script>
-    window.onerror = function(msg, src, line, col, err) {
+    window.onerror = function(msg, src, line) {
       document.getElementById('root').innerHTML = '<div style="padding:40px;color:#ff6b6b;font-family:sans-serif"><h2>Error loading app</h2><p style="margin-top:12px;font-size:14px">' + msg + '</p><p style="margin-top:8px;color:#888;font-size:12px">Line: ' + line + '</p></div>';
     };
   </script>
@@ -1114,7 +1113,7 @@ const AdminLoginGate = ({onUnlock}) => {
           </div>
         </div>
         {err&&<div style={{background:T.red+"22",border:`1px solid ${T.red}44`,borderRadius:8,padding:"10px 14px",fontSize:13,color:T.red,marginBottom:14}}>{err}</div>}
-        <button onClick={attempt} style={{...btnSt(T.accent),width:"100%",justifyContent:"center",fontSize:15,padding:"13px"}}>
+        <button onClick={attempt} style={{background:T.accent,color:T.bg,border:"none",borderRadius:10,padding:"13px",fontSize:15,fontWeight:700,cursor:"pointer",width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
           🔓 Unlock Admin Panel
         </button>
       </div>

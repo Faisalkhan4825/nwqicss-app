@@ -1,0 +1,1401 @@
+import { useState, useEffect, useRef } from "react";
+
+// ─────────────────────────────────────────────────────────────
+//  CONFIG
+// ─────────────────────────────────────────────────────────────
+const ORG_NAME  = "NWQICSS";
+const SITE_URL  = "https://nwqicsscompliance.org";
+const HR_EMAIL  = "hr@nwqicss.org";
+const WHS_EMAIL = "whs@nwqicss.org";
+const CEO_EMAIL = "ceo@nwqicss.org";
+
+// Programs by location
+const LOCATION_PROGRAMS = {
+  "Mount Isa": ["CFC","Youth Hub","APDC","RAGOSS","RAGOSS Youth","Brilla Brilla","Main Office","AICC"],
+  "Doomadgee": ["Doomadgee Women's Shelter","Doomadgee Community Justice Group"],
+  "Boulia":    ["Boulia Community Support Service"],
+};
+const ALL_LOCATIONS = Object.keys(LOCATION_PROGRAMS);
+
+// Purpose of visit options
+const VISIT_PURPOSES = [
+  "Program","Clinic","Meeting","Event","General Visit",
+  "Diversion","Playgroup","Maternity","Hearing","Men's Shed","Women's Group","Other"
+];
+
+// Per-program report recipients
+const PROGRAM_EMAILS = {
+  "CFC":                              {manager:"cfcmanager@nwqicss.org",    label:"CFC Manager"},
+  "Youth Hub":                        {manager:"youthhubmanager@nwqicss.org",label:"Youth Hub Manager"},
+  "APDC":                             {manager:"apdc@nwqicss.org",          label:"APDC Manager"},
+  "RAGOSS":                           {manager:"ragossmanager@nwqicss.org", label:"RAGOSS Manager"},
+  "RAGOSS Youth":                     {manager:"ragossmanager@nwqicss.org", label:"RAGOSS Manager"},
+  "Brilla Brilla":                    {manager:CEO_EMAIL,                   label:"CEO"},
+  "Main Office":                      {manager:CEO_EMAIL,                   label:"CEO"},
+  "AICC":                             {manager:"dhankin@nwqicss.org",       label:"D. Hankin"},
+  "Boulia Community Support Service": {manager:"jnorton@nwqicss.org",      label:"J. Norton"},
+  "Doomadgee Women's Shelter":        {manager:"clogan@nwqicss.org",        label:"C. Logan"},
+  "Doomadgee Community Justice Group":{manager:"clogan@nwqicss.org",        label:"C. Logan"},
+};
+
+// ─────────────────────────────────────────────────────────────
+//  THEME
+// ─────────────────────────────────────────────────────────────
+const T = {
+  bg:"#07101f", surface:"#0f1d33", card:"#132040", border:"#1a2d4a",
+  accent:"#00b4d8", accent2:"#f77f00", green:"#06d6a0", red:"#ef233c",
+  amber:"#ffd166", text:"#e2eaf6", muted:"#5a7a9f", white:"#ffffff",
+  purple:"#9b72ff",
+};
+
+// ─────────────────────────────────────────────────────────────
+//  HELPERS
+// ─────────────────────────────────────────────────────────────
+const nowStr   = () => new Date().toLocaleTimeString("en-AU",{hour:"2-digit",minute:"2-digit"});
+const dateStr  = () => new Date().toLocaleDateString("en-AU",{day:"2-digit",month:"short",year:"numeric"});
+const todayISO = () => new Date().toISOString().split("T")[0];
+const programsForLocation = loc => LOCATION_PROGRAMS[loc] || [];
+
+// ─────────────────────────────────────────────────────────────
+//  DEFAULT DATA
+// ─────────────────────────────────────────────────────────────
+const DEFAULT_STAFF = [
+  {id:1,name:"Faisal Khan",   role:"CEO",            email:"ceo@nwqicss.org",   phone:"0400000001"},
+  {id:2,name:"Sarah Williams",role:"Program Manager",email:"sarah@nwqicss.org", phone:"0400000002"},
+  {id:3,name:"John Murray",   role:"Field Officer",  email:"john@nwqicss.org",  phone:"0400000003"},
+  {id:4,name:"Aisha Nguyen",  role:"Admin",          email:"aisha@nwqicss.org", phone:"0400000004"},
+];
+
+const DEFAULT_ASSETS = [
+  {id:1,type:"Vehicle",      name:"Toyota Hilux",   rego:"123ABC",status:"available",assigned_to:null,checked_out:null},
+  {id:2,type:"Vehicle",      name:"Ford Ranger",    rego:"456DEF",status:"available",assigned_to:null,checked_out:null},
+  {id:3,type:"Duress Alarm", name:"Duress Alarm #1",serial:"DA001",status:"available",assigned_to:null,checked_out:null},
+  {id:4,type:"Duress Alarm", name:"Duress Alarm #2",serial:"DA002",status:"available",assigned_to:null,checked_out:null},
+  {id:5,type:"Equipment",    name:"Camera Kit",     serial:"CK001",status:"available",assigned_to:null,checked_out:null},
+];
+
+const DEMO_RECORDS = [
+  {id:1,type:"visitor",   name:"Mary Thompson",     purpose:"Clinic",    program:"APDC",                          location:"Mount Isa",sign_in_time:"08:42",sign_out_time:null,   status:"on-site",   date:todayISO()},
+  {id:2,type:"visitor",   name:"James Koowootha",   purpose:"Program",   program:"Youth Hub",                     location:"Mount Isa",sign_in_time:"09:10",sign_out_time:"11:30",status:"signed-out",date:todayISO()},
+  {id:3,type:"visitor",   name:"Aunty Gloria Davis",purpose:"Women's Group",program:"Doomadgee Women's Shelter",  location:"Doomadgee",sign_in_time:"10:30",sign_out_time:null,   status:"on-site",   date:todayISO()},
+  {id:4,type:"contractor",company:"BuildRight",     contact_name:"Tom Hicks",location:"Mount Isa",sign_in_time:"07:30",sign_out_time:null,   compliance:"valid",   status:"on-site",   date:todayISO()},
+  {id:5,type:"staff",     staff_name:"Sarah Williams",location:"Mount Isa",  sign_in_time:"08:00",sign_out_time:null,   status:"on-site",   date:todayISO(), staff_status:"in-centre"},
+  {id:6,type:"staff",     staff_name:"John Murray",   location:"Doomadgee",  sign_in_time:"08:15",sign_out_time:null,   status:"on-site",   date:todayISO(), staff_status:"outreach", outreach_purpose:"Home visit — client welfare check, Doomadgee"},
+];
+
+// ─────────────────────────────────────────────────────────────
+//  REUSABLE UI
+// ─────────────────────────────────────────────────────────────
+const Badge = ({label,color}) => (
+  <span style={{display:"inline-block",padding:"3px 10px",borderRadius:20,fontSize:11,fontWeight:700,
+    background:color+"22",color,border:`1px solid ${color}44`,letterSpacing:".4px",textTransform:"uppercase",whiteSpace:"nowrap"}}>{label}</span>
+);
+const Card = ({children,style={}}) => (
+  <div style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:16,padding:20,...style}}>{children}</div>
+);
+const Btn = ({children,onClick,color=T.accent,outline=false,small=false,full=false,style={}}) => (
+  <button onClick={onClick} style={{background:outline?"transparent":color,color:outline?color:"#07101f",
+    border:`1.5px solid ${color}`,borderRadius:10,padding:small?"7px 14px":"11px 22px",fontSize:small?12:14,
+    fontWeight:700,cursor:"pointer",letterSpacing:".3px",width:full?"100%":"auto",...style}}>{children}</button>
+);
+const FLabel = ({text}) => (
+  <label style={{display:"block",fontSize:11,color:T.muted,marginBottom:5,fontWeight:700,letterSpacing:".6px",textTransform:"uppercase"}}>{text}</label>
+);
+const inputSt = {width:"100%",padding:"11px 12px",background:T.surface,border:`1.5px solid #1a2d4a`,
+  borderRadius:10,color:"#e2eaf6",fontSize:14,outline:"none",boxSizing:"border-box"};
+const Field = ({label,value,onChange,type="text",options=null,placeholder="",textarea=false}) => (
+  <div style={{marginBottom:14}}>
+    <FLabel text={label}/>
+    {textarea
+      ? <textarea value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} rows={3}
+          style={{...inputSt,resize:"vertical"}}/>
+      : options
+        ? <select value={value} onChange={e=>onChange(e.target.value)} style={{...inputSt,color:value?T.text:T.muted}}>
+            <option value="">Select…</option>
+            {options.map(o=><option key={o} value={o}>{o}</option>)}
+          </select>
+        : <input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} style={inputSt}/>}
+  </div>
+);
+const Section = ({title,children}) => (
+  <div style={{marginBottom:28}}>
+    <div style={{fontSize:13,fontWeight:800,color:T.white,marginBottom:14,paddingBottom:8,borderBottom:`1px solid ${T.border}`}}>{title}</div>
+    {children}
+  </div>
+);
+
+// ─────────────────────────────────────────────────────────────
+//  SIGN IN MODAL  (visitor / contractor / staff)
+// ─────────────────────────────────────────────────────────────
+const SignInModal = ({type,location,staffList,onClose,onSubmit}) => {
+  const programs = programsForLocation(location);
+  const [f,setF] = useState({
+    name:"",purpose:"",program:programs[0]||"",company:"",contact:"",
+    staff:"",loc:location||"",phone:"",
+    // staff-specific
+    staff_mode:"in-centre",   // "in-centre" | "outreach"
+    outreach_purpose:"",
+    // visitor purpose of visit
+    visit_purpose:"",
+  });
+  const set = (k,v) => setF(p=>({...p,[k]:v}));
+
+  const valid = type==="visitor"
+    ? (f.name&&f.program&&f.visit_purpose)
+    : type==="contractor"
+      ? (f.company&&f.contact)
+      : f.staff;
+
+  return (
+    <div style={{position:"fixed",inset:0,background:"#000c",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={onClose}>
+      <div style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:20,padding:28,width:"100%",maxWidth:480,maxHeight:"94vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
+
+        <div style={{fontSize:11,color:T.accent,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>
+          {type==="visitor"?"👤 Visitor":type==="contractor"?"🔧 Contractor":"👷 Staff"} Sign In
+        </div>
+        <div style={{fontSize:18,fontWeight:900,color:T.white,marginBottom:4}}>{dateStr()} — {nowStr()}</div>
+        <div style={{fontSize:12,color:T.accent,marginBottom:18}}>📍 {location}</div>
+
+        {/* ── VISITOR ── */}
+        {type==="visitor"&&<>
+          <Field label="Full Name *" value={f.name} onChange={v=>set("name",v)} placeholder="Enter full name"/>
+          <Field label="Phone (optional)" value={f.phone} onChange={v=>set("phone",v)} type="tel" placeholder="Mobile number"/>
+          <Field label="Program / Area *" value={f.program} onChange={v=>set("program",v)} options={programs}/>
+          <Field label="Purpose of Visit *" value={f.visit_purpose} onChange={v=>set("visit_purpose",v)} options={VISIT_PURPOSES}/>
+          <div style={{marginBottom:14}}>
+            <FLabel text="Additional notes (optional)"/>
+            <textarea value={f.purpose} onChange={e=>set("purpose",e.target.value)} placeholder="Any additional details about the visit…" rows={2}
+              style={{...inputSt,resize:"vertical"}}/>
+          </div>
+        </>}
+
+        {/* ── CONTRACTOR ── */}
+        {type==="contractor"&&<>
+          <Field label="Company Name *" value={f.company} onChange={v=>set("company",v)} placeholder="Company name"/>
+          <Field label="Your Name *" value={f.contact} onChange={v=>set("contact",v)} placeholder="Contact person"/>
+          <Field label="Phone (optional)" value={f.phone} onChange={v=>set("phone",v)} type="tel" placeholder="Mobile number"/>
+          <Field label="Purpose" value={f.purpose} onChange={v=>set("purpose",v)} options={["Maintenance","Cleaning","Delivery","IT Support","Inspection","Other"]}/>
+        </>}
+
+        {/* ── STAFF ── */}
+        {type==="staff"&&<>
+          <Field label="Staff Member *" value={f.staff} onChange={v=>set("staff",v)} options={staffList.map(s=>s.name)}/>
+
+          {/* Toggle: signing in to centre vs going out on outreach */}
+          <div style={{marginBottom:16}}>
+            <FLabel text="Sign in type *"/>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+              {[
+                {val:"in-centre",icon:"🏢",label:"Arriving at Centre",sub:"I'm starting my day / returning"},
+                {val:"outreach", icon:"🚶",label:"Leaving for Outreach",sub:"I'm heading out to a client"},
+              ].map(opt=>(
+                <div key={opt.val} onClick={()=>set("staff_mode",opt.val)}
+                  style={{padding:"12px 14px",borderRadius:12,cursor:"pointer",
+                    border:`2px solid ${f.staff_mode===opt.val?T.accent:T.border}`,
+                    background:f.staff_mode===opt.val?T.accent+"18":T.surface}}>
+                  <div style={{fontSize:20,marginBottom:4}}>{opt.icon}</div>
+                  <div style={{fontSize:12,fontWeight:700,color:f.staff_mode===opt.val?T.accent:T.text}}>{opt.label}</div>
+                  <div style={{fontSize:10,color:T.muted,marginTop:2}}>{opt.sub}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {f.staff_mode==="outreach"&&(
+            <div style={{marginBottom:14}}>
+              <FLabel text="Purpose of Outreach Visit *"/>
+              <textarea value={f.outreach_purpose} onChange={e=>set("outreach_purpose",e.target.value)}
+                placeholder="Describe the purpose of this outreach visit…" rows={3}
+                style={{...inputSt,resize:"vertical"}}/>
+              <div style={{fontSize:11,color:T.muted,marginTop:4}}>Include client name, address or area if safe to do so.</div>
+            </div>
+          )}
+          <Field label="Location" value={f.loc} onChange={v=>set("loc",v)} options={ALL_LOCATIONS}/>
+        </>}
+
+        <div style={{display:"flex",gap:10,marginTop:8}}>
+          <Btn onClick={()=>valid&&onSubmit(f)} color={valid?T.green:T.muted} style={{flex:1}}>✓ Sign In</Btn>
+          <Btn onClick={onClose} color={T.muted} outline style={{flex:1}}>Cancel</Btn>
+        </div>
+        {!valid&&<div style={{fontSize:11,color:T.muted,textAlign:"center",marginTop:8}}>Fill in all required * fields to continue</div>}
+      </div>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────
+//  DASHBOARD
+// ─────────────────────────────────────────────────────────────
+const Dashboard = ({records,assets,location}) => {
+  const loc    = r => !location||r.location===location;
+  const onSite = records.filter(r=>r.status==="on-site"&&loc(r));
+  const progCounts={};
+  records.filter(r=>r.type==="visitor"&&r.program&&loc(r)&&r.date===todayISO())
+    .forEach(r=>{progCounts[r.program]=(progCounts[r.program]||0)+1;});
+  const maxProg=Math.max(...Object.values(progCounts),1);
+  const outreach = records.filter(r=>r.type==="staff"&&r.staff_status==="outreach"&&r.status==="on-site"&&loc(r));
+
+  const Stat=({icon,val,label,color})=>(
+    <Card style={{flex:1,minWidth:100,textAlign:"center"}}>
+      <div style={{fontSize:22,marginBottom:4}}>{icon}</div>
+      <div style={{fontSize:32,fontWeight:900,color,lineHeight:1}}>{val}</div>
+      <div style={{fontSize:10,color:T.muted,marginTop:4,textTransform:"uppercase",letterSpacing:.5}}>{label}</div>
+    </Card>
+  );
+  return (
+    <div>
+      <div style={{fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Live Overview</div>
+      <div style={{fontSize:24,fontWeight:900,color:T.white,marginBottom:4}}>{dateStr()}</div>
+      <div style={{fontSize:13,color:T.accent,marginBottom:16}}>📍 {location}</div>
+
+      <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:20}}>
+        <Stat icon="🏢" val={onSite.length} label="On Site" color={T.green}/>
+        <Stat icon="👤" val={onSite.filter(r=>r.type==="visitor").length} label="Visitors" color={T.accent}/>
+        <Stat icon="🔧" val={onSite.filter(r=>r.type==="contractor").length} label="Contractors" color={T.accent2}/>
+        <Stat icon="🏢" val={onSite.filter(r=>r.type==="staff"&&r.staff_status!=="outreach").length} label="Staff In" color={T.amber}/>
+        <Stat icon="🚶" val={outreach.length} label="On Outreach" color={T.purple}/>
+        <Stat icon="🚗" val={assets.filter(a=>a.status==="out").length} label="Assets Out" color={T.red}/>
+      </div>
+
+      {outreach.length>0&&(
+        <div style={{background:T.purple+"18",border:`1px solid ${T.purple}44`,borderRadius:12,padding:"12px 16px",marginBottom:16}}>
+          <div style={{fontSize:13,fontWeight:700,color:T.purple,marginBottom:8}}>🚶 Staff Currently on Outreach</div>
+          {outreach.map(r=>(
+            <div key={r.id} style={{fontSize:12,color:T.text,marginBottom:4}}>
+              • <strong>{r.staff_name}</strong> — {r.outreach_purpose||"Purpose not recorded"} <span style={{color:T.muted}}>(out since {r.sign_in_time})</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:14,marginBottom:16}}>
+        <Card>
+          <div style={{fontSize:13,fontWeight:700,color:T.white,marginBottom:12,display:"flex",alignItems:"center",gap:8}}>
+            <span style={{width:8,height:8,borderRadius:"50%",background:T.green,display:"inline-block",boxShadow:`0 0 8px ${T.green}`}}/>
+            Currently On Site
+          </div>
+          {onSite.length===0&&<div style={{fontSize:13,color:T.muted}}>Nobody on site yet.</div>}
+          {onSite.slice(0,8).map(r=>(
+            <div key={r.id} style={{padding:"8px 0",borderBottom:`1px solid ${T.border}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <div>
+                <div style={{fontSize:13,fontWeight:700,color:T.text}}>{r.name||r.company||r.staff_name}</div>
+                <div style={{fontSize:11,color:T.muted}}>
+                  {r.type==="visitor"?r.program:r.type==="contractor"?r.contact_name:r.staff_status==="outreach"?"On Outreach":r.location}
+                  {" · In "}{r.sign_in_time}
+                </div>
+              </div>
+              <Badge label={r.type==="staff"&&r.staff_status==="outreach"?"outreach":r.type}
+                color={r.type==="visitor"?T.accent:r.type==="contractor"?T.accent2:r.staff_status==="outreach"?T.purple:T.amber}/>
+            </div>
+          ))}
+        </Card>
+        <Card>
+          <div style={{fontSize:13,fontWeight:700,color:T.white,marginBottom:12}}>Visitors by Program Today</div>
+          {Object.keys(progCounts).length===0&&<div style={{fontSize:13,color:T.muted}}>No visitor data yet.</div>}
+          {Object.entries(progCounts).sort((a,b)=>b[1]-a[1]).map(([prog,cnt])=>(
+            <div key={prog} style={{marginBottom:10}}>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:3}}>
+                <span style={{color:T.text}}>{prog}</span><span style={{color:T.accent,fontWeight:700}}>{cnt}</span>
+              </div>
+              <div style={{height:6,background:T.border,borderRadius:4,overflow:"hidden"}}>
+                <div style={{height:"100%",background:T.accent,borderRadius:4,width:`${(cnt/maxProg)*100}%`}}/>
+              </div>
+            </div>
+          ))}
+        </Card>
+      </div>
+      <Card>
+        <div style={{fontSize:13,fontWeight:700,color:T.white,marginBottom:12}}>Assets</div>
+        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+          {assets.map(a=>(
+            <div key={a.id} style={{background:T.surface,border:`1px solid ${a.status==="out"?T.red+"55":T.green+"44"}`,borderRadius:12,padding:"10px 14px",minWidth:150}}>
+              <div style={{fontSize:13,fontWeight:700,color:T.text}}>{a.name}</div>
+              <div style={{fontSize:11,color:T.muted,margin:"3px 0 6px"}}>{a.status==="out"?`With ${a.assigned_to}`:"Available"}</div>
+              <Badge label={a.status==="out"?"Out":"Available"} color={a.status==="out"?T.red:T.green}/>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────
+//  VISITORS TAB
+// ─────────────────────────────────────────────────────────────
+const VisitorsTab = ({records,onSignOut,location}) => {
+  const [prog,setProg]    = useState("all");
+  const [search,setSearch]= useState("");
+  const programs = programsForLocation(location);
+  const visitors = records.filter(r=>r.type==="visitor"&&(!location||r.location===location));
+  const shown    = visitors.filter(r=>(prog==="all"||r.program===prog)&&
+    (!search||(r.name||"").toLowerCase().includes(search.toLowerCase())));
+
+  const exportCSV=()=>{
+    const rows=[["Name","Phone","Program","Purpose","Notes","Location","Sign In","Sign Out","Status"],
+      ...shown.map(r=>[r.name,r.phone||"",r.program,r.visit_purpose||"",r.purpose||"",r.location,r.sign_in_time,r.sign_out_time||"On Site",r.status])];
+    const a=document.createElement("a");
+    a.href="data:text/csv;charset=utf-8,"+encodeURI(rows.map(r=>r.map(c=>`"${c}"`).join(",")).join("\n"));
+    a.download=`visitors_${todayISO()}.csv`;a.click();
+  };
+
+  return (
+    <div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:20,flexWrap:"wrap",gap:10}}>
+        <div>
+          <div style={{fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Visitor Register</div>
+          <div style={{fontSize:24,fontWeight:900,color:T.white}}>{visitors.filter(r=>r.status==="on-site").length} On Site · {visitors.length} Total Today</div>
+        </div>
+        <Btn onClick={exportCSV} color={T.green} small>⬇ Export CSV</Btn>
+      </div>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:12}}>
+        <button onClick={()=>setProg("all")} style={{padding:"5px 12px",borderRadius:20,fontSize:12,fontWeight:600,cursor:"pointer",
+          background:prog==="all"?T.accent:"transparent",color:prog==="all"?T.bg:T.muted,border:`1px solid ${prog==="all"?T.accent:T.border}`}}>All</button>
+        {programs.map(p=>(
+          <button key={p} onClick={()=>setProg(p)} style={{padding:"5px 12px",borderRadius:20,fontSize:12,fontWeight:600,cursor:"pointer",
+            background:prog===p?T.accent:"transparent",color:prog===p?T.bg:T.muted,border:`1px solid ${prog===p?T.accent:T.border}`}}>{p}</button>
+        ))}
+      </div>
+      <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search by name…"
+        style={{width:"100%",padding:"10px 14px",background:T.surface,border:`1.5px solid ${T.border}`,borderRadius:10,color:T.text,fontSize:13,outline:"none",marginBottom:14,boxSizing:"border-box"}}/>
+      <div style={{display:"flex",flexDirection:"column",gap:10}}>
+        {shown.map(r=>(
+          <Card key={r.id} style={{padding:"14px 16px"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:8}}>
+              <div style={{flex:1}}>
+                <div style={{fontSize:14,fontWeight:800,color:T.white}}>{r.name}</div>
+                <div style={{fontSize:12,color:T.muted}}>{r.program} · {r.visit_purpose||r.purpose} · In {r.sign_in_time}{r.sign_out_time&&` · Out ${r.sign_out_time}`}</div>
+                {r.purpose&&r.visit_purpose&&<div style={{fontSize:11,color:T.muted,marginTop:2,fontStyle:"italic"}}>Notes: {r.purpose}</div>}
+              </div>
+              <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+                <Badge label={r.status==="on-site"?"On Site":"Left"} color={r.status==="on-site"?T.green:T.muted}/>
+                {r.status==="on-site"&&<Btn onClick={()=>onSignOut(r.id)} color={T.red} outline small>Sign Out</Btn>}
+              </div>
+            </div>
+          </Card>
+        ))}
+        {shown.length===0&&<div style={{color:T.muted,fontSize:13,padding:20,textAlign:"center"}}>No visitors found.</div>}
+      </div>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────
+//  CONTRACTORS TAB
+// ─────────────────────────────────────────────────────────────
+const ContractorsTab = ({records,onSignOut,location}) => {
+  const [email,setEmail]=useState("");
+  const contractors=records.filter(r=>r.type==="contractor"&&(!location||r.location===location));
+  return (
+    <div>
+      <div style={{fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>WHS & Contractors</div>
+      <div style={{fontSize:24,fontWeight:900,color:T.white,marginBottom:20}}>Contractor Register</div>
+      {contractors.some(c=>c.compliance==="expiring")&&(
+        <div style={{background:T.amber+"22",border:`1px solid ${T.amber}44`,borderRadius:12,padding:"12px 16px",marginBottom:16,display:"flex",gap:10}}>
+          <span style={{fontSize:20}}>⚠️</span>
+          <div>
+            <div style={{fontSize:13,fontWeight:700,color:T.amber}}>Compliance Expiring Soon</div>
+            <div style={{fontSize:12,color:T.muted}}>{contractors.filter(c=>c.compliance==="expiring").map(c=>c.company).join(", ")} — forms due for renewal.</div>
+          </div>
+        </div>
+      )}
+      <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:20}}>
+        {contractors.map(r=>(
+          <Card key={r.id}>
+            <div style={{display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:8,marginBottom:10}}>
+              <div>
+                <div style={{fontSize:15,fontWeight:800,color:T.white}}>{r.company}</div>
+                <div style={{fontSize:12,color:T.muted}}>Contact: {r.contact_name} · {r.location}</div>
+                <div style={{fontSize:12,color:T.muted}}>In: {r.sign_in_time}{r.sign_out_time?` · Out: ${r.sign_out_time}`:""}</div>
+              </div>
+              <Badge label={r.status==="on-site"?"On Site":"Signed Out"} color={r.status==="on-site"?T.green:T.muted}/>
+            </div>
+            <Badge label={`Compliance: ${r.compliance||"Unknown"}`} color={r.compliance==="valid"?T.green:r.compliance==="expiring"?T.amber:T.red}/>
+            <div style={{display:"flex",gap:8,marginTop:12,flexWrap:"wrap"}}>
+              {r.status==="on-site"&&<Btn onClick={()=>onSignOut(r.id)} color={T.red} outline small>Sign Out</Btn>}
+              <Btn color={T.accent} outline small onClick={()=>alert(`Compliance form link sent to ${r.company}!`)}>Send Form</Btn>
+            </div>
+          </Card>
+        ))}
+        {contractors.length===0&&<div style={{color:T.muted,fontSize:13,padding:20,textAlign:"center"}}>No contractors today.</div>}
+      </div>
+      <Card>
+        <div style={{fontSize:14,fontWeight:700,color:T.white,marginBottom:6}}>Pre-send Compliance Forms</div>
+        <div style={{fontSize:12,color:T.muted,marginBottom:12}}>Send a compliance form link before their visit.</div>
+        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+          <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="contractor@email.com" type="email"
+            style={{flex:1,padding:"10px 12px",background:T.surface,border:`1.5px solid ${T.border}`,borderRadius:10,color:T.text,fontSize:13,outline:"none",minWidth:180}}/>
+          <Btn color={T.accent2} small onClick={()=>{alert("Form link sent!");setEmail("");}}>Send Link</Btn>
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────
+//  STAFF TAB
+// ─────────────────────────────────────────────────────────────
+const StaffTab = ({records,assets,onSignOut,onAssetAction,location}) => {
+  const staff = records.filter(r=>r.type==="staff"&&(!location||r.location===location));
+  const inCentre = staff.filter(r=>r.status==="on-site"&&r.staff_status!=="outreach");
+  const onOutreach = staff.filter(r=>r.status==="on-site"&&r.staff_status==="outreach");
+
+  const StaffCard = ({r}) => (
+    <Card style={{borderLeft:`4px solid ${r.staff_status==="outreach"?T.purple:T.amber}`}}>
+      <div style={{width:40,height:40,borderRadius:"50%",background:(r.staff_status==="outreach"?T.purple:T.amber)+"33",
+        display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,fontWeight:900,
+        color:r.staff_status==="outreach"?T.purple:T.amber,marginBottom:10}}>
+        {(r.staff_name||"?")[0]}
+      </div>
+      <div style={{fontSize:14,fontWeight:800,color:T.white}}>{r.staff_name}</div>
+      <div style={{fontSize:12,color:T.muted,margin:"3px 0 6px"}}>📍 {r.location} · {r.sign_in_time}</div>
+      {r.staff_status==="outreach"&&r.outreach_purpose&&(
+        <div style={{fontSize:11,color:T.purple,marginBottom:8,padding:"6px 10px",background:T.purple+"15",borderRadius:8}}>
+          🚶 {r.outreach_purpose}
+        </div>
+      )}
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+        <Badge label={r.staff_status==="outreach"?"On Outreach":"In Centre"} color={r.staff_status==="outreach"?T.purple:T.amber}/>
+        {r.status==="on-site"&&<Btn onClick={()=>onSignOut(r.id)} color={T.red} outline small>Sign Out</Btn>}
+      </div>
+    </Card>
+  );
+
+  return (
+    <div>
+      <div style={{fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Staff Whereabouts</div>
+      <div style={{fontSize:24,fontWeight:900,color:T.white,marginBottom:20}}>Staff & Assets</div>
+
+      {onOutreach.length>0&&(
+        <div style={{background:T.purple+"18",border:`1px solid ${T.purple}44`,borderRadius:12,padding:"14px 16px",marginBottom:20}}>
+          <div style={{fontSize:13,fontWeight:700,color:T.purple,marginBottom:10}}>🚶 Currently on Outreach ({onOutreach.length})</div>
+          {onOutreach.map(r=>(
+            <div key={r.id} style={{marginBottom:8,paddingBottom:8,borderBottom:`1px solid ${T.border}`}}>
+              <div style={{fontSize:13,fontWeight:700,color:T.text}}>{r.staff_name}</div>
+              <div style={{fontSize:12,color:T.muted}}>{r.outreach_purpose||"Purpose not recorded"} · Left {r.sign_in_time}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {inCentre.length>0&&(
+        <>
+          <div style={{fontSize:13,fontWeight:700,color:T.white,marginBottom:10}}>🏢 In Centre ({inCentre.length})</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:12,marginBottom:24}}>
+            {inCentre.map(r=><StaffCard key={r.id} r={r}/>)}
+          </div>
+        </>
+      )}
+
+      {onOutreach.length>0&&(
+        <>
+          <div style={{fontSize:13,fontWeight:700,color:T.white,marginBottom:10}}>🚶 On Outreach ({onOutreach.length})</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:12,marginBottom:24}}>
+            {onOutreach.map(r=><StaffCard key={r.id} r={r}/>)}
+          </div>
+        </>
+      )}
+
+      {staff.length===0&&<div style={{color:T.muted,fontSize:13,marginBottom:24}}>No staff signed in yet.</div>}
+
+      {/* Assets */}
+      <div style={{fontSize:14,fontWeight:800,color:T.white,marginBottom:12}}>Asset Sign In / Out</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:12}}>
+        {assets.map(a=>(
+          <Card key={a.id}>
+            <div style={{fontSize:26,marginBottom:8}}>{a.type==="Vehicle"?"🚗":a.type==="Duress Alarm"?"🔔":"📦"}</div>
+            <div style={{fontSize:13,fontWeight:700,color:T.white,marginBottom:4}}>{a.name}</div>
+            <div style={{fontSize:11,color:T.muted,marginBottom:10}}>{a.status==="out"?`With ${a.assigned_to}`:"Available"}</div>
+            <Badge label={a.status==="out"?"Checked Out":"Available"} color={a.status==="out"?T.red:T.green}/>
+            <div style={{marginTop:10}}>
+              {a.status==="out"
+                ?<Btn onClick={()=>onAssetAction(a.id,"return")} color={T.green} small>Return</Btn>
+                :<Btn onClick={()=>onAssetAction(a.id,"checkout")} color={T.accent} small>Check Out</Btn>}
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────
+//  DURESS ALARMS TAB
+// ─────────────────────────────────────────────────────────────
+const DuressTab = ({assets,setAssets,staffList,location}) => {
+  const [checkoutModal,setCheckoutModal] = useState(null);
+  const [form,setForm] = useState({staff:"",notes:"",loc:location||""});
+  const [history,setHistory] = useState([
+    {id:1,alarm:"Duress Alarm #1",staff:"Sarah Williams",out:"08:00",returned:"16:30",date:dateStr(),notes:"Field visit"},
+    {id:2,alarm:"Duress Alarm #2",staff:"John Murray",out:"08:15",returned:null,date:dateStr(),notes:"Doomadgee run"},
+  ]);
+  const alarms = assets.filter(a=>a.type==="Duress Alarm");
+  const activeAlarms = alarms.filter(a=>a.status==="out");
+
+  const confirmCheckout = () => {
+    if(!form.staff) return;
+    const asset = assets.find(a=>a.id===checkoutModal);
+    setAssets(p=>p.map(a=>a.id===checkoutModal?{...a,status:"out",assigned_to:form.staff,checked_out:nowStr(),notes:form.notes}:a));
+    setHistory(p=>[{id:Date.now(),alarm:asset.name,staff:form.staff,out:nowStr(),returned:null,date:dateStr(),notes:form.notes},...p]);
+    setForm({staff:"",notes:"",loc:location||""});
+    setCheckoutModal(null);
+  };
+
+  const returnAlarm = id => {
+    const asset = assets.find(a=>a.id===id);
+    setAssets(p=>p.map(a=>a.id===id?{...a,status:"available",assigned_to:null,checked_out:null,notes:""}:a));
+    setHistory(p=>p.map(h=>h.alarm===asset.name&&!h.returned?{...h,returned:nowStr()}:h));
+  };
+
+  return (
+    <div>
+      <div style={{fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Safety Equipment</div>
+      <div style={{fontSize:24,fontWeight:900,color:T.white,marginBottom:4}}>Duress Alarms</div>
+      <div style={{fontSize:13,color:T.muted,marginBottom:20}}>Track who has each duress alarm at all times.</div>
+      {activeAlarms.length>0&&(
+        <div style={{background:T.amber+"22",border:`1px solid ${T.amber}55`,borderRadius:12,padding:"12px 16px",marginBottom:20,display:"flex",gap:10}}>
+          <span style={{fontSize:22}}>🔔</span>
+          <div>
+            <div style={{fontSize:13,fontWeight:700,color:T.amber}}>{activeAlarms.length} Alarm{activeAlarms.length>1?"s":""} Currently Out</div>
+            <div style={{fontSize:12,color:T.muted}}>{activeAlarms.map(a=>`${a.name} — ${a.assigned_to}`).join(" · ")}</div>
+          </div>
+        </div>
+      )}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:14,marginBottom:28}}>
+        {alarms.map(a=>(
+          <Card key={a.id} style={{borderLeft:`4px solid ${a.status==="out"?T.amber:T.green}`}}>
+            <div style={{fontSize:32,marginBottom:10}}>🔔</div>
+            <div style={{fontSize:15,fontWeight:800,color:T.white,marginBottom:2}}>{a.name}</div>
+            <div style={{fontSize:11,color:T.muted,marginBottom:8}}>Serial: {a.serial||"—"}</div>
+            {a.status==="out"?(
+              <>
+                <div style={{fontSize:12,color:T.amber,fontWeight:700,marginBottom:2}}>With: {a.assigned_to}</div>
+                <div style={{fontSize:11,color:T.muted,marginBottom:a.notes?4:10}}>Checked out: {a.checked_out}</div>
+                {a.notes&&<div style={{fontSize:11,color:T.muted,marginBottom:10}}>Note: {a.notes}</div>}
+                <Badge label="Currently Out" color={T.amber}/>
+                <div style={{marginTop:12}}><Btn onClick={()=>returnAlarm(a.id)} color={T.green} small full>✓ Return Alarm</Btn></div>
+              </>
+            ):(
+              <>
+                <Badge label="Available" color={T.green}/>
+                <div style={{marginTop:12}}><Btn onClick={()=>{setCheckoutModal(a.id);setForm({staff:"",notes:"",loc:location||""}); }} color={T.amber} small full>Check Out</Btn></div>
+              </>
+            )}
+          </Card>
+        ))}
+        {alarms.length===0&&<div style={{color:T.muted,fontSize:13}}>No duress alarms in the system. Add them in Admin.</div>}
+      </div>
+
+      <div style={{fontSize:14,fontWeight:800,color:T.white,marginBottom:12}}>📋 Duress Alarm Log</div>
+      <Card style={{padding:0,overflow:"hidden"}}>
+        <table style={{width:"100%",borderCollapse:"collapse"}}>
+          <thead><tr style={{background:T.surface}}>
+            {["Alarm","Staff Member","Date","Out","Returned","Notes"].map(h=>(
+              <th key={h} style={{padding:"10px 14px",textAlign:"left",fontSize:11,color:T.muted,fontWeight:700,textTransform:"uppercase"}}>{h}</th>
+            ))}
+          </tr></thead>
+          <tbody>
+            {history.map(h=>(
+              <tr key={h.id} style={{borderTop:`1px solid ${T.border}`}}>
+                <td style={{padding:"10px 14px",fontSize:13,fontWeight:700,color:T.text}}>🔔 {h.alarm}</td>
+                <td style={{padding:"10px 14px",fontSize:13,color:T.text}}>{h.staff}</td>
+                <td style={{padding:"10px 14px",fontSize:12,color:T.muted}}>{h.date}</td>
+                <td style={{padding:"10px 14px",fontSize:12,color:T.muted}}>{h.out}</td>
+                <td style={{padding:"10px 14px"}}><Badge label={h.returned||"Still Out"} color={h.returned?T.green:T.amber}/></td>
+                <td style={{padding:"10px 14px",fontSize:11,color:T.muted}}>{h.notes||"—"}</td>
+              </tr>
+            ))}
+            {history.length===0&&<tr><td colSpan={6} style={{padding:20,textAlign:"center",color:T.muted,fontSize:13}}>No history yet.</td></tr>}
+          </tbody>
+        </table>
+      </Card>
+
+      {checkoutModal&&(
+        <div style={{position:"fixed",inset:0,background:"#000c",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={()=>setCheckoutModal(null)}>
+          <div style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:20,padding:28,width:"100%",maxWidth:420}} onClick={e=>e.stopPropagation()}>
+            <div style={{fontSize:11,color:T.amber,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>🔔 Duress Alarm Checkout</div>
+            <div style={{fontSize:18,fontWeight:900,color:T.white,marginBottom:20}}>{assets.find(a=>a.id===checkoutModal)?.name}</div>
+            <Field label="Staff Member *" value={form.staff} onChange={v=>setForm(p=>({...p,staff:v}))} options={staffList.map(s=>s.name)}/>
+            <Field label="Location" value={form.loc} onChange={v=>setForm(p=>({...p,loc:v}))} options={ALL_LOCATIONS}/>
+            <Field label="Notes (optional)" value={form.notes} onChange={v=>setForm(p=>({...p,notes:v}))} placeholder="e.g. Field visit, home visit…"/>
+            <div style={{display:"flex",gap:10}}>
+              <Btn onClick={confirmCheckout} color={form.staff?T.amber:T.muted} style={{flex:1}}>✓ Check Out</Btn>
+              <Btn onClick={()=>setCheckoutModal(null)} color={T.muted} outline style={{flex:1}}>Cancel</Btn>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────
+//  VEHICLES TAB
+// ─────────────────────────────────────────────────────────────
+const VehiclesTab = ({assets,setAssets,staffList,location}) => {
+  const [checkoutModal,setCheckoutModal] = useState(null);
+  const [returnModal,setReturnModal]     = useState(null);
+  const [form,setForm]           = useState({driver:"",destination:"",purpose:"",odometer_out:""});
+  const [returnForm,setReturnForm] = useState({odometer_in:"",notes:""});
+  const [history,setHistory] = useState([
+    {id:1,vehicle:"Toyota Hilux",rego:"123ABC",driver:"John Murray",out:"08:15",returned:"17:00",date:dateStr(),destination:"Doomadgee",purpose:"Community Visit",odometer_out:"45230",odometer_in:"45680"},
+    {id:2,vehicle:"Ford Ranger",rego:"456DEF",driver:"Sarah Williams",out:"09:00",returned:null,date:dateStr(),destination:"Mount Isa CBD",purpose:"Supply Run",odometer_out:"32100",odometer_in:null},
+  ]);
+  const vehicles = assets.filter(a=>a.type==="Vehicle");
+  const activeVehicles = vehicles.filter(v=>v.status==="out");
+
+  const confirmCheckout = () => {
+    if(!form.driver||!form.destination) return;
+    const asset = assets.find(a=>a.id===checkoutModal);
+    setAssets(p=>p.map(a=>a.id===checkoutModal?{...a,status:"out",assigned_to:form.driver,checked_out:nowStr(),destination:form.destination,purpose:form.purpose,odometer_out:form.odometer_out}:a));
+    setHistory(p=>[{id:Date.now(),vehicle:asset.name,rego:asset.rego,driver:form.driver,out:nowStr(),returned:null,date:dateStr(),destination:form.destination,purpose:form.purpose,odometer_out:form.odometer_out,odometer_in:null},...p]);
+    setForm({driver:"",destination:"",purpose:"",odometer_out:""});
+    setCheckoutModal(null);
+  };
+
+  const confirmReturn = () => {
+    const asset = assets.find(a=>a.id===returnModal);
+    setAssets(p=>p.map(a=>a.id===returnModal?{...a,status:"available",assigned_to:null,checked_out:null,destination:null}:a));
+    setHistory(p=>p.map(h=>h.vehicle===asset.name&&!h.returned?{...h,returned:nowStr(),odometer_in:returnForm.odometer_in,notes:returnForm.notes}:h));
+    setReturnForm({odometer_in:"",notes:""});
+    setReturnModal(null);
+  };
+
+  const exportLog=()=>{
+    const rows=[["Vehicle","Rego","Driver","Date","Out","Returned","Destination","Purpose","Odo Out","Odo In"],
+      ...history.map(h=>[h.vehicle,h.rego||"",h.driver,h.date,h.out,h.returned||"Still Out",h.destination||"",h.purpose||"",h.odometer_out||"",h.odometer_in||""])];
+    const a=document.createElement("a");
+    a.href="data:text/csv;charset=utf-8,"+encodeURI(rows.map(r=>r.join(",")).join("\n"));
+    a.download=`vehicle_log_${todayISO()}.csv`;a.click();
+  };
+
+  return (
+    <div>
+      <div style={{fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Fleet Management</div>
+      <div style={{fontSize:24,fontWeight:900,color:T.white,marginBottom:4}}>Vehicles</div>
+      <div style={{fontSize:13,color:T.muted,marginBottom:20}}>Track sign out, driver, destination and odometer readings.</div>
+      {activeVehicles.length>0&&(
+        <div style={{background:T.accent+"22",border:`1px solid ${T.accent}55`,borderRadius:12,padding:"12px 16px",marginBottom:20,display:"flex",gap:10}}>
+          <span style={{fontSize:22}}>🚗</span>
+          <div>
+            <div style={{fontSize:13,fontWeight:700,color:T.accent}}>{activeVehicles.length} Vehicle{activeVehicles.length>1?"s":""} Currently Out</div>
+            <div style={{fontSize:12,color:T.muted}}>{activeVehicles.map(v=>`${v.name} — ${v.assigned_to} → ${v.destination||"?"}`).join(" · ")}</div>
+          </div>
+        </div>
+      )}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:14,marginBottom:28}}>
+        {vehicles.map(v=>(
+          <Card key={v.id} style={{borderLeft:`4px solid ${v.status==="out"?T.accent2:T.green}`}}>
+            <div style={{fontSize:32,marginBottom:10}}>🚗</div>
+            <div style={{fontSize:15,fontWeight:800,color:T.white,marginBottom:2}}>{v.name}</div>
+            <div style={{fontSize:12,color:T.muted,marginBottom:8}}>Rego: <strong style={{color:T.text}}>{v.rego||"—"}</strong></div>
+            {v.status==="out"?(
+              <>
+                <div style={{fontSize:12,color:T.accent2,fontWeight:700,marginBottom:2}}>Driver: {v.assigned_to}</div>
+                <div style={{fontSize:11,color:T.muted,marginBottom:2}}>Out: {v.checked_out}</div>
+                {v.destination&&<div style={{fontSize:11,color:T.muted,marginBottom:8}}>→ {v.destination}</div>}
+                <Badge label="Out" color={T.accent2}/>
+                <div style={{marginTop:12}}><Btn onClick={()=>{setReturnModal(v.id);setReturnForm({odometer_in:"",notes:""});}} color={T.green} small full>✓ Return Vehicle</Btn></div>
+              </>
+            ):(
+              <>
+                <Badge label="Available" color={T.green}/>
+                <div style={{marginTop:12}}><Btn onClick={()=>{setCheckoutModal(v.id);setForm({driver:"",destination:"",purpose:"",odometer_out:""}); }} color={T.accent2} small full>Sign Out Vehicle</Btn></div>
+              </>
+            )}
+          </Card>
+        ))}
+        {vehicles.length===0&&<div style={{color:T.muted,fontSize:13}}>No vehicles in the system. Add them in Admin.</div>}
+      </div>
+
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,flexWrap:"wrap",gap:8}}>
+        <div style={{fontSize:14,fontWeight:800,color:T.white}}>📋 Vehicle Trip Log</div>
+        <Btn onClick={exportLog} color={T.green} small>⬇ Export Log</Btn>
+      </div>
+      <Card style={{padding:0,overflow:"hidden",overflowX:"auto"}}>
+        <table style={{width:"100%",borderCollapse:"collapse",minWidth:700}}>
+          <thead><tr style={{background:T.surface}}>
+            {["Vehicle","Driver","Date","Out","Returned","Destination","Purpose","Odo Out","Odo In"].map(h=>(
+              <th key={h} style={{padding:"10px 14px",textAlign:"left",fontSize:11,color:T.muted,fontWeight:700,textTransform:"uppercase",whiteSpace:"nowrap"}}>{h}</th>
+            ))}
+          </tr></thead>
+          <tbody>
+            {history.map(h=>(
+              <tr key={h.id} style={{borderTop:`1px solid ${T.border}`}}>
+                <td style={{padding:"10px 14px",fontSize:13,fontWeight:700,color:T.text}}>🚗 {h.vehicle}<br/><span style={{fontSize:10,color:T.muted,fontWeight:400}}>{h.rego}</span></td>
+                <td style={{padding:"10px 14px",fontSize:13,color:T.text}}>{h.driver}</td>
+                <td style={{padding:"10px 14px",fontSize:12,color:T.muted}}>{h.date}</td>
+                <td style={{padding:"10px 14px",fontSize:12,color:T.muted}}>{h.out}</td>
+                <td style={{padding:"10px 14px"}}><Badge label={h.returned||"Out"} color={h.returned?T.green:T.accent2}/></td>
+                <td style={{padding:"10px 14px",fontSize:12,color:T.muted}}>{h.destination||"—"}</td>
+                <td style={{padding:"10px 14px",fontSize:12,color:T.muted}}>{h.purpose||"—"}</td>
+                <td style={{padding:"10px 14px",fontSize:12,color:T.muted}}>{h.odometer_out?`${h.odometer_out} km`:"—"}</td>
+                <td style={{padding:"10px 14px",fontSize:12,color:T.muted}}>{h.odometer_in?`${h.odometer_in} km`:"—"}</td>
+              </tr>
+            ))}
+            {history.length===0&&<tr><td colSpan={9} style={{padding:20,textAlign:"center",color:T.muted,fontSize:13}}>No trips yet.</td></tr>}
+          </tbody>
+        </table>
+      </Card>
+
+      {checkoutModal&&(
+        <div style={{position:"fixed",inset:0,background:"#000c",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={()=>setCheckoutModal(null)}>
+          <div style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:20,padding:28,width:"100%",maxWidth:440,maxHeight:"92vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
+            <div style={{fontSize:11,color:T.accent2,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>🚗 Vehicle Sign Out</div>
+            <div style={{fontSize:18,fontWeight:900,color:T.white,marginBottom:20}}>{assets.find(a=>a.id===checkoutModal)?.name} — {assets.find(a=>a.id===checkoutModal)?.rego}</div>
+            <Field label="Driver *" value={form.driver} onChange={v=>setForm(p=>({...p,driver:v}))} options={staffList.map(s=>s.name)}/>
+            <Field label="Destination *" value={form.destination} onChange={v=>setForm(p=>({...p,destination:v}))} placeholder="e.g. Doomadgee, Mount Isa CBD…"/>
+            <Field label="Purpose" value={form.purpose} onChange={v=>setForm(p=>({...p,purpose:v}))} options={["Community Visit","Client Transport","Field Work","Supply Run","Staff Travel","Meeting","Other"]}/>
+            <Field label="Odometer Reading (km)" value={form.odometer_out} onChange={v=>setForm(p=>({...p,odometer_out:v}))} type="number" placeholder="e.g. 45230"/>
+            <div style={{display:"flex",gap:10}}>
+              <Btn onClick={confirmCheckout} color={(form.driver&&form.destination)?T.accent2:T.muted} style={{flex:1}}>✓ Sign Out</Btn>
+              <Btn onClick={()=>setCheckoutModal(null)} color={T.muted} outline style={{flex:1}}>Cancel</Btn>
+            </div>
+          </div>
+        </div>
+      )}
+      {returnModal&&(
+        <div style={{position:"fixed",inset:0,background:"#000c",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={()=>setReturnModal(null)}>
+          <div style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:20,padding:28,width:"100%",maxWidth:420}} onClick={e=>e.stopPropagation()}>
+            <div style={{fontSize:11,color:T.green,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>🚗 Return Vehicle</div>
+            <div style={{fontSize:18,fontWeight:900,color:T.white,marginBottom:20}}>{assets.find(a=>a.id===returnModal)?.name}</div>
+            <Field label="Odometer on Return (km)" value={returnForm.odometer_in} onChange={v=>setReturnForm(p=>({...p,odometer_in:v}))} type="number" placeholder="e.g. 45680"/>
+            <Field label="Any issues to report?" value={returnForm.notes} onChange={v=>setReturnForm(p=>({...p,notes:v}))} placeholder="e.g. No issues / Low fuel / Damage…"/>
+            <div style={{display:"flex",gap:10}}>
+              <Btn onClick={confirmReturn} color={T.green} style={{flex:1}}>✓ Confirm Return</Btn>
+              <Btn onClick={()=>setReturnModal(null)} color={T.muted} outline style={{flex:1}}>Cancel</Btn>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────
+//  EMERGENCY TAB
+// ─────────────────────────────────────────────────────────────
+const EmergencyTab = ({records,location}) => {
+  const onSite=records.filter(r=>r.status==="on-site"&&(!location||r.location===location));
+  return (
+    <div>
+      <div style={{background:T.red+"22",border:`1px solid ${T.red}44`,borderRadius:16,padding:"18px 24px",marginBottom:20}}>
+        <div style={{fontSize:22,fontWeight:900,color:T.red,marginBottom:4}}>🚨 Emergency Roll Call</div>
+        <div style={{fontSize:13,color:T.muted}}>Live list of everyone on site. Use for evacuations.</div>
+      </div>
+      <div style={{fontSize:20,fontWeight:800,color:T.white,marginBottom:4}}>{onSite.length} People On Site</div>
+      <div style={{fontSize:12,color:T.muted,marginBottom:16}}>As of {nowStr()}, {dateStr()} · {location}</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:10}}>
+        {onSite.map(r=>(
+          <Card key={r.id} style={{borderLeft:`4px solid ${r.type==="visitor"?T.accent:r.type==="contractor"?T.accent2:r.staff_status==="outreach"?T.purple:T.amber}`,padding:"12px 16px"}}>
+            <div style={{fontSize:13,fontWeight:800,color:T.white}}>{r.name||r.company||r.staff_name}</div>
+            <div style={{fontSize:11,color:T.muted,marginTop:2}}>
+              {r.type==="visitor"?`Visitor · ${r.program}`:r.type==="contractor"?`Contractor · ${r.contact_name}`:r.staff_status==="outreach"?"Staff · On Outreach":`Staff · ${r.location}`}
+            </div>
+            <div style={{fontSize:11,color:T.muted}}>In: {r.sign_in_time}</div>
+          </Card>
+        ))}
+        {onSite.length===0&&<div style={{color:T.muted,fontSize:13}}>Nobody on site right now.</div>}
+      </div>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────
+//  DAILY REPORT TAB
+// ─────────────────────────────────────────────────────────────
+const ReportTab = ({records,assets}) => {
+  const [activeReport,setActiveReport] = useState("combined");
+  const today       = records.filter(r=>r.date===todayISO());
+  const visitors    = today.filter(r=>r.type==="visitor");
+  const contractors = today.filter(r=>r.type==="contractor");
+  const staffRec    = today.filter(r=>r.type==="staff");
+  const stillOnSite = today.filter(r=>r.status==="on-site");
+  const assetsOut   = assets.filter(a=>a.status==="out");
+
+  // All unique programs that had visitors today
+  const activePrograms = [...new Set(visitors.map(v=>v.program))];
+
+  const buildCombinedReport = () => {
+    const lines=[];
+    lines.push(`NWQICSS — Combined Daily Site Report`);
+    lines.push(`Date: ${dateStr()}   Generated: ${nowStr()}`);
+    lines.push(`Sent to: ${CEO_EMAIL}, ${HR_EMAIL}, ${WHS_EMAIL}`);
+    lines.push(`${"─".repeat(50)}`);
+    lines.push(``);
+    // by location
+    ALL_LOCATIONS.forEach(loc=>{
+      const locVisitors = visitors.filter(r=>r.location===loc);
+      const locStaff    = staffRec.filter(r=>r.location===loc);
+      const locContractors = contractors.filter(r=>r.location===loc);
+      if(locVisitors.length+locStaff.length+locContractors.length===0) return;
+      lines.push(`📍 ${loc.toUpperCase()}`);
+      lines.push(`─────────────────────────────────────────────`);
+      if(locVisitors.length>0){
+        lines.push(`  Visitors (${locVisitors.length}):`);
+        locVisitors.forEach(r=>lines.push(`    • ${r.name} | ${r.program} | ${r.visit_purpose||r.purpose} | In: ${r.sign_in_time} Out: ${r.sign_out_time||"Still on site"}`));
+      }
+      if(locStaff.length>0){
+        lines.push(`  Staff (${locStaff.length}):`);
+        locStaff.forEach(r=>lines.push(`    • ${r.staff_name} | ${r.staff_status==="outreach"?"Outreach":"In Centre"} | In: ${r.sign_in_time} Out: ${r.sign_out_time||"Still on site"}${r.outreach_purpose?` | ${r.outreach_purpose}`:""}`));
+      }
+      if(locContractors.length>0){
+        lines.push(`  Contractors (${locContractors.length}):`);
+        locContractors.forEach(r=>lines.push(`    • ${r.company} | ${r.contact_name} | Compliance: ${r.compliance||"?"} | In: ${r.sign_in_time}`));
+      }
+      lines.push(``);
+    });
+    if(assetsOut.length>0){
+      lines.push(`ASSETS STILL OUT:`);
+      assetsOut.forEach(a=>lines.push(`  • ${a.name} — with ${a.assigned_to} since ${a.checked_out}`));
+      lines.push(``);
+    }
+    if(stillOnSite.length>0){
+      lines.push(`⚠️  STILL ON SITE (${stillOnSite.length}):`);
+      stillOnSite.forEach(r=>lines.push(`  • ${r.name||r.company||r.staff_name} (${r.type}) in since ${r.sign_in_time}`));
+    } else {
+      lines.push(`✓  All persons signed out.`);
+    }
+    return lines.join("\n");
+  };
+
+  const buildProgramReport = (prog) => {
+    const progVisitors = visitors.filter(r=>r.program===prog);
+    const recipient    = PROGRAM_EMAILS[prog];
+    const lines=[];
+    lines.push(`NWQICSS — Daily Program Report: ${prog}`);
+    lines.push(`Date: ${dateStr()}   Generated: ${nowStr()}`);
+    lines.push(`Sent to: ${recipient?.manager||"—"}, ${HR_EMAIL}, ${WHS_EMAIL}`);
+    lines.push(`${"─".repeat(50)}`);
+    lines.push(`Total visitors today: ${progVisitors.length}`);
+    lines.push(``);
+    if(progVisitors.length===0){
+      lines.push(`No visitors recorded for ${prog} today.`);
+    } else {
+      progVisitors.forEach((r,i)=>{
+        lines.push(`${i+1}. ${r.name}`);
+        lines.push(`   Purpose: ${r.visit_purpose||"—"}`);
+        if(r.purpose) lines.push(`   Notes: ${r.purpose}`);
+        lines.push(`   Location: ${r.location}`);
+        lines.push(`   Sign In: ${r.sign_in_time}   Sign Out: ${r.sign_out_time||"Still on site"}`);
+        if(r.phone) lines.push(`   Phone: ${r.phone}`);
+        lines.push(``);
+      });
+    }
+    return lines.join("\n");
+  };
+
+  const emailCombined = () => {
+    const subject = encodeURIComponent(`NWQICSS Combined Daily Report — ${dateStr()}`);
+    const body    = encodeURIComponent(buildCombinedReport());
+    window.open(`mailto:${CEO_EMAIL},${HR_EMAIL},${WHS_EMAIL}?subject=${subject}&body=${body}`);
+  };
+
+  const emailProgram = (prog) => {
+    const recipient = PROGRAM_EMAILS[prog];
+    if(!recipient) return;
+    const subject = encodeURIComponent(`NWQICSS Daily Report: ${prog} — ${dateStr()}`);
+    const body    = encodeURIComponent(buildProgramReport(prog));
+    const to      = [recipient.manager,HR_EMAIL,WHS_EMAIL].join(",");
+    window.open(`mailto:${to}?subject=${subject}&body=${body}`);
+  };
+
+  const exportCSV = () => {
+    const rows=[["Type","Name","Program","Purpose","Notes","Location","Sign In","Sign Out","Status"],
+      ...today.map(r=>[r.type,r.name||r.company||r.staff_name,r.program||"",r.visit_purpose||"",r.purpose||r.outreach_purpose||"",r.location,r.sign_in_time,r.sign_out_time||"On Site",r.status])];
+    const a=document.createElement("a");
+    a.href="data:text/csv;charset=utf-8,"+encodeURI(rows.map(r=>r.map(c=>`"${c||""}"`).join(",")).join("\n"));
+    a.download=`NWQICSS_Report_${todayISO()}.csv`;a.click();
+  };
+
+  const reportText = activeReport==="combined" ? buildCombinedReport() : buildProgramReport(activeReport);
+
+  return (
+    <div>
+      <div style={{fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Daily Reports</div>
+      <div style={{fontSize:24,fontWeight:900,color:T.white,marginBottom:4}}>End of Day Reports</div>
+      <div style={{fontSize:13,color:T.muted,marginBottom:20}}>Reports auto-send at midnight. Use buttons below to send manually any time.</div>
+
+      {/* Summary stats */}
+      <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:24}}>
+        {[
+          {icon:"👤",val:visitors.length,label:"Visitors",color:T.accent},
+          {icon:"🔧",val:contractors.length,label:"Contractors",color:T.accent2},
+          {icon:"👷",val:staffRec.length,label:"Staff",color:T.amber},
+          {icon:"⚠️",val:stillOnSite.length,label:"Still On Site",color:stillOnSite.length>0?T.red:T.green},
+          {icon:"🚗",val:assetsOut.length,label:"Assets Out",color:assetsOut.length>0?T.red:T.green},
+        ].map(({icon,val,label,color})=>(
+          <Card key={label} style={{flex:1,minWidth:90,textAlign:"center"}}>
+            <div style={{fontSize:20,marginBottom:4}}>{icon}</div>
+            <div style={{fontSize:26,fontWeight:900,color,lineHeight:1}}>{val}</div>
+            <div style={{fontSize:10,color:T.muted,marginTop:4,textTransform:"uppercase"}}>{label}</div>
+          </Card>
+        ))}
+      </div>
+
+      {/* Report selector */}
+      <div style={{marginBottom:16}}>
+        <div style={{fontSize:13,fontWeight:700,color:T.white,marginBottom:10}}>Select Report to Preview</div>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          <button onClick={()=>setActiveReport("combined")} style={{padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:700,cursor:"pointer",
+            background:activeReport==="combined"?CEO_EMAIL?T.accent:T.accent:T.accent,color:T.bg,border:`1px solid ${T.accent}`,opacity:activeReport==="combined"?1:.5}}>
+            📋 Combined Report
+          </button>
+          {Object.entries(PROGRAM_EMAILS).map(([prog,info])=>(
+            <button key={prog} onClick={()=>setActiveReport(prog)} style={{padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:600,cursor:"pointer",
+              background:activeReport===prog?T.accent2:"transparent",color:activeReport===prog?T.bg:T.muted,border:`1px solid ${activeReport===prog?T.accent2:T.border}`}}>
+              {prog}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Preview */}
+      <Card style={{marginBottom:20}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,flexWrap:"wrap",gap:8}}>
+          <div style={{fontSize:13,fontWeight:700,color:T.white}}>
+            {activeReport==="combined"?"Combined Report Preview":`${activeReport} — Report Preview`}
+          </div>
+          {activeReport!=="combined"&&PROGRAM_EMAILS[activeReport]&&(
+            <div style={{fontSize:12,color:T.muted}}>
+              Sent to: <span style={{color:T.accent}}>{PROGRAM_EMAILS[activeReport].manager}</span> + HR + WHS
+            </div>
+          )}
+        </div>
+        <pre style={{fontSize:11,color:T.text,lineHeight:1.7,whiteSpace:"pre-wrap",fontFamily:"monospace",
+          background:T.surface,padding:16,borderRadius:10,maxHeight:300,overflowY:"auto"}}>
+          {reportText}
+        </pre>
+      </Card>
+
+      {/* Action buttons */}
+      <div style={{fontSize:13,fontWeight:700,color:T.white,marginBottom:10}}>Send Reports</div>
+      <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:20}}>
+        <Btn onClick={emailCombined} color={T.accent} style={{flex:1,minWidth:200}}>
+          📧 Email Combined Report → CEO + HR + WHS
+        </Btn>
+        <Btn onClick={exportCSV} color={T.green} style={{flex:1,minWidth:200}}>
+          📊 Export Full CSV
+        </Btn>
+      </div>
+
+      {/* Per-program send buttons */}
+      <div style={{fontSize:13,fontWeight:700,color:T.white,marginBottom:10}}>Send Program Reports</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:10,marginBottom:24}}>
+        {Object.entries(PROGRAM_EMAILS).map(([prog,info])=>{
+          const count = visitors.filter(v=>v.program===prog).length;
+          return (
+            <div key={prog} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:"12px 14px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}>
+              <div>
+                <div style={{fontSize:13,fontWeight:700,color:T.white}}>{prog}</div>
+                <div style={{fontSize:11,color:T.muted}}>{info.manager} · {count} visitor{count!==1?"s":""} today</div>
+              </div>
+              <Btn onClick={()=>emailProgram(prog)} color={count>0?T.accent2:T.muted} outline small>Send</Btn>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Auto-send info */}
+      <Card>
+        <div style={{fontSize:13,fontWeight:700,color:T.amber,marginBottom:8}}>🕛 Automatic Midnight Reports</div>
+        <div style={{fontSize:12,color:T.text,lineHeight:1.8}}>
+          Once you connect the app to a database (Supabase), all reports will be sent automatically at <strong style={{color:T.accent}}>12:00 AM every night</strong> to the relevant recipients below:
+        </div>
+        <div style={{marginTop:12,display:"flex",flexDirection:"column",gap:6}}>
+          {[
+            {label:"Combined (all data)",to:`${CEO_EMAIL}, ${HR_EMAIL}, ${WHS_EMAIL}`},
+            ...Object.entries(PROGRAM_EMAILS).map(([prog,info])=>({label:prog,to:`${info.manager}, ${HR_EMAIL}, ${WHS_EMAIL}`}))
+          ].map(({label,to})=>(
+            <div key={label} style={{display:"flex",gap:10,fontSize:12,padding:"6px 0",borderBottom:`1px solid ${T.border}`}}>
+              <span style={{color:T.text,minWidth:220,fontWeight:600}}>{label}</span>
+              <span style={{color:T.accent}}>{to}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{fontSize:11,color:T.muted,marginTop:12}}>
+          To enable auto-send: connect the app to Supabase using the Setup Guide, then set up a scheduled function. I can walk you through this step by step.
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────
+//  ADMIN TAB
+// ─────────────────────────────────────────────────────────────
+const AdminTab = ({staffList,setStaffList,assets,setAssets}) => {
+  const [activeSection,setSection] = useState("staff");
+  const [newStaff,setNewStaff]   = useState({name:"",role:"",email:"",phone:""});
+  const [newAsset,setNewAsset]   = useState({type:"Vehicle",name:"",rego:"",serial:""});
+  const [pasteText,setPasteText] = useState("");
+
+  const addStaff = () => {
+    if(!newStaff.name) return;
+    setStaffList(p=>[...p,{...newStaff,id:Date.now()}]);
+    setNewStaff({name:"",role:"",email:"",phone:""});
+  };
+  const removeStaff = id => setStaffList(p=>p.filter(s=>s.id!==id));
+  const addAsset = () => {
+    if(!newAsset.name) return;
+    setAssets(p=>[...p,{...newAsset,id:Date.now(),status:"available",assigned_to:null,checked_out:null}]);
+    setNewAsset({type:"Vehicle",name:"",rego:"",serial:""});
+  };
+  const removeAsset = id => setAssets(p=>p.filter(a=>a.id!==id));
+
+  const importPasteList = () => {
+    const lines=pasteText.split("\n").filter(l=>l.trim());
+    const imported=lines.map((line,i)=>{
+      const parts=line.split(",").map(p=>p.trim());
+      return {id:Date.now()+i,name:parts[0]||"",role:parts[1]||"",email:parts[2]||"",phone:parts[3]||""};
+    }).filter(s=>s.name);
+    setStaffList(p=>[...p,...imported]);
+    setPasteText("");
+    alert(`✓ ${imported.length} staff member(s) added!`);
+  };
+
+  const handleFileUpload = e => {
+    const file=e.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=evt=>{
+      const text=evt.target.result;
+      const lines=text.split("\n").filter(l=>l.trim());
+      const dataLines=lines[0].toLowerCase().includes("name")?lines.slice(1):lines;
+      const imported=dataLines.map((line,i)=>{
+        const parts=line.includes("\t")?line.split("\t"):line.split(",");
+        const clean=parts.map(p=>p.replace(/^"|"$/g,"").trim());
+        return {id:Date.now()+i,name:clean[0]||"",role:clean[1]||"",email:clean[2]||"",phone:clean[3]||""};
+      }).filter(s=>s.name);
+      setStaffList(p=>[...p,...imported]);
+      alert(`✓ ${imported.length} staff member(s) imported!`);
+    };
+    reader.readAsText(file);e.target.value="";
+  };
+
+  const handleAssetFileUpload = e => {
+    const file=e.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=evt=>{
+      const text=evt.target.result;
+      const lines=text.split("\n").filter(l=>l.trim());
+      const dataLines=lines[0].toLowerCase().includes("type")?lines.slice(1):lines;
+      const imported=dataLines.map((line,i)=>{
+        const parts=line.includes("\t")?line.split("\t"):line.split(",");
+        const clean=parts.map(p=>p.replace(/^"|"$/g,"").trim());
+        return {id:Date.now()+i,type:clean[0]||"Equipment",name:clean[1]||"",rego:clean[2]||"",serial:clean[3]||"",status:"available",assigned_to:null,checked_out:null};
+      }).filter(a=>a.name);
+      setAssets(p=>[...p,...imported]);
+      alert(`✓ ${imported.length} asset(s) imported!`);
+    };
+    reader.readAsText(file);e.target.value="";
+  };
+
+  const downloadTemplate = type => {
+    const content=type==="staff"
+      ?"Name,Role,Email,Phone\nFaisal Khan,CEO,ceo@nwqicss.org,0400000001"
+      :"Type,Name,Rego,Serial\nVehicle,Toyota Hilux,123ABC,\nDuress Alarm,Duress Alarm #1,,DA001";
+    const a=document.createElement("a");
+    a.href="data:text/csv;charset=utf-8,"+encodeURIComponent(content);
+    a.download=type==="staff"?"staff_template.csv":"assets_template.csv";a.click();
+  };
+
+  const navBtn=(id,label)=>(
+    <button onClick={()=>setSection(id)} style={{padding:"8px 18px",borderRadius:10,fontSize:13,fontWeight:700,cursor:"pointer",
+      background:activeSection===id?T.accent:"transparent",color:activeSection===id?T.bg:T.muted,
+      border:`1.5px solid ${activeSection===id?T.accent:T.border}`}}>{label}</button>
+  );
+
+  return (
+    <div>
+      <div style={{fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Admin Panel</div>
+      <div style={{fontSize:24,fontWeight:900,color:T.white,marginBottom:20}}>Manage Staff & Assets</div>
+      <div style={{display:"flex",gap:8,marginBottom:24,flexWrap:"wrap"}}>
+        {navBtn("staff","👷 Staff")}
+        {navBtn("assets","🚗 Vehicles & Assets")}
+        {navBtn("settings","⚙️ Settings")}
+      </div>
+
+      {activeSection==="staff"&&(
+        <div>
+          <Section title={`Staff List (${staffList.length} members)`}>
+            <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
+              {staffList.map(s=>(
+                <div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:T.surface,padding:"10px 14px",borderRadius:10,border:`1px solid ${T.border}`,flexWrap:"wrap",gap:8}}>
+                  <div>
+                    <div style={{fontSize:13,fontWeight:700,color:T.white}}>{s.name}</div>
+                    <div style={{fontSize:11,color:T.muted}}>{s.role}{s.email?` · ${s.email}`:""}</div>
+                  </div>
+                  <Btn onClick={()=>removeStaff(s.id)} color={T.red} outline small>Remove</Btn>
+                </div>
+              ))}
+            </div>
+          </Section>
+          <Section title="➕ Add Staff Member">
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+              <Field label="Full Name *" value={newStaff.name} onChange={v=>setNewStaff(p=>({...p,name:v}))} placeholder="Full name"/>
+              <Field label="Role" value={newStaff.role} onChange={v=>setNewStaff(p=>({...p,role:v}))} placeholder="e.g. Program Manager"/>
+              <Field label="Email" value={newStaff.email} onChange={v=>setNewStaff(p=>({...p,email:v}))} placeholder="email@nwqicss.org" type="email"/>
+              <Field label="Phone" value={newStaff.phone} onChange={v=>setNewStaff(p=>({...p,phone:v}))} placeholder="0400 000 000" type="tel"/>
+            </div>
+            <Btn onClick={addStaff} color={T.green} small>+ Add Staff Member</Btn>
+          </Section>
+          <Section title="📋 Paste a List">
+            <div style={{fontSize:12,color:T.muted,marginBottom:8}}>One per line, or: <code style={{color:T.accent}}>Name, Role, Email, Phone</code></div>
+            <textarea value={pasteText} onChange={e=>setPasteText(e.target.value)} rows={4}
+              placeholder={"John Smith, Field Officer, john@nwqicss.org, 0400000000\nJane Doe, Admin"}
+              style={{width:"100%",padding:"10px 12px",background:T.surface,border:`1.5px solid ${T.border}`,borderRadius:10,color:T.text,fontSize:13,outline:"none",boxSizing:"border-box",resize:"vertical",marginBottom:10}}/>
+            <Btn onClick={importPasteList} color={T.accent} small>Import List</Btn>
+          </Section>
+          <Section title="📁 Upload CSV / Excel">
+            <div style={{fontSize:12,color:T.muted,marginBottom:12}}>Columns: <code style={{color:T.accent}}>Name, Role, Email, Phone</code></div>
+            <div style={{display:"flex",gap:10,flexWrap:"wrap",alignItems:"center"}}>
+              <Btn onClick={()=>downloadTemplate("staff")} color={T.muted} outline small>⬇ Download Template</Btn>
+              <label style={{background:T.accent,color:T.bg,border:`1.5px solid ${T.accent}`,borderRadius:10,padding:"7px 14px",fontSize:12,fontWeight:700,cursor:"pointer"}}>
+                📁 Choose File
+                <input type="file" accept=".csv,.txt" onChange={handleFileUpload} style={{display:"none"}}/>
+              </label>
+            </div>
+            <div style={{fontSize:11,color:T.muted,marginTop:8}}>For .xlsx: open in Excel → File → Save As → CSV, then upload here.</div>
+          </Section>
+        </div>
+      )}
+
+      {activeSection==="assets"&&(
+        <div>
+          <Section title={`Asset Register (${assets.length} assets)`}>
+            <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
+              {assets.map(a=>(
+                <div key={a.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:T.surface,padding:"10px 14px",borderRadius:10,border:`1px solid ${T.border}`,flexWrap:"wrap",gap:8}}>
+                  <div>
+                    <div style={{fontSize:13,fontWeight:700,color:T.white}}>{a.type==="Vehicle"?"🚗":a.type==="Duress Alarm"?"🔔":"📦"} {a.name}</div>
+                    <div style={{fontSize:11,color:T.muted}}>{a.type}{a.rego?` · Rego: ${a.rego}`:""}  {a.serial?`· Serial: ${a.serial}`:""}</div>
+                  </div>
+                  <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                    <Badge label={a.status==="out"?"Out":"Available"} color={a.status==="out"?T.red:T.green}/>
+                    <Btn onClick={()=>removeAsset(a.id)} color={T.red} outline small>Remove</Btn>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Section>
+          <Section title="➕ Add Asset">
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+              <Field label="Type *" value={newAsset.type} onChange={v=>setNewAsset(p=>({...p,type:v}))} options={["Vehicle","Duress Alarm","Equipment","Laptop","Other"]}/>
+              <Field label="Name *" value={newAsset.name} onChange={v=>setNewAsset(p=>({...p,name:v}))} placeholder="e.g. Toyota Hilux"/>
+              <Field label="Rego (vehicles)" value={newAsset.rego} onChange={v=>setNewAsset(p=>({...p,rego:v}))} placeholder="e.g. 123ABC"/>
+              <Field label="Serial Number" value={newAsset.serial} onChange={v=>setNewAsset(p=>({...p,serial:v}))} placeholder="e.g. DA001"/>
+            </div>
+            <Btn onClick={addAsset} color={T.green} small>+ Add Asset</Btn>
+          </Section>
+          <Section title="📁 Upload Assets CSV">
+            <div style={{fontSize:12,color:T.muted,marginBottom:12}}>Columns: <code style={{color:T.accent}}>Type, Name, Rego, Serial</code></div>
+            <div style={{display:"flex",gap:10,flexWrap:"wrap",alignItems:"center"}}>
+              <Btn onClick={()=>downloadTemplate("assets")} color={T.muted} outline small>⬇ Download Template</Btn>
+              <label style={{background:T.accent,color:T.bg,border:`1.5px solid ${T.accent}`,borderRadius:10,padding:"7px 14px",fontSize:12,fontWeight:700,cursor:"pointer"}}>
+                📁 Choose File
+                <input type="file" accept=".csv,.txt" onChange={handleAssetFileUpload} style={{display:"none"}}/>
+              </label>
+            </div>
+          </Section>
+        </div>
+      )}
+
+      {activeSection==="settings"&&(
+        <div>
+          <Section title="🌐 Website & App Link">
+            <Card>
+              <div style={{fontSize:13,color:T.text,marginBottom:8}}>Your app will be available at:</div>
+              <div style={{background:T.surface,padding:"10px 14px",borderRadius:10,fontSize:14,fontWeight:700,color:T.accent,marginBottom:12}}>{SITE_URL}</div>
+              <div style={{fontSize:12,color:T.muted,lineHeight:1.7}}>
+                This link works on <strong style={{color:T.text}}>iPhone, Android, iPad, and desktop</strong>.<br/>
+                To add to home screen on iPhone: open in Safari → Share → Add to Home Screen.<br/>
+                To add to home screen on Android: open in Chrome → Menu (⋮) → Add to Home Screen.
+              </div>
+            </Card>
+          </Section>
+          <Section title="📧 Report Email Recipients">
+            <Card>
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                {[
+                  {label:"Combined Report",to:`${CEO_EMAIL}, ${HR_EMAIL}, ${WHS_EMAIL}`},
+                  ...Object.entries(PROGRAM_EMAILS).map(([prog,info])=>({label:prog,to:`${info.manager}, ${HR_EMAIL}, ${WHS_EMAIL}`}))
+                ].map(({label,to})=>(
+                  <div key={label} style={{display:"flex",gap:10,fontSize:12,padding:"8px 0",borderBottom:`1px solid ${T.border}`,flexWrap:"wrap"}}>
+                    <span style={{color:T.text,fontWeight:700,minWidth:200}}>{label}</span>
+                    <span style={{color:T.accent}}>{to}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{fontSize:11,color:T.muted,marginTop:12}}>To change any email address, edit the PROGRAM_EMAILS or HR_EMAIL/WHS_EMAIL/CEO_EMAIL at the top of App.jsx.</div>
+            </Card>
+          </Section>
+          <Section title="📍 Locations & Programs">
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:12}}>
+              {Object.entries(LOCATION_PROGRAMS).map(([loc,progs])=>(
+                <Card key={loc} style={{padding:"14px 16px"}}>
+                  <div style={{fontSize:13,fontWeight:800,color:T.accent,marginBottom:8}}>📍 {loc}</div>
+                  {progs.map(p=><div key={p} style={{fontSize:12,color:T.text,padding:"3px 0",borderBottom:`1px solid ${T.border}`}}>• {p}</div>)}
+                </Card>
+              ))}
+            </div>
+          </Section>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────
+//  MAIN APP
+// ─────────────────────────────────────────────────────────────
+export default function App() {
+  const [tab,setTab]         = useState("dashboard");
+  const [location,setLoc]    = useState("Mount Isa");
+  const [records,setRecs]    = useState(DEMO_RECORDS);
+  const [assets,setAssets]   = useState(DEFAULT_ASSETS);
+  const [staffList,setStaff] = useState(DEFAULT_STAFF);
+  const [modal,setModal]     = useState(null);
+  const [time,setTime]       = useState(nowStr());
+
+  useEffect(()=>{const t=setInterval(()=>setTime(nowStr()),30000);return()=>clearInterval(t);},[]);
+
+  const handleSignIn = form => {
+    setRecs(p=>[...p,{
+      id:Date.now(), type:modal,
+      sign_in_time:nowStr(), sign_out_time:null, status:"on-site",
+      location:form.loc||location, date:todayISO(),
+      ...(modal==="visitor"&&{
+        name:form.name, purpose:form.purpose, visit_purpose:form.visit_purpose,
+        program:form.program, phone:form.phone
+      }),
+      ...(modal==="contractor"&&{
+        company:form.company, contact_name:form.contact,
+        purpose:form.purpose, phone:form.phone, compliance:"valid"
+      }),
+      ...(modal==="staff"&&{
+        staff_name:form.staff, staff_status:form.staff_mode,
+        outreach_purpose:form.outreach_purpose
+      }),
+    }]);
+    setModal(null);
+  };
+
+  const handleSignOut = id => setRecs(p=>p.map(r=>r.id===id?{...r,sign_out_time:nowStr(),status:"signed-out"}:r));
+
+  const handleAsset = (id,action) => {
+    if(action==="return"){
+      setAssets(p=>p.map(a=>a.id===id?{...a,status:"available",assigned_to:null,checked_out:null}:a));
+    } else {
+      const who=prompt("Who is checking out this asset?");
+      if(who) setAssets(p=>p.map(a=>a.id===id?{...a,status:"out",assigned_to:who,checked_out:nowStr()}:a));
+    }
+  };
+
+  const onSiteCount = records.filter(r=>r.status==="on-site"&&(!location||r.location===location)).length;
+
+  const TABS = [
+    {id:"dashboard",   icon:"📊",label:"Dashboard"},
+    {id:"signin",      icon:"✍️", label:"Sign In"},
+    {id:"visitors",    icon:"👤",label:"Visitors"},
+    {id:"contractors", icon:"🔧",label:"WHS"},
+    {id:"staff",       icon:"👷",label:"Staff"},
+    {id:"duress",      icon:"🔔",label:"Duress"},
+    {id:"vehicles",    icon:"🚗",label:"Vehicles"},
+    {id:"report",      icon:"📋",label:"Reports"},
+    {id:"emergency",   icon:"🚨",label:"Emergency"},
+    {id:"admin",       icon:"⚙️", label:"Admin"},
+  ];
+
+  return (
+    <div style={{minHeight:"100vh",background:T.bg,color:T.text,fontFamily:"'Segoe UI',system-ui,sans-serif",fontSize:14}}>
+
+      {/* Header */}
+      <div style={{background:T.surface,borderBottom:`1px solid ${T.border}`,padding:"0 16px",position:"sticky",top:0,zIndex:100}}>
+        <div style={{maxWidth:1100,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",height:52}}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <div style={{width:32,height:32,borderRadius:8,background:T.accent,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:900,color:T.bg}}>N</div>
+            <div>
+              <div style={{fontSize:13,fontWeight:900,color:T.white,lineHeight:1.1}}>NWQICSS</div>
+              <div style={{fontSize:9,color:T.muted,letterSpacing:.6,textTransform:"uppercase"}}>Compliance Portal</div>
+            </div>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
+              <span style={{width:7,height:7,borderRadius:"50%",background:T.green,display:"inline-block",boxShadow:`0 0 6px ${T.green}`}}/>
+              <span style={{color:T.green,fontWeight:700}}>{onSiteCount}</span>
+              <span style={{color:T.muted}}>on site</span>
+            </div>
+            <span style={{fontSize:11,color:T.muted}}>{time}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Location selector */}
+      <div style={{background:T.surface,borderBottom:`1px solid ${T.border}`,padding:"8px 16px"}}>
+        <div style={{maxWidth:1100,margin:"0 auto",display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+          <span style={{fontSize:11,color:T.muted,fontWeight:700}}>📍</span>
+          {ALL_LOCATIONS.map(l=>(
+            <button key={l} onClick={()=>setLoc(l)} style={{padding:"5px 14px",borderRadius:20,fontSize:12,fontWeight:600,cursor:"pointer",
+              background:location===l?T.accent:"transparent",color:location===l?T.bg:T.muted,
+              border:`1px solid ${location===l?T.accent:T.border}`,transition:"all .15s"}}>{l}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* Tab bar */}
+      <div style={{background:T.surface,borderBottom:`1px solid ${T.border}`,padding:"0 16px",overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
+        <div style={{maxWidth:1100,margin:"0 auto",display:"flex",gap:0}}>
+          {TABS.map(t=>(
+            <button key={t.id} onClick={()=>setTab(t.id)} style={{
+              padding:"11px 12px",background:"transparent",border:"none",
+              borderBottom:`2px solid ${tab===t.id?T.accent:"transparent"}`,
+              color:tab===t.id?T.accent:T.muted,fontWeight:700,fontSize:12,
+              cursor:"pointer",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:4,
+              WebkitTapHighlightColor:"transparent"}}>
+              {t.icon} {t.label}
+              {t.id==="emergency"&&onSiteCount>0&&(
+                <span style={{background:T.red,color:"#fff",borderRadius:20,fontSize:10,fontWeight:900,padding:"1px 6px"}}>{onSiteCount}</span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Page content */}
+      <div style={{maxWidth:1100,margin:"0 auto",padding:"20px 16px"}}>
+        {tab==="dashboard"   &&<Dashboard records={records} assets={assets} location={location}/>}
+        {tab==="signin"      &&(
+          <div>
+            <div style={{fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Sign In Kiosk</div>
+            <div style={{fontSize:22,fontWeight:900,color:T.white,marginBottom:4}}>Who's signing in today?</div>
+            <div style={{fontSize:13,color:T.accent,marginBottom:20}}>📍 {location}</div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:14}}>
+              {[
+                {type:"visitor",   icon:"👤",label:"Visitor",    desc:"Programs, clinics, meetings",color:T.accent},
+                {type:"contractor",icon:"🔧",label:"Contractor", desc:"WHS compliance sign in",    color:T.accent2},
+                {type:"staff",     icon:"👷",label:"Staff",      desc:"Arriving at centre or leaving for outreach",color:T.amber},
+              ].map(({type,icon,label,desc,color})=>(
+                <Card key={type} style={{cursor:"pointer",textAlign:"center"}} onClick={()=>setModal(type)}>
+                  <div style={{fontSize:44,marginBottom:12}}>{icon}</div>
+                  <div style={{fontSize:17,fontWeight:800,color:T.white,marginBottom:6}}>{label}</div>
+                  <div style={{fontSize:12,color:T.muted,marginBottom:16}}>{desc}</div>
+                  <Btn onClick={e=>{e.stopPropagation();setModal(type);}} color={color} full small>Tap to Sign In</Btn>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+        {tab==="visitors"    &&<VisitorsTab records={records} onSignOut={handleSignOut} location={location}/>}
+        {tab==="contractors" &&<ContractorsTab records={records} onSignOut={handleSignOut} location={location}/>}
+        {tab==="staff"       &&<StaffTab records={records} assets={assets} onSignOut={handleSignOut} onAssetAction={handleAsset} location={location}/>}
+        {tab==="duress"      &&<DuressTab assets={assets} setAssets={setAssets} staffList={staffList} location={location}/>}
+        {tab==="vehicles"    &&<VehiclesTab assets={assets} setAssets={setAssets} staffList={staffList} location={location}/>}
+        {tab==="report"      &&<ReportTab records={records} assets={assets}/>}
+        {tab==="emergency"   &&<EmergencyTab records={records} location={location}/>}
+        {tab==="admin"       &&<AdminTab staffList={staffList} setStaffList={setStaff} assets={assets} setAssets={setAssets}/>}
+      </div>
+
+      {modal&&<SignInModal type={modal} location={location} staffList={staffList} onClose={()=>setModal(null)} onSubmit={handleSignIn}/>}
+    </div>
+  );
+}

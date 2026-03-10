@@ -39,7 +39,6 @@ const ORG_NAME  = "NWQICSS";
 const SITE_URL  = "https://nwqicsscompliance.org";
 const HR_EMAIL  = "hr@nwqicss.org";
 const WHS_EMAIL = "whs@nwqicss.org";
-const CEO_EMAIL = "ceo@nwqicss.org";
 
 // Programs by location
 const LOCATION_PROGRAMS = {
@@ -66,8 +65,8 @@ const PROGRAM_EMAILS = {
   "APDC":                             {manager:"apdc@nwqicss.org",          label:"APDC Manager"},
   "RAGOSS":                           {manager:"ragossmanager@nwqicss.org", label:"RAGOSS Manager"},
   "RAGOSS Youth":                     {manager:"ragossmanager@nwqicss.org", label:"RAGOSS Manager"},
-  "Brilla Brilla":                    {manager:CEO_EMAIL,                   label:"CEO"},
-  "Main Office":                      {manager:CEO_EMAIL,                   label:"CEO"},
+  "Brilla Brilla":                    {manager:HR_EMAIL, label:"HR Manager"},
+  "Main Office":                      {manager:HR_EMAIL, label:"HR Manager"},
   "AICC":                             {manager:"dhankin@nwqicss.org",       label:"D. Hankin"},
   "Boulia Community Support Service": {manager:"jnorton@nwqicss.org",      label:"J. Norton"},
   "Doomadgee Women's Shelter":        {manager:"clogan@nwqicss.org",        label:"C. Logan"},
@@ -1181,11 +1180,32 @@ const ReportTab = ({records,assets}) => {
 
   const reportText = activeReport==="combined" ? buildCombinedReport() : buildProgramReport(activeReport);
 
+  // ── Auto-send at 11:45 PM AEST ───────────────────────────
+  useEffect(()=>{
+    const checkTime = () => {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString("en-AU",{hour:"2-digit",minute:"2-digit",hour12:false,timeZone:"Australia/Brisbane"});
+      if(timeStr === "23:45"){
+        // Auto-send all program reports
+        Object.keys(PROGRAM_EMAILS).forEach(prog => {
+          const recipient = PROGRAM_EMAILS[prog];
+          if(!recipient) return;
+          const subject = encodeURIComponent(`NWQICSS Auto Report: ${prog} — ${dateStr()}`);
+          const body    = encodeURIComponent(buildProgramReport(prog));
+          const to      = [recipient.manager, HR_EMAIL, WHS_EMAIL].filter(Boolean).join(",");
+          window.open(`mailto:${to}?subject=${subject}&body=${body}`);
+        });
+      }
+    };
+    const interval = setInterval(checkTime, 60000); // check every minute
+    return () => clearInterval(interval);
+  },[records]);
+
   return (
     <div>
       <div style={{fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Daily Reports</div>
       <div style={{fontSize:24,fontWeight:900,color:T.white,marginBottom:4}}>End of Day Reports</div>
-      <div style={{fontSize:13,color:T.muted,marginBottom:20}}>Reports auto-send at midnight. Use buttons below to send manually any time.</div>
+      <div style={{fontSize:13,color:T.muted,marginBottom:20}}>Reports auto-send at 11:45 PM each day. Use buttons below to send manually any time.</div>
 
       {/* Summary stats */}
       <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:24}}>
@@ -1209,7 +1229,7 @@ const ReportTab = ({records,assets}) => {
         <div style={{fontSize:13,fontWeight:700,color:T.white,marginBottom:10}}>Select Report to Preview</div>
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
           <button onClick={()=>setActiveReport("combined")} style={{padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:700,cursor:"pointer",
-            background:activeReport==="combined"?CEO_EMAIL?T.accent:T.accent:T.accent,color:T.bg,border:`1px solid ${T.accent}`,opacity:activeReport==="combined"?1:.5}}>
+            background:activeReport==="combined"?HR_EMAIL?T.accent:T.accent:T.accent,color:T.bg,border:`1px solid ${T.accent}`,opacity:activeReport==="combined"?1:.5}}>
             📋 Combined Report
           </button>
           {Object.entries(PROGRAM_EMAILS).map(([prog,info])=>(
@@ -1488,7 +1508,7 @@ const AdminTab = ({staffList,setStaffList,assets,setAssets}) => {
             <Card>
               <div style={{display:"flex",flexDirection:"column",gap:8}}>
                 {[
-                  {label:"Combined Report",to:`${CEO_EMAIL}, ${HR_EMAIL}, ${WHS_EMAIL}`},
+                  {label:"Combined Report",to:`${HR_EMAIL}, ${WHS_EMAIL}`},
                   ...Object.entries(PROGRAM_EMAILS).map(([prog,info])=>({label:prog,to:`${info.manager}, ${HR_EMAIL}, ${WHS_EMAIL}`}))
                 ].map(({label,to})=>(
                   <div key={label} style={{display:"flex",gap:10,fontSize:12,padding:"8px 0",borderBottom:`1px solid ${T.border}`,flexWrap:"wrap"}}>
@@ -1497,7 +1517,7 @@ const AdminTab = ({staffList,setStaffList,assets,setAssets}) => {
                   </div>
                 ))}
               </div>
-              <div style={{fontSize:11,color:T.muted,marginTop:12}}>To change any email address, edit the PROGRAM_EMAILS or HR_EMAIL/WHS_EMAIL/CEO_EMAIL at the top of App.jsx.</div>
+              <div style={{fontSize:11,color:T.muted,marginTop:12}}>To change any email address, edit the PROGRAM_EMAILS or HR_EMAIL/WHS_EMAIL/HR_EMAIL at the top of App.jsx.</div>
             </Card>
           </Section>
           <Section title="📍 Locations & Programs">

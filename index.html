@@ -87,9 +87,14 @@ const T = {
 // ─────────────────────────────────────────────────────────────
 //  HELPERS
 // ─────────────────────────────────────────────────────────────
-const nowStr   = () => new Date().toLocaleTimeString("en-AU",{hour:"2-digit",minute:"2-digit"});
-const dateStr  = () => new Date().toLocaleDateString("en-AU",{day:"2-digit",month:"short",year:"numeric"});
-const todayISO = () => new Date().toISOString().split("T")[0];
+const AUS_TZ   = "Australia/Brisbane"; // AEST — no DST, consistent year-round
+const nowStr   = () => new Date().toLocaleTimeString("en-AU",{hour:"2-digit",minute:"2-digit",timeZone:AUS_TZ});
+const dateStr  = () => new Date().toLocaleDateString("en-AU",{day:"2-digit",month:"short",year:"numeric",timeZone:AUS_TZ});
+const todayISO = () => {
+  const d = new Date();
+  const s = d.toLocaleDateString("en-CA",{timeZone:AUS_TZ}); // en-CA gives YYYY-MM-DD
+  return s;
+};
 const programsForLocation = loc => LOCATION_PROGRAMS[loc] || [];
 
 // ─────────────────────────────────────────────────────────────
@@ -896,8 +901,8 @@ const KioskTab = ({records, onSignIn, onSignOut, location, staffList}) => {
 
   const tabBtn = (val,label) => (
     <button onClick={()=>{setKioskTab(val);reset();}}
-      style={{flex:1,padding:"14px",fontSize:15,fontWeight:700,cursor:"pointer",border:"none",
-        borderRadius:12,background:kioskTab===val?T.accent:T.surface,
+      style={{flex:1,padding:"20px",fontSize:20,fontWeight:800,cursor:"pointer",border:"none",
+        borderRadius:14,background:kioskTab===val?T.accent:T.surface,
         color:kioskTab===val?T.bg:T.muted}}>
       {label}
     </button>
@@ -1697,10 +1702,10 @@ function App() {
         <div style={{maxWidth:1100,margin:"0 auto",display:"flex",gap:0}}>
           {TABS.map(t=>(
             <button key={t.id} onClick={()=>setTab(t.id)} style={{
-              padding:"11px 12px",background:"transparent",border:"none",
-              borderBottom:`2px solid ${tab===t.id?T.accent:"transparent"}`,
-              color:tab===t.id?T.accent:T.muted,fontWeight:700,fontSize:12,
-              cursor:"pointer",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:4,
+              padding:"14px 16px",background:"transparent",border:"none",
+              borderBottom:`3px solid ${tab===t.id?T.accent:"transparent"}`,
+              color:tab===t.id?T.accent:T.muted,fontWeight:700,fontSize:14,
+              cursor:"pointer",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:6,
               WebkitTapHighlightColor:"transparent"}}>
               {t.icon} {t.label}
               {t.id==="emergency"&&onSiteCount>0&&(

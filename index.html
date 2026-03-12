@@ -173,7 +173,10 @@ const SignInModal = ({type,location,staffList,onClose,onSubmit}) => {
     staff:"",loc:location||"",phone:"",
     // staff-specific
     staff_mode:"in-centre",   // "in-centre" | "outreach"
-    outreach_purpose:"",
+    outreach_purpose:"", outreach_notes:"",
+    programme:"",
+    has_duress:false, duress_number:"",
+    has_vehicle:false, vehicle_rego:"",
     // visitor purpose of visit
     visit_purpose:"",
   });

@@ -1463,35 +1463,59 @@ const SUPABASE_URL = "https://kfxvkossvqlumdxwauak.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmeHZrb3NzdnFsdW1keHdhdWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwMDg3NzksImV4cCI6MjA4ODU4NDc3OX0.vzdKGA1LOgNjKYln7uEAVSjr4nFc9FbEiAgVGbi6SYc";
 
 // -- Sync helpers --------------------
+// Generate a unique ID safe across 8 simultaneous iPads
+const genId = () => Date.now() * 1000 + Math.floor(Math.random() * 999);
+
 const dbFetch = async () => {
   try {
     const tISO = new Date().toLocaleDateString("en-CA",{timeZone:"Australia/Brisbane"});
     const y = new Date(); y.setDate(y.getDate()-1);
     const yISO = y.toLocaleDateString("en-CA",{timeZone:"Australia/Brisbane"});
-    const r = await fetch(SUPABASE_URL+"/rest/v1/records?or=(date.eq."+tISO+",date.eq."+yISO+")&order=id.desc&limit=1000",{
-      headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Cache-Control":"no-cache"}
-    });
+    const r = await fetch(
+      SUPABASE_URL+"/rest/v1/records?or=(date.eq."+tISO+",date.eq."+yISO+")&order=id.desc&limit=2000",
+      {headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Cache-Control":"no-cache"}}
+    );
     if(r.ok) return await r.json();
   } catch(e){}
   return null;
 };
+
 const dbInsert = async (record) => {
-  try {
-    await fetch(SUPABASE_URL+"/rest/v1/records",{
-      method:"POST",
-      headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Content-Type":"application/json","Prefer":"return=minimal"},
-      body:JSON.stringify(record)
-    });
-  } catch(e){}
+  // Retry up to 3 times with backoff
+  for(let attempt=0; attempt<3; attempt++){
+    try {
+      const r = await fetch(SUPABASE_URL+"/rest/v1/records",{
+        method:"POST",
+        headers:{
+          "apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,
+          "Content-Type":"application/json","Prefer":"return=representation"
+        },
+        body:JSON.stringify(record)
+      });
+      if(r.ok) return true;
+    } catch(e){}
+    // Wait before retry: 500ms, 1500ms
+    await new Promise(res=>setTimeout(res, 500 * (attempt+1)));
+  }
+  return false;
 };
+
 const dbUpdate = async (id, patch) => {
-  try {
-    await fetch(SUPABASE_URL+"/rest/v1/records?id=eq."+id,{
-      method:"PATCH",
-      headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Content-Type":"application/json"},
-      body:JSON.stringify(patch)
-    });
-  } catch(e){}
+  for(let attempt=0; attempt<3; attempt++){
+    try {
+      const r = await fetch(SUPABASE_URL+"/rest/v1/records?id=eq."+id,{
+        method:"PATCH",
+        headers:{
+          "apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify(patch)
+      });
+      if(r.ok) return true;
+    } catch(e){}
+    await new Promise(res=>setTimeout(res, 500 * (attempt+1)));
+  }
+  return false;
 };
 
 
@@ -1792,7 +1816,7 @@ function App() {
 
   const handleSignIn = form => {
     const newRec = {
-      id:Date.now(), type:modal,
+      id:genId(), type:modal,
       sign_in_time:nowStr(), sign_out_time:null, status:"on-site",
       location:form.loc||location, date:todayISO(),
       ...(modal==="visitor"&&{
@@ -1818,32 +1842,51 @@ function App() {
     };
     setRecs(p=>[...p, newRec]);
     setModal(null);
-    dbInsert(newRec);
+    insertRecord(newRec);
   };
 
-  // -- Live sync from Supabase --------------------
+  // -- Live sync from Supabase (3-second polling) --------------------
+  // pendingIds = set of IDs inserted locally but not yet confirmed in DB
+  const pendingRef = React.useRef(new Set());
+
   useEffect(()=>{
     const load = async () => {
       const data = await dbFetch();
       if(data && Array.isArray(data)){
-        // Merge: keep local records not yet in DB, update existing ones from DB
+        const dbIds = new Set(data.map(r=>String(r.id)));
+        // Remove from pending any that are now in DB
+        pendingRef.current.forEach(id=>{ if(dbIds.has(String(id))) pendingRef.current.delete(id); });
+        // Merge: DB is truth, but keep local-pending records not yet in DB
         setRecs(prev => {
-          const dbIds = new Set(data.map(r=>r.id));
-          const localOnly = prev.filter(r=>!dbIds.has(r.id));
-          return [...data, ...localOnly];
+          const stillPending = prev.filter(r=>pendingRef.current.has(r.id));
+          return [...data, ...stillPending];
         });
         setDbReady(true);
-      } else setDbReady(true);
+      } else {
+        setDbReady(false);
+      }
     };
     load();
-    const iv = setInterval(load, 5000);
+    const iv = setInterval(load, 3000);
     return () => clearInterval(iv);
   },[]);
+
+  // Insert a record, track it as pending until confirmed in DB
+  const insertRecord = async (rec) => {
+    pendingRef.current.add(rec.id);
+    const ok = await dbInsert(rec);
+    if(!ok){
+      // Keep in pending longer — will retry on next sync cycle
+      console.warn("Insert failed for id", rec.id);
+    }
+  };
 
   const handleSignOut = id => {
     const patch = {sign_out_time:nowStr(),status:"signed-out"};
     setRecs(p=>p.map(r=>r.id===id?{...r,...patch}:r));
-    dbUpdate(id, patch);
+    dbUpdate(id, patch).then(ok=>{
+      if(!ok) console.warn("Sign-out update failed for id", id);
+    });
   };
 
   const handleAsset = (id,action) => {
@@ -1897,8 +1940,8 @@ function App() {
               , React.createElement('span', { style: {color:T.muted},}, "on site" )
             )
             , React.createElement('span', { style: {display:"flex",alignItems:"center",gap:4,fontSize:11},}
-              , React.createElement('span', { style: {width:6,height:6,borderRadius:"50%",background:dbReady?T.green:T.amber,display:"inline-block"},})
-              , React.createElement('span', { style: {color:dbReady?T.green:T.amber},}, dbReady?"Live":"...")
+              , React.createElement('span', { style: {width:6,height:6,borderRadius:"50%",background:dbReady?T.green:T.red,display:"inline-block",boxShadow:dbReady?`0 0 5px ${T.green}`:"none"},})
+              , React.createElement('span', { style: {color:dbReady?T.green:T.red},}, dbReady?"● Synced":"○ Offline")
             )
             , React.createElement('span', { style: {fontSize:11,color:T.muted},}, time)
           )

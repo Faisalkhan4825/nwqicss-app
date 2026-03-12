@@ -898,47 +898,18 @@ const KioskTab = ({records, onSignIn, onSignOut, location, staffList}) => {
     if(!valid) return;
     const rec = {
       type, location: f.loc||location,
-      ...(type==="visitor"&&{name:f.name, phone:f.phone||"", program:f.program, visit_purpose:f.visit_purpose, purpose:f.purpose||""}),
+      ...(type==="visitor"&&{name:f.name, phone:f.phone||"", program:f.program, visit_purpose:f.visit_purpose, purpose:f.purpose||"",
+        has_children:f.has_children||false,
+        children_names:f.has_children&&f.children?(f.children.filter(n=>n.trim()).join(", ")):""}),
       ...(type==="contractor"&&{company:f.company, contact_name:f.contact, phone:f.phone||"", purpose:f.purpose||"", program:f.program||"", compliance:"valid",
-        has_insurance:f.has_insurance||false, has_forms:f.has_forms||false}),
+        has_insurance:f.has_insurance||false, has_code_of_conduct:f.has_code_of_conduct||false, has_safety_forms:f.has_safety_forms||false}),
       ...(type==="staff"&&{staff_name:f.staff, staff_status:f.staff_mode||"in-centre", outreach_purpose:f.outreach_purpose||"", program:f.program||""}),
     };
     onSignIn(rec);
     setStep("done");
   };
 
-  const sendContractorForms = () => {
-    const subj = encodeURIComponent(`Contractor Forms — ${f.company} — ${dateStr()}`);
-    const body = encodeURIComponent(
-      `NWQICSS Contractor Forms Submission\n` +
-      `Date: ${dateStr()} ${nowStr()}\n` +
-      `Company: ${f.company||"—"}\n` +
-      `Contact: ${f.contact||"—"}\n` +
-      `Phone: ${f.phone||"—"}\n\n` +
-      `CONTRACTOR INDUCTION\n` +
-      `Name: ${f.ind_name||"—"}\n` +
-      `Date of Induction: ${dateStr()}\n` +
-      `Acknowledged safety procedures: ${f.ind_safety?"Yes":"No"}\n` +
-      `Acknowledged site rules: ${f.ind_rules?"Yes":"No"}\n` +
-      `Signature: ${f.ind_sign||"—"}\n\n` +
-      `SAFE WORK METHOD STATEMENT (SWMS)\n` +
-      `Work to be performed: ${f.swms_work||"—"}\n` +
-      `Hazards identified: ${f.swms_hazards||"—"}\n` +
-      `Control measures: ${f.swms_controls||"—"}\n\n` +
-      `EMERGENCY CONTACT\n` +
-      `Emergency contact name: ${f.emerg_name||"—"}\n` +
-      `Emergency contact phone: ${f.emerg_phone||"—"}\n` +
-      `Relationship: ${f.emerg_rel||"—"}\n\n` +
-      `PUBLIC LIABILITY INSURANCE\n` +
-      `Insurance provider: ${f.ins_provider||"NOT PROVIDED"}\n` +
-      `Policy number: ${f.ins_policy||"NOT PROVIDED"}\n` +
-      `Expiry date: ${f.ins_expiry||"NOT PROVIDED"}\n` +
-      `Note: Please provide a copy of the certificate of currency to whs@nwqicss.org\n`
-    );
-    window.open(`mailto:${WHS_EMAIL},${HR_EMAIL}?subject=${subj}&body=${body}`);
-    setStep("done");
-    handleKioskSignIn();
-  };
+
 
   // ── Bigger type selector buttons
   const TypeBtn = ({val,icon,label,color}) => (
@@ -1009,79 +980,36 @@ const KioskTab = ({records, onSignIn, onSignOut, location, staffList}) => {
         {/* STEP: Contractor compliance check */}
         {step==="contractor_check" && (
           <div style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:16,padding:24}}>
-            <div style={{fontSize:13,color:T.accent2,fontWeight:700,marginBottom:4,textTransform:"uppercase"}}>🔧 Contractor — Compliance Check</div>
-            <div style={{fontSize:11,color:T.muted,marginBottom:20}}>Please confirm the following before signing in</div>
+            <div style={{fontSize:13,color:T.accent2,fontWeight:700,marginBottom:4,textTransform:"uppercase"}}>🔧 Contractor — Compliance Declaration</div>
+            <div style={{fontSize:12,color:T.muted,marginBottom:20}}>Please confirm the following before signing in</div>
 
-            <Check label="✅ I have current Public Liability Insurance and can provide a copy" val={f.has_insurance||false} k="has_insurance"/>
-            <Check label="✅ I have completed all required NWQICSS Contractor Forms" val={f.has_forms||false} k="has_forms"/>
+            <Check label="✅ I have current Public Liability Insurance and can provide a copy to NWQICSS" val={f.has_insurance||false} k="has_insurance"/>
+            <Check label="✅ I have received and signed the NWQICSS Code of Conduct" val={f.has_code_of_conduct||false} k="has_code_of_conduct"/>
+            <Check label="✅ I have completed and signed all safety forms required by NWQICSS" val={f.has_safety_forms||false} k="has_safety_forms"/>
 
-            <div style={{display:"flex",gap:10,marginTop:20,flexWrap:"wrap"}}>
-              {(f.has_insurance && f.has_forms) && (
-                <Btn onClick={()=>{setStep("form");setF(p=>({...p,program:programs[0]||"",loc:location}));}} color={T.green} style={{flex:1}}>
-                  ✓ Proceed to Sign In
-                </Btn>
-              )}
-              {(!f.has_insurance || !f.has_forms) && (
-                <Btn onClick={()=>setStep("forms")} color={T.amber} style={{flex:1}}>
-                  📋 Complete Required Forms
-                </Btn>
-              )}
-              <Btn onClick={reset} color={T.muted} outline style={{flex:1}}>Back</Btn>
-            </div>
-            {(!f.has_insurance || !f.has_forms) && (
-              <div style={{fontSize:11,color:T.amber,marginTop:10,textAlign:"center"}}>
-                ⚠️ Please complete the required forms before signing in
+            {/* Warning if forms not signed */}
+            {(!f.has_insurance || !f.has_code_of_conduct || !f.has_safety_forms) && (
+              <div style={{background:T.red+"18",border:`1px solid ${T.red}44`,borderRadius:12,
+                padding:"14px 16px",marginTop:16,marginBottom:4}}>
+                <div style={{fontSize:14,fontWeight:800,color:T.red,marginBottom:4}}>
+                  ⚠️ Forms Not Completed
+                </div>
+                <div style={{fontSize:13,color:T.text,lineHeight:1.5}}>
+                  If required forms are not signed before commencing work, please contact reception before proceeding.
+                </div>
               </div>
             )}
-          </div>
-        )}
 
-        {/* STEP: Contractor forms */}
-        {step==="forms" && (
-          <div style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:16,padding:24,maxHeight:"75vh",overflowY:"auto"}}>
-            <div style={{fontSize:13,color:T.accent2,fontWeight:700,marginBottom:4,textTransform:"uppercase"}}>📋 Contractor Forms</div>
-            <div style={{fontSize:11,color:T.muted,marginBottom:20}}>Complete all sections — will be emailed to WHS & HR</div>
-
-            {/* Company details */}
-            <div style={{fontSize:12,fontWeight:800,color:T.white,marginBottom:10,borderBottom:`1px solid ${T.border}`,paddingBottom:6}}>COMPANY DETAILS</div>
-            <Field label="Company Name *" value={f.company||""} onChange={v=>set("company",v)} placeholder="Your company name"/>
-            <Field label="Your Name *" value={f.contact||""} onChange={v=>set("contact",v)} placeholder="Contact person"/>
-            <Field label="Phone *" value={f.phone||""} onChange={v=>set("phone",v)} type="tel" placeholder="Mobile number"/>
-
-            {/* Induction */}
-            <div style={{fontSize:12,fontWeight:800,color:T.white,marginTop:16,marginBottom:10,borderBottom:`1px solid ${T.border}`,paddingBottom:6}}>CONTRACTOR INDUCTION</div>
-            <Field label="Full Name" value={f.ind_name||""} onChange={v=>set("ind_name",v)} placeholder="Full legal name"/>
-            <Check label="I have read and understood NWQICSS safety procedures" val={f.ind_safety||false} k="ind_safety"/>
-            <Check label="I have read and understood NWQICSS site rules" val={f.ind_rules||false} k="ind_rules"/>
-            <Field label="Signature (type full name as signature)" value={f.ind_sign||""} onChange={v=>set("ind_sign",v)} placeholder="Type your full name"/>
-
-            {/* SWMS */}
-            <div style={{fontSize:12,fontWeight:800,color:T.white,marginTop:16,marginBottom:10,borderBottom:`1px solid ${T.border}`,paddingBottom:6}}>SAFE WORK METHOD STATEMENT (SWMS)</div>
-            <Field label="Work to be performed" value={f.swms_work||""} onChange={v=>set("swms_work",v)} textarea placeholder="Describe the work you will be doing on site"/>
-            <Field label="Hazards identified" value={f.swms_hazards||""} onChange={v=>set("swms_hazards",v)} textarea placeholder="List any hazards associated with this work"/>
-            <Field label="Control measures" value={f.swms_controls||""} onChange={v=>set("swms_controls",v)} textarea placeholder="How will you control or eliminate these hazards?"/>
-
-            {/* Emergency contact */}
-            <div style={{fontSize:12,fontWeight:800,color:T.white,marginTop:16,marginBottom:10,borderBottom:`1px solid ${T.border}`,paddingBottom:6}}>EMERGENCY CONTACT</div>
-            <Field label="Emergency Contact Name" value={f.emerg_name||""} onChange={v=>set("emerg_name",v)} placeholder="Full name"/>
-            <Field label="Emergency Contact Phone" value={f.emerg_phone||""} onChange={v=>set("emerg_phone",v)} type="tel" placeholder="Phone number"/>
-            <Field label="Relationship" value={f.emerg_rel||""} onChange={v=>set("emerg_rel",v)} placeholder="e.g. Spouse, Parent"/>
-
-            {/* Insurance */}
-            <div style={{fontSize:12,fontWeight:800,color:T.white,marginTop:16,marginBottom:10,borderBottom:`1px solid ${T.border}`,paddingBottom:6}}>PUBLIC LIABILITY INSURANCE</div>
-            <div style={{background:T.amber+"18",border:`1px solid ${T.amber}44`,borderRadius:10,padding:"10px 14px",marginBottom:14,fontSize:12,color:T.amber}}>
-              ⚠️ Please provide a copy of your Certificate of Currency to whs@nwqicss.org — fill in the details below and we will follow up.
-            </div>
-            <Field label="Insurance Provider" value={f.ins_provider||""} onChange={v=>set("ins_provider",v)} placeholder="e.g. CGU, Allianz, QBE"/>
-            <Field label="Policy Number" value={f.ins_policy||""} onChange={v=>set("ins_policy",v)} placeholder="Policy number"/>
-            <Field label="Expiry Date" value={f.ins_expiry||""} onChange={v=>set("ins_expiry",v)} placeholder="DD/MM/YYYY"/>
-
-            <div style={{display:"flex",gap:10,marginTop:20}}>
-              <Btn onClick={sendContractorForms} color={T.green} style={{flex:1}}>📧 Submit & Email to WHS + HR</Btn>
-              <Btn onClick={()=>setStep("contractor_check")} color={T.muted} outline style={{flex:1}}>Back</Btn>
+            <div style={{display:"flex",gap:10,marginTop:20,flexWrap:"wrap"}}>
+              <Btn onClick={()=>{setStep("form");setF(p=>({...p,program:programs[0]||"",loc:location}));}} color={T.green} style={{flex:1}}>
+                ✓ Proceed to Sign In
+              </Btn>
+              <Btn onClick={reset} color={T.muted} outline style={{flex:1}}>Back</Btn>
             </div>
           </div>
         )}
+
+
 
         {/* STEP: Regular sign-in form */}
         {step==="form" && (
@@ -1097,6 +1025,45 @@ const KioskTab = ({records, onSignIn, onSignOut, location, staffList}) => {
               <Field label="Program / Area *" value={f.program||""} onChange={v=>set("program",v)} options={programs.length?programs:allPrograms}/>
               <Field label="Purpose of Visit *" value={f.visit_purpose||""} onChange={v=>set("visit_purpose",v)} options={VISIT_PURPOSES}/>
               <Field label="Notes (optional)" value={f.purpose||""} onChange={v=>set("purpose",v)} textarea placeholder="Any additional details…"/>
+
+              {/* Children accompanying visitor */}
+              <div style={{marginBottom:14}}>
+                <div onClick={()=>set("has_children",!f.has_children)}
+                  style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",
+                    background:f.has_children?T.accent+"18":T.surface,
+                    border:`2px solid ${f.has_children?T.accent:T.border}`,
+                    borderRadius:12,cursor:"pointer",marginBottom:f.has_children?12:0}}>
+                  <div style={{width:24,height:24,borderRadius:6,border:`2px solid ${f.has_children?T.accent:T.muted}`,
+                    background:f.has_children?T.accent:"transparent",display:"flex",alignItems:"center",
+                    justifyContent:"center",fontSize:14,color:T.bg,flexShrink:0}}>
+                    {f.has_children?"✓":""}
+                  </div>
+                  <div style={{fontSize:14,color:T.text,fontWeight:f.has_children?700:400}}>
+                    🧒 Children are accompanying me today
+                  </div>
+                </div>
+                {f.has_children && (
+                  <div style={{background:T.surface,borderRadius:12,padding:"14px 16px",border:`1px solid ${T.border}`}}>
+                    <div style={{fontSize:11,color:T.muted,marginBottom:10,textTransform:"uppercase",letterSpacing:1}}>
+                      Children's Names (optional — up to 7)
+                    </div>
+                    {[0,1,2,3,4,5,6].map(i=>(
+                      <input key={i}
+                        value={(f.children&&f.children[i])||""}
+                        onChange={e=>{
+                          const arr = [...(f.children||["","","","","","",""])];
+                          arr[i] = e.target.value;
+                          set("children", arr);
+                        }}
+                        placeholder={`Child ${i+1} name`}
+                        style={{width:"100%",padding:"9px 12px",background:T.card,
+                          border:`1px solid ${T.border}`,borderRadius:8,color:T.text,
+                          fontSize:13,outline:"none",marginBottom:6,boxSizing:"border-box"}}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
             </>}
 
             {type==="contractor" && <>

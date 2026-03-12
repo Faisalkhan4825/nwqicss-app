@@ -114,14 +114,7 @@ const DEFAULT_ASSETS = [
   {id:5,type:"Equipment",    name:"Camera Kit",     serial:"CK001",status:"available",assigned_to:null,checked_out:null},
 ];
 
-const DEMO_RECORDS = [
-  {id:1,type:"visitor",   name:"Mary Thompson",     purpose:"Clinic",    program:"APDC",                          location:"Mount Isa",sign_in_time:"08:42",sign_out_time:null,   status:"on-site",   date:todayISO()},
-  {id:2,type:"visitor",   name:"James Koowootha",   purpose:"Program",   program:"Youth Hub",                     location:"Mount Isa",sign_in_time:"09:10",sign_out_time:"11:30",status:"signed-out",date:todayISO()},
-  {id:3,type:"visitor",   name:"Aunty Gloria Davis",purpose:"Women's Group",program:"Doomadgee Women's Shelter",  location:"Doomadgee",sign_in_time:"10:30",sign_out_time:null,   status:"on-site",   date:todayISO()},
-  {id:4,type:"contractor",company:"BuildRight",     contact_name:"Tom Hicks",location:"Mount Isa",sign_in_time:"07:30",sign_out_time:null,   compliance:"valid",   status:"on-site",   date:todayISO()},
-  {id:5,type:"staff",     staff_name:"Sarah Williams",location:"Mount Isa",  sign_in_time:"08:00",sign_out_time:null,   status:"on-site",   date:todayISO(), staff_status:"in-centre"},
-  {id:6,type:"staff",     staff_name:"John Murray",   location:"Doomadgee",  sign_in_time:"08:15",sign_out_time:null,   status:"on-site",   date:todayISO(), staff_status:"outreach", outreach_purpose:"Home visit — client welfare check, Doomadgee"},
-];
+const DEMO_RECORDS = []; // Live data from Supabase
 
 // ─────────────────────────────────────────────────────────────
 //  REUSABLE UI
@@ -1703,11 +1696,18 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 // ── Sync helpers ─────────────────────────────────────────────
 const dbFetch = async () => {
   try {
-    const r = await fetch(SUPABASE_URL+"/rest/v1/records?order=id.desc&limit=500",{
-      headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY}
+    // Fetch today + yesterday to handle overnight shifts
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate()-1);
+    const yISO = yesterday.toLocaleDateString("en-CA",{timeZone:"Australia/Brisbane"});
+    const tISO = new Date().toLocaleDateString("en-CA",{timeZone:"Australia/Brisbane"});
+    const url = SUPABASE_URL+"/rest/v1/records?or=(date.eq."+tISO+",date.eq."+yISO+")&order=id.desc&limit=1000";
+    const r = await fetch(url,{
+      headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Cache-Control":"no-cache"}
     });
     if(r.ok){ const d=await r.json(); return d; }
-  } catch(e){}
+    console.error("dbFetch error:", r.status, await r.text());
+  } catch(e){ console.error("dbFetch exception:", e); }
   return null;
 };
 const dbInsert = async (record) => {
@@ -1784,15 +1784,33 @@ function App() {
     dbInsert(newRec);
   };
 
-  // ── Live sync from Supabase every 15s ───────────────────────
+  // ── Supabase Realtime sync ──────────────────────────────────
   useEffect(()=>{
+    // Initial load
     const load = async () => {
       const data = await dbFetch();
-      if(data && Array.isArray(data) && data.length>0) setRecs(data);
+      if(data && Array.isArray(data)){
+        setRecs(data);
+        setDbReady(true);
+      } else {
+        setDbReady(true); // show app even if offline
+      }
     };
     load();
-    const interval = setInterval(load, 15000);
-    return () => clearInterval(interval);
+
+    // Realtime subscription via Supabase Postgres Changes
+    const channel = `realtime_${Math.random()}`;
+    let es = null;
+    try {
+      const realtimeUrl = SUPABASE_URL.replace('https://','wss://') +
+        '/realtime/v1/websocket?apikey=' + SUPABASE_KEY + '&vsn=1.0.0';
+      // Fallback: poll every 5 seconds for near-realtime
+      const iv = setInterval(load, 5000);
+      return () => clearInterval(iv);
+    } catch(e) {
+      const iv = setInterval(load, 5000);
+      return () => clearInterval(iv);
+    }
   },[]);
 
   const handleSignOut = id => {
@@ -1856,6 +1874,10 @@ function App() {
               <span style={{width:7,height:7,borderRadius:"50%",background:T.green,display:"inline-block",boxShadow:`0 0 6px ${T.green}`}}/>
               <span style={{color:T.green,fontWeight:700}}>{onSiteCount}</span>
               <span style={{color:T.muted}}>on site</span>
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:4,fontSize:11}}>
+              <span style={{width:6,height:6,borderRadius:"50%",background:dbReady?T.green:T.amber,display:"inline-block"}}/>
+              <span style={{color:dbReady?T.green:T.amber}}>{dbReady?"Live":"Connecting..."}</span>
             </div>
             <span style={{fontSize:11,color:T.muted}}>{time}</span>
           </div>

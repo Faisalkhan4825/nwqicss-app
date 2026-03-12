@@ -10,7 +10,6 @@
   <title>NWQICSS Compliance Portal</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #07101f; color: #e2eaf6; font-family: 'Segoe UI', system-ui, sans-serif; }
@@ -29,7 +28,7 @@
       <div style="color:#e2eaf6;font-size:15px">Loading NWQICSS Portal...</div>
     </div>
   </div>
-  <script type="text/babel">
+  <script>
 const { useState, useEffect, useRef } = React;
 
 // --------------------
@@ -116,41 +115,41 @@ const DEMO_RECORDS = [];
 //  REUSABLE UI
 // --------------------
 const Badge = ({label,color}) => (
-  <span style={{display:"inline-block",padding:"3px 10px",borderRadius:20,fontSize:11,fontWeight:700,
-    background:color+"22",color,border:`1px solid ${color}44`,letterSpacing:".4px",textTransform:"uppercase",whiteSpace:"nowrap"}}>{label}</span>
+  React.createElement('span', { style: {display:"inline-block",padding:"3px 10px",borderRadius:20,fontSize:11,fontWeight:700,
+    background:color+"22",color,border:`1px solid ${color}44`,letterSpacing:".4px",textTransform:"uppercase",whiteSpace:"nowrap"},}, label)
 );
 const Card = ({children,style={}}) => (
-  <div style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:16,padding:20,...style}}>{children}</div>
+  React.createElement('div', { style: {background:T.card,border:`1px solid ${T.border}`,borderRadius:16,padding:20,...style},}, children)
 );
 const Btn = ({children,onClick,color=T.accent,outline=false,small=false,full=false,style={}}) => (
-  <button onClick={onClick} style={{background:outline?"transparent":color,color:outline?color:"#07101f",
+  React.createElement('button', { onClick: onClick, style: {background:outline?"transparent":color,color:outline?color:"#07101f",
     border:`1.5px solid ${color}`,borderRadius:10,padding:small?"7px 14px":"11px 22px",fontSize:small?12:14,
-    fontWeight:700,cursor:"pointer",letterSpacing:".3px",width:full?"100%":"auto",...style}}>{children}</button>
+    fontWeight:700,cursor:"pointer",letterSpacing:".3px",width:full?"100%":"auto",...style},}, children)
 );
 const FLabel = ({text}) => (
-  <label style={{display:"block",fontSize:11,color:T.muted,marginBottom:5,fontWeight:700,letterSpacing:".6px",textTransform:"uppercase"}}>{text}</label>
+  React.createElement('label', { style: {display:"block",fontSize:11,color:T.muted,marginBottom:5,fontWeight:700,letterSpacing:".6px",textTransform:"uppercase"},}, text)
 );
 const inputSt = {width:"100%",padding:"11px 12px",background:T.surface,border:`1.5px solid #1a2d4a`,
   borderRadius:10,color:"#e2eaf6",fontSize:14,outline:"none",boxSizing:"border-box"};
 const Field = ({label,value,onChange,type="text",options=null,placeholder="",textarea=false}) => (
-  <div style={{marginBottom:14}}>
-    <FLabel text={label}/>
-    {textarea
-      ? <textarea value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} rows={3}
-          style={{...inputSt,resize:"vertical"}}/>
+  React.createElement('div', { style: {marginBottom:14},}
+    , React.createElement(FLabel, { text: label,})
+    , textarea
+      ? React.createElement('textarea', { value: value, onChange: e=>onChange(e.target.value), placeholder: placeholder, rows: 3,
+          style: {...inputSt,resize:"vertical"},})
       : options
-        ? <select value={value} onChange={e=>onChange(e.target.value)} style={{...inputSt,color:value?T.text:T.muted}}>
-            <option value="">Select…</option>
-            {options.map(o=><option key={o} value={o}>{o}</option>)}
-          </select>
-        : <input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} style={inputSt}/>}
-  </div>
+        ? React.createElement('select', { value: value, onChange: e=>onChange(e.target.value), style: {...inputSt,color:value?T.text:T.muted},}
+            , React.createElement('option', { value: "",}, "Select…")
+            , options.map(o=>React.createElement('option', { key: o, value: o,}, o))
+          )
+        : React.createElement('input', { type: type, value: value, onChange: e=>onChange(e.target.value), placeholder: placeholder, style: inputSt,})
+  )
 );
 const Section = ({title,children}) => (
-  <div style={{marginBottom:28}}>
-    <div style={{fontSize:13,fontWeight:800,color:T.white,marginBottom:14,paddingBottom:8,borderBottom:`1px solid ${T.border}`}}>{title}</div>
-    {children}
-  </div>
+  React.createElement('div', { style: {marginBottom:28},}
+    , React.createElement('div', { style: {fontSize:13,fontWeight:800,color:T.white,marginBottom:14,paddingBottom:8,borderBottom:`1px solid ${T.border}`},}, title)
+    , children
+  )
 );
 
 // --------------------
@@ -176,152 +175,152 @@ const SignInModal = ({type,location,staffList,onClose,onSubmit}) => {
       : f.staff;
 
   return (
-    <div style={{position:"fixed",inset:0,background:"#000c",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={onClose}>
-      <div style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:20,padding:28,width:"100%",maxWidth:480,maxHeight:"94vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
+    React.createElement('div', { style: {position:"fixed",inset:0,background:"#000c",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16}, onClick: onClose,}
+      , React.createElement('div', { style: {background:T.card,border:`1px solid ${T.border}`,borderRadius:20,padding:28,width:"100%",maxWidth:480,maxHeight:"94vh",overflowY:"auto"}, onClick: e=>e.stopPropagation(),}
 
-        <div style={{fontSize:11,color:T.accent,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>
-          {type==="visitor"?"👤 Visitor":type==="contractor"?"🔧 Contractor":"👷 Staff"} Sign In
-        </div>
-        <div style={{fontSize:18,fontWeight:900,color:T.white,marginBottom:4}}>{dateStr()} — {nowStr()}</div>
-        <div style={{fontSize:12,color:T.accent,marginBottom:18}}>📍 {location}</div>
+        , React.createElement('div', { style: {fontSize:11,color:T.accent,letterSpacing:2,textTransform:"uppercase",marginBottom:4},}
+          , type==="visitor"?"👤 Visitor":type==="contractor"?"🔧 Contractor":"👷 Staff", " Sign In"
+        )
+        , React.createElement('div', { style: {fontSize:18,fontWeight:900,color:T.white,marginBottom:4},}, dateStr(), " — "  , nowStr())
+        , React.createElement('div', { style: {fontSize:12,color:T.accent,marginBottom:18},}, "📍 " , location)
 
-        {/* -- VISITOR -- */}
-        {type==="visitor"&&<>
-          <Field label="Full Name *" value={f.name} onChange={v=>set("name",v)} placeholder="Enter full name"/>
-          <Field label="Phone (optional)" value={f.phone} onChange={v=>set("phone",v)} type="tel" placeholder="Mobile number"/>
-          <Field label="Program / Area *" value={f.program} onChange={v=>set("program",v)} options={programs}/>
-          <Field label="Purpose of Visit *" value={f.visit_purpose} onChange={v=>set("visit_purpose",v)} options={VISIT_PURPOSES}/>
-          <div style={{marginBottom:14}}>
-            <FLabel text="Additional notes (optional)"/>
-            <textarea value={f.purpose} onChange={e=>set("purpose",e.target.value)} placeholder="Any additional details about the visit…" rows={2}
-              style={{...inputSt,resize:"vertical"}}/>
-          </div>
-          <div style={{marginBottom:14}}>
-            <div onClick={()=>set("has_children",!f.has_children)}
-              style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",cursor:"pointer",
+        /* -- VISITOR -- */
+        , type==="visitor"&&React.createElement(React.Fragment, null
+          , React.createElement(Field, { label: "Full Name *"  , value: f.name, onChange: v=>set("name",v), placeholder: "Enter full name"  ,})
+          , React.createElement(Field, { label: "Phone (optional)" , value: f.phone, onChange: v=>set("phone",v), type: "tel", placeholder: "Mobile number" ,})
+          , React.createElement(Field, { label: "Program / Area *"   , value: f.program, onChange: v=>set("program",v), options: programs,})
+          , React.createElement(Field, { label: "Purpose of Visit *"   , value: f.visit_purpose, onChange: v=>set("visit_purpose",v), options: VISIT_PURPOSES,})
+          , React.createElement('div', { style: {marginBottom:14},}
+            , React.createElement(FLabel, { text: "Additional notes (optional)"  ,})
+            , React.createElement('textarea', { value: f.purpose, onChange: e=>set("purpose",e.target.value), placeholder: "Any additional details about the visit…"     , rows: 2,
+              style: {...inputSt,resize:"vertical"},})
+          )
+          , React.createElement('div', { style: {marginBottom:14},}
+            , React.createElement('div', { onClick: ()=>set("has_children",!f.has_children),
+              style: {display:"flex",alignItems:"center",gap:10,padding:"12px 14px",cursor:"pointer",
                 background:f.has_children?T.accent+"18":T.surface,borderRadius:10,
-                border:`2px solid ${f.has_children?T.accent:T.border}`,marginBottom:f.has_children?10:0}}>
-              <div style={{width:22,height:22,borderRadius:6,border:`2px solid ${f.has_children?T.accent:T.muted}`,
+                border:`2px solid ${f.has_children?T.accent:T.border}`,marginBottom:f.has_children?10:0},}
+              , React.createElement('div', { style: {width:22,height:22,borderRadius:6,border:`2px solid ${f.has_children?T.accent:T.muted}`,
                 background:f.has_children?T.accent:"transparent",display:"flex",alignItems:"center",justifyContent:"center",
-                fontSize:13,color:"#07101f",flexShrink:0}}>{f.has_children?"✓":""}</div>
-              <span style={{fontSize:13,color:T.text}}>🧒 Children are accompanying me today (optional)</span>
-            </div>
-            {f.has_children&&(
-              <div style={{background:T.surface,borderRadius:10,padding:"12px 14px",border:`1px solid ${T.border}`}}>
-                <div style={{fontSize:11,color:T.muted,marginBottom:8,textTransform:"uppercase",letterSpacing:1}}>Children names (up to 7, optional)</div>
-                {[0,1,2,3,4,5,6].map(i=>(
-                  <input key={i} value={(f.children&&f.children[i])||""} placeholder={"Child "+(i+1)+" name"}
-                    onChange={e=>{const a=[...((f.children)||["","","","","","",""])];a[i]=e.target.value;set("children",a);}}
-                    style={{...inputSt,marginBottom:6}}/>
-                ))}
-              </div>
-            )}
-          </div>
-        </>}
+                fontSize:13,color:"#07101f",flexShrink:0},}, f.has_children?"✓":"")
+              , React.createElement('span', { style: {fontSize:13,color:T.text},}, "🧒 Children are accompanying me today (optional)"      )
+            )
+            , f.has_children&&(
+              React.createElement('div', { style: {background:T.surface,borderRadius:10,padding:"12px 14px",border:`1px solid ${T.border}`},}
+                , React.createElement('div', { style: {fontSize:11,color:T.muted,marginBottom:8,textTransform:"uppercase",letterSpacing:1},}, "Children names (up to 7, optional)"     )
+                , [0,1,2,3,4,5,6].map(i=>(
+                  React.createElement('input', { key: i, value: (f.children&&f.children[i])||"", placeholder: "Child "+(i+1)+" name",
+                    onChange: e=>{const a=[...((f.children)||["","","","","","",""])];a[i]=e.target.value;set("children",a);},
+                    style: {...inputSt,marginBottom:6},})
+                ))
+              )
+            )
+          )
+        )
 
-        {/* -- CONTRACTOR -- */}
-        {type==="contractor"&&<>
-          <Field label="Company Name *" value={f.company} onChange={v=>set("company",v)} placeholder="Company name"/>
-          <Field label="Your Name *" value={f.contact} onChange={v=>set("contact",v)} placeholder="Contact person"/>
-          <Field label="Phone (optional)" value={f.phone} onChange={v=>set("phone",v)} type="tel" placeholder="Mobile number"/>
-          <Field label="Purpose" value={f.purpose} onChange={v=>set("purpose",v)} options={["Maintenance","Cleaning","Delivery","IT Support","Inspection","Other"]}/>
-          <Field label="Program Area Visiting" value={f.program} onChange={v=>set("program",v)} options={PROGRAM_VISIT_PURPOSES}/>
-          <div style={{fontSize:12,fontWeight:700,color:T.white,marginBottom:8,marginTop:4}}>Compliance Declaration</div>
-          {[
+        /* -- CONTRACTOR -- */
+        , type==="contractor"&&React.createElement(React.Fragment, null
+          , React.createElement(Field, { label: "Company Name *"  , value: f.company, onChange: v=>set("company",v), placeholder: "Company name" ,})
+          , React.createElement(Field, { label: "Your Name *"  , value: f.contact, onChange: v=>set("contact",v), placeholder: "Contact person" ,})
+          , React.createElement(Field, { label: "Phone (optional)" , value: f.phone, onChange: v=>set("phone",v), type: "tel", placeholder: "Mobile number" ,})
+          , React.createElement(Field, { label: "Purpose", value: f.purpose, onChange: v=>set("purpose",v), options: ["Maintenance","Cleaning","Delivery","IT Support","Inspection","Other"],})
+          , React.createElement(Field, { label: "Program Area Visiting"  , value: f.program, onChange: v=>set("program",v), options: PROGRAM_VISIT_PURPOSES,})
+          , React.createElement('div', { style: {fontSize:12,fontWeight:700,color:T.white,marginBottom:8,marginTop:4},}, "Compliance Declaration" )
+          , [
             {k:"has_insurance",label:"I have current Public Liability Insurance and can provide a copy to NWQICSS"},
             {k:"has_code_of_conduct",label:"I have received and signed the NWQICSS Code of Conduct"},
             {k:"has_safety_forms",label:"I have completed and signed all safety forms required by NWQICSS"},
           ].map(({k,label})=>(
-            <div key={k} onClick={()=>set(k,!f[k])}
-              style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",cursor:"pointer",marginBottom:8,
-                background:f[k]?T.green+"18":T.surface,borderRadius:10,border:`2px solid ${f[k]?T.green:T.border}`}}>
-              <div style={{width:22,height:22,borderRadius:6,flexShrink:0,border:`2px solid ${f[k]?T.green:T.muted}`,
+            React.createElement('div', { key: k, onClick: ()=>set(k,!f[k]),
+              style: {display:"flex",alignItems:"center",gap:10,padding:"10px 12px",cursor:"pointer",marginBottom:8,
+                background:f[k]?T.green+"18":T.surface,borderRadius:10,border:`2px solid ${f[k]?T.green:T.border}`},}
+              , React.createElement('div', { style: {width:22,height:22,borderRadius:6,flexShrink:0,border:`2px solid ${f[k]?T.green:T.muted}`,
                 background:f[k]?T.green:"transparent",display:"flex",alignItems:"center",justifyContent:"center",
-                fontSize:13,color:"#07101f"}}>{f[k]?"✓":""}</div>
-              <span style={{fontSize:12,color:T.text}}>✅ {label}</span>
-            </div>
-          ))}
-          {(!f.has_insurance||!f.has_code_of_conduct||!f.has_safety_forms)&&(
-            <div style={{background:T.red+"18",border:`1px solid ${T.red}44`,borderRadius:10,padding:"10px 14px",marginBottom:8,fontSize:12,color:T.red,fontWeight:600}}>
-              ⚠️ If required forms are not signed before commencing work, please contact reception before proceeding.
-            </div>
-          )}
-        </>}
+                fontSize:13,color:"#07101f"},}, f[k]?"✓":"")
+              , React.createElement('span', { style: {fontSize:12,color:T.text},}, "✅ " , label)
+            )
+          ))
+          , (!f.has_insurance||!f.has_code_of_conduct||!f.has_safety_forms)&&(
+            React.createElement('div', { style: {background:T.red+"18",border:`1px solid ${T.red}44`,borderRadius:10,padding:"10px 14px",marginBottom:8,fontSize:12,color:T.red,fontWeight:600},}, "⚠️ If required forms are not signed before commencing work, please contact reception before proceeding."
 
-        {/* -- STAFF -- */}
-        {type==="staff"&&<>
-          <Field label="Staff Member *" value={f.staff} onChange={v=>set("staff",v)} options={staffList.map(s=>s.name)}/>
+            )
+          )
+        )
 
-          {/* Toggle: signing in to centre vs going out on outreach */}
-          <div style={{marginBottom:16}}>
-            <FLabel text="Sign in type *"/>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-              {[
+        /* -- STAFF -- */
+        , type==="staff"&&React.createElement(React.Fragment, null
+          , React.createElement(Field, { label: "Staff Member *"  , value: f.staff, onChange: v=>set("staff",v), options: staffList.map(s=>s.name),})
+
+          /* Toggle: signing in to centre vs going out on outreach */
+          , React.createElement('div', { style: {marginBottom:16},}
+            , React.createElement(FLabel, { text: "Sign in type *"   ,})
+            , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"1fr 1fr",gap:8},}
+              , [
                 {val:"in-centre",icon:"🏢",label:"Staff In — Arriving at Centre",sub:"Starting shift or returning to centre"},
                 {val:"outreach", icon:"🚶",label:"Staff Out — Leaving for Outreach",sub:"Heading out to client or community"},
               ].map(opt=>(
-                <div key={opt.val} onClick={()=>set("staff_mode",opt.val)}
-                  style={{padding:"12px 14px",borderRadius:12,cursor:"pointer",
+                React.createElement('div', { key: opt.val, onClick: ()=>set("staff_mode",opt.val),
+                  style: {padding:"12px 14px",borderRadius:12,cursor:"pointer",
                     border:`2px solid ${f.staff_mode===opt.val?T.accent:T.border}`,
-                    background:f.staff_mode===opt.val?T.accent+"18":T.surface}}>
-                  <div style={{fontSize:20,marginBottom:4}}>{opt.icon}</div>
-                  <div style={{fontSize:12,fontWeight:700,color:f.staff_mode===opt.val?T.accent:T.text}}>{opt.label}</div>
-                  <div style={{fontSize:10,color:T.muted,marginTop:2}}>{opt.sub}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+                    background:f.staff_mode===opt.val?T.accent+"18":T.surface},}
+                  , React.createElement('div', { style: {fontSize:20,marginBottom:4},}, opt.icon)
+                  , React.createElement('div', { style: {fontSize:12,fontWeight:700,color:f.staff_mode===opt.val?T.accent:T.text},}, opt.label)
+                  , React.createElement('div', { style: {fontSize:10,color:T.muted,marginTop:2},}, opt.sub)
+                )
+              ))
+            )
+          )
 
-          {f.staff_mode==="outreach"&&(<>
-            <div style={{marginBottom:14}}>
-              <FLabel text="Purpose of Outreach *"/>
-              <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:8}}>
-                {["Family Support","Centrelink","Health","Job Network","Housing","Home Visit","Meeting","NWQICSS Support"].map(p=>(
-                  <div key={p} onClick={()=>set("outreach_purpose",p)}
-                    style={{padding:"8px 14px",borderRadius:20,cursor:"pointer",fontSize:12,fontWeight:600,
+          , f.staff_mode==="outreach"&&(React.createElement(React.Fragment, null
+            , React.createElement('div', { style: {marginBottom:14},}
+              , React.createElement(FLabel, { text: "Purpose of Outreach *"   ,})
+              , React.createElement('div', { style: {display:"flex",flexWrap:"wrap",gap:8,marginBottom:8},}
+                , ["Family Support","Centrelink","Health","Job Network","Housing","Home Visit","Meeting","NWQICSS Support"].map(p=>(
+                  React.createElement('div', { key: p, onClick: ()=>set("outreach_purpose",p),
+                    style: {padding:"8px 14px",borderRadius:20,cursor:"pointer",fontSize:12,fontWeight:600,
                       border:`2px solid ${f.outreach_purpose===p?T.accent:T.border}`,
                       background:f.outreach_purpose===p?T.accent+"22":T.surface,
-                      color:f.outreach_purpose===p?T.accent:T.text}}>{p}</div>
-                ))}
-              </div>
-              <input value={f.outreach_notes||""} onChange={e=>set("outreach_notes",e.target.value)}
-                placeholder="Additional notes (optional)" style={{...inputSt}}/>
-            </div>
-            <div style={{background:T.amber+"18",border:`2px solid ${T.amber}44`,borderRadius:10,padding:"12px 14px",marginBottom:12}}>
-              <div style={{fontSize:12,fontWeight:700,color:T.amber,marginBottom:8}}>🔔 Duress Alarm</div>
-              <div onClick={()=>set("has_duress",!f.has_duress)}
-                style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",marginBottom:f.has_duress?8:0}}>
-                <div style={{width:20,height:20,borderRadius:5,flexShrink:0,border:`2px solid ${f.has_duress?T.amber:T.muted}`,
+                      color:f.outreach_purpose===p?T.accent:T.text},}, p)
+                ))
+              )
+              , React.createElement('input', { value: f.outreach_notes||"", onChange: e=>set("outreach_notes",e.target.value),
+                placeholder: "Additional notes (optional)"  , style: {...inputSt},})
+            )
+            , React.createElement('div', { style: {background:T.amber+"18",border:`2px solid ${T.amber}44`,borderRadius:10,padding:"12px 14px",marginBottom:12},}
+              , React.createElement('div', { style: {fontSize:12,fontWeight:700,color:T.amber,marginBottom:8},}, "🔔 Duress Alarm"  )
+              , React.createElement('div', { onClick: ()=>set("has_duress",!f.has_duress),
+                style: {display:"flex",alignItems:"center",gap:10,cursor:"pointer",marginBottom:f.has_duress?8:0},}
+                , React.createElement('div', { style: {width:20,height:20,borderRadius:5,flexShrink:0,border:`2px solid ${f.has_duress?T.amber:T.muted}`,
                   background:f.has_duress?T.amber:"transparent",display:"flex",alignItems:"center",justifyContent:"center",
-                  fontSize:12,color:"#07101f"}}>{f.has_duress?"✓":""}</div>
-                <span style={{fontSize:13,color:T.text}}>I have a duress alarm with me</span>
-              </div>
-              {f.has_duress&&<input value={f.duress_number||""} onChange={e=>set("duress_number",e.target.value)}
-                placeholder="Duress alarm number / ID" style={{...inputSt,borderColor:T.amber+"44"}}/>}
-            </div>
-            <div style={{background:T.accent+"18",border:`2px solid ${T.accent}44`,borderRadius:10,padding:"12px 14px",marginBottom:12}}>
-              <div style={{fontSize:12,fontWeight:700,color:T.accent,marginBottom:8}}>🚗 Vehicle</div>
-              <div onClick={()=>set("has_vehicle",!f.has_vehicle)}
-                style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",marginBottom:f.has_vehicle?8:0}}>
-                <div style={{width:20,height:20,borderRadius:5,flexShrink:0,border:`2px solid ${f.has_vehicle?T.accent:T.muted}`,
+                  fontSize:12,color:"#07101f"},}, f.has_duress?"✓":"")
+                , React.createElement('span', { style: {fontSize:13,color:T.text},}, "I have a duress alarm with me"      )
+              )
+              , f.has_duress&&React.createElement('input', { value: f.duress_number||"", onChange: e=>set("duress_number",e.target.value),
+                placeholder: "Duress alarm number / ID"    , style: {...inputSt,borderColor:T.amber+"44"},})
+            )
+            , React.createElement('div', { style: {background:T.accent+"18",border:`2px solid ${T.accent}44`,borderRadius:10,padding:"12px 14px",marginBottom:12},}
+              , React.createElement('div', { style: {fontSize:12,fontWeight:700,color:T.accent,marginBottom:8},}, "🚗 Vehicle" )
+              , React.createElement('div', { onClick: ()=>set("has_vehicle",!f.has_vehicle),
+                style: {display:"flex",alignItems:"center",gap:10,cursor:"pointer",marginBottom:f.has_vehicle?8:0},}
+                , React.createElement('div', { style: {width:20,height:20,borderRadius:5,flexShrink:0,border:`2px solid ${f.has_vehicle?T.accent:T.muted}`,
                   background:f.has_vehicle?T.accent:"transparent",display:"flex",alignItems:"center",justifyContent:"center",
-                  fontSize:12,color:"#07101f"}}>{f.has_vehicle?"✓":""}</div>
-                <span style={{fontSize:13,color:T.text}}>I have a vehicle signed out</span>
-              </div>
-              {f.has_vehicle&&<input value={f.vehicle_rego||""} onChange={e=>set("vehicle_rego",e.target.value)}
-                placeholder="Vehicle registration (e.g. 123 ABC)" style={{...inputSt,borderColor:T.accent+"44"}}/>}
-            </div>
-          </>)}
-          <Field label="Location" value={f.loc} onChange={v=>set("loc",v)} options={ALL_LOCATIONS}/>
-        </>}
+                  fontSize:12,color:"#07101f"},}, f.has_vehicle?"✓":"")
+                , React.createElement('span', { style: {fontSize:13,color:T.text},}, "I have a vehicle signed out"     )
+              )
+              , f.has_vehicle&&React.createElement('input', { value: f.vehicle_rego||"", onChange: e=>set("vehicle_rego",e.target.value),
+                placeholder: "Vehicle registration (e.g. 123 ABC)"    , style: {...inputSt,borderColor:T.accent+"44"},})
+            )
+          ))
+          , React.createElement(Field, { label: "Location", value: f.loc, onChange: v=>set("loc",v), options: ALL_LOCATIONS,})
+        )
 
-        <div style={{display:"flex",gap:10,marginTop:8}}>
-          <Btn onClick={()=>valid&&onSubmit(f)} color={valid?T.green:T.muted} style={{flex:1}}>✓ Sign In</Btn>
-          <Btn onClick={onClose} color={T.muted} outline style={{flex:1}}>Cancel</Btn>
-        </div>
-        {!valid&&<div style={{fontSize:11,color:T.muted,textAlign:"center",marginTop:8}}>Fill in all required * fields to continue</div>}
-      </div>
-    </div>
+        , React.createElement('div', { style: {display:"flex",gap:10,marginTop:8},}
+          , React.createElement(Btn, { onClick: ()=>valid&&onSubmit(f), color: valid?T.green:T.muted, style: {flex:1},}, "✓ Sign In"  )
+          , React.createElement(Btn, { onClick: onClose, color: T.muted, outline: true, style: {flex:1},}, "Cancel")
+        )
+        , !valid&&React.createElement('div', { style: {fontSize:11,color:T.muted,textAlign:"center",marginTop:8},}, "Fill in all required * fields to continue"       )
+      )
+    )
   );
 };
 
@@ -338,87 +337,87 @@ const Dashboard = ({records,assets,location}) => {
   const outreach = records.filter(r=>r.type==="staff"&&r.staff_status==="outreach"&&r.status==="on-site"&&loc(r));
 
   const Stat=({icon,val,label,color})=>(
-    <Card style={{flex:1,minWidth:100,textAlign:"center"}}>
-      <div style={{fontSize:22,marginBottom:4}}>{icon}</div>
-      <div style={{fontSize:32,fontWeight:900,color,lineHeight:1}}>{val}</div>
-      <div style={{fontSize:10,color:T.muted,marginTop:4,textTransform:"uppercase",letterSpacing:.5}}>{label}</div>
-    </Card>
+    React.createElement(Card, { style: {flex:1,minWidth:100,textAlign:"center"},}
+      , React.createElement('div', { style: {fontSize:22,marginBottom:4},}, icon)
+      , React.createElement('div', { style: {fontSize:32,fontWeight:900,color,lineHeight:1},}, val)
+      , React.createElement('div', { style: {fontSize:10,color:T.muted,marginTop:4,textTransform:"uppercase",letterSpacing:.5},}, label)
+    )
   );
   return (
-    <div>
-      <div style={{fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Live Overview</div>
-      <div style={{fontSize:24,fontWeight:900,color:T.white,marginBottom:4}}>{dateStr()}</div>
-      <div style={{fontSize:13,color:T.accent,marginBottom:16}}>📍 {location}</div>
+    React.createElement('div', null
+      , React.createElement('div', { style: {fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4},}, "Live Overview" )
+      , React.createElement('div', { style: {fontSize:24,fontWeight:900,color:T.white,marginBottom:4},}, dateStr())
+      , React.createElement('div', { style: {fontSize:13,color:T.accent,marginBottom:16},}, "📍 " , location)
 
-      <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:20}}>
-        <Stat icon="🏢" val={onSite.length} label="On Site" color={T.green}/>
-        <Stat icon="👤" val={onSite.filter(r=>r.type==="visitor").length} label="Visitors" color={T.accent}/>
-        <Stat icon="🔧" val={onSite.filter(r=>r.type==="contractor").length} label="Contractors" color={T.accent2}/>
-        <Stat icon="🏢" val={onSite.filter(r=>r.type==="staff"&&r.staff_status!=="outreach").length} label="Staff In" color={T.amber}/>
-        <Stat icon="🚶" val={outreach.length} label="On Outreach" color={T.purple}/>
-        <Stat icon="🚗" val={assets.filter(a=>a.status==="out").length} label="Assets Out" color={T.red}/>
-      </div>
+      , React.createElement('div', { style: {display:"flex",gap:10,flexWrap:"wrap",marginBottom:20},}
+        , React.createElement(Stat, { icon: "🏢", val: onSite.length, label: "On Site" , color: T.green,})
+        , React.createElement(Stat, { icon: "👤", val: onSite.filter(r=>r.type==="visitor").length, label: "Visitors", color: T.accent,})
+        , React.createElement(Stat, { icon: "🔧", val: onSite.filter(r=>r.type==="contractor").length, label: "Contractors", color: T.accent2,})
+        , React.createElement(Stat, { icon: "🏢", val: onSite.filter(r=>r.type==="staff"&&r.staff_status!=="outreach").length, label: "Staff In" , color: T.amber,})
+        , React.createElement(Stat, { icon: "🚶", val: outreach.length, label: "On Outreach" , color: T.purple,})
+        , React.createElement(Stat, { icon: "🚗", val: assets.filter(a=>a.status==="out").length, label: "Assets Out" , color: T.red,})
+      )
 
-      {outreach.length>0&&(
-        <div style={{background:T.purple+"18",border:`1px solid ${T.purple}44`,borderRadius:12,padding:"12px 16px",marginBottom:16}}>
-          <div style={{fontSize:13,fontWeight:700,color:T.purple,marginBottom:8}}>🚶 Staff Currently on Outreach</div>
-          {outreach.map(r=>(
-            <div key={r.id} style={{fontSize:12,color:T.text,marginBottom:4}}>
-              • <strong>{r.staff_name}</strong> — {r.outreach_purpose||"Purpose not recorded"} <span style={{color:T.muted}}>(out since {r.sign_in_time})</span>
-            </div>
-          ))}
-        </div>
-      )}
+      , outreach.length>0&&(
+        React.createElement('div', { style: {background:T.purple+"18",border:`1px solid ${T.purple}44`,borderRadius:12,padding:"12px 16px",marginBottom:16},}
+          , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.purple,marginBottom:8},}, "🚶 Staff Currently on Outreach"    )
+          , outreach.map(r=>(
+            React.createElement('div', { key: r.id, style: {fontSize:12,color:T.text,marginBottom:4},}, "• "
+               , React.createElement('strong', null, r.staff_name), " — "  , r.outreach_purpose||"Purpose not recorded", " " , React.createElement('span', { style: {color:T.muted},}, "(out since "  , r.sign_in_time, ")")
+            )
+          ))
+        )
+      )
 
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:14,marginBottom:16}}>
-        <Card>
-          <div style={{fontSize:13,fontWeight:700,color:T.white,marginBottom:12,display:"flex",alignItems:"center",gap:8}}>
-            <span style={{width:8,height:8,borderRadius:"50%",background:T.green,display:"inline-block",boxShadow:`0 0 8px ${T.green}`}}/>
-            Currently On Site
-          </div>
-          {onSite.length===0&&<div style={{fontSize:13,color:T.muted}}>Nobody on site yet.</div>}
-          {onSite.slice(0,8).map(r=>(
-            <div key={r.id} style={{padding:"8px 0",borderBottom:`1px solid ${T.border}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div>
-                <div style={{fontSize:13,fontWeight:700,color:T.text}}>{r.name||r.company||r.staff_name}</div>
-                <div style={{fontSize:11,color:T.muted}}>
-                  {r.type==="visitor"?r.program:r.type==="contractor"?r.contact_name:r.staff_status==="outreach"?"On Outreach":r.location}
-                  {" · In "}{r.sign_in_time}
-                </div>
-              </div>
-              <Badge label={r.type==="staff"&&r.staff_status==="outreach"?"outreach":r.type}
-                color={r.type==="visitor"?T.accent:r.type==="contractor"?T.accent2:r.staff_status==="outreach"?T.purple:T.amber}/>
-            </div>
-          ))}
-        </Card>
-        <Card>
-          <div style={{fontSize:13,fontWeight:700,color:T.white,marginBottom:12}}>Visitors by Program Today</div>
-          {Object.keys(progCounts).length===0&&<div style={{fontSize:13,color:T.muted}}>No visitor data yet.</div>}
-          {Object.entries(progCounts).sort((a,b)=>b[1]-a[1]).map(([prog,cnt])=>(
-            <div key={prog} style={{marginBottom:10}}>
-              <div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:3}}>
-                <span style={{color:T.text}}>{prog}</span><span style={{color:T.accent,fontWeight:700}}>{cnt}</span>
-              </div>
-              <div style={{height:6,background:T.border,borderRadius:4,overflow:"hidden"}}>
-                <div style={{height:"100%",background:T.accent,borderRadius:4,width:`${(cnt/maxProg)*100}%`}}/>
-              </div>
-            </div>
-          ))}
-        </Card>
-      </div>
-      <Card>
-        <div style={{fontSize:13,fontWeight:700,color:T.white,marginBottom:12}}>Assets</div>
-        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-          {assets.map(a=>(
-            <div key={a.id} style={{background:T.surface,border:`1px solid ${a.status==="out"?T.red+"55":T.green+"44"}`,borderRadius:12,padding:"10px 14px",minWidth:150}}>
-              <div style={{fontSize:13,fontWeight:700,color:T.text}}>{a.name}</div>
-              <div style={{fontSize:11,color:T.muted,margin:"3px 0 6px"}}>{a.status==="out"?`With ${a.assigned_to}`:"Available"}</div>
-              <Badge label={a.status==="out"?"Out":"Available"} color={a.status==="out"?T.red:T.green}/>
-            </div>
-          ))}
-        </div>
-      </Card>
-    </div>
+      , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))",gap:14,marginBottom:16},}
+        , React.createElement(Card, null
+          , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.white,marginBottom:12,display:"flex",alignItems:"center",gap:8},}
+            , React.createElement('span', { style: {width:8,height:8,borderRadius:"50%",background:T.green,display:"inline-block",boxShadow:`0 0 8px ${T.green}`},}), "Currently On Site"
+
+          )
+          , onSite.length===0&&React.createElement('div', { style: {fontSize:13,color:T.muted},}, "Nobody on site yet."   )
+          , onSite.slice(0,8).map(r=>(
+            React.createElement('div', { key: r.id, style: {padding:"8px 0",borderBottom:`1px solid ${T.border}`,display:"flex",justifyContent:"space-between",alignItems:"center"},}
+              , React.createElement('div', null
+                , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.text},}, r.name||r.company||r.staff_name)
+                , React.createElement('div', { style: {fontSize:11,color:T.muted},}
+                  , r.type==="visitor"?r.program:r.type==="contractor"?r.contact_name:r.staff_status==="outreach"?"On Outreach":r.location
+                  , " · In ", r.sign_in_time
+                )
+              )
+              , React.createElement(Badge, { label: r.type==="staff"&&r.staff_status==="outreach"?"outreach":r.type,
+                color: r.type==="visitor"?T.accent:r.type==="contractor"?T.accent2:r.staff_status==="outreach"?T.purple:T.amber,})
+            )
+          ))
+        )
+        , React.createElement(Card, null
+          , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.white,marginBottom:12},}, "Visitors by Program Today"   )
+          , Object.keys(progCounts).length===0&&React.createElement('div', { style: {fontSize:13,color:T.muted},}, "No visitor data yet."   )
+          , Object.entries(progCounts).sort((a,b)=>b[1]-a[1]).map(([prog,cnt])=>(
+            React.createElement('div', { key: prog, style: {marginBottom:10},}
+              , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:3},}
+                , React.createElement('span', { style: {color:T.text},}, prog), React.createElement('span', { style: {color:T.accent,fontWeight:700},}, cnt)
+              )
+              , React.createElement('div', { style: {height:6,background:T.border,borderRadius:4,overflow:"hidden"},}
+                , React.createElement('div', { style: {height:"100%",background:T.accent,borderRadius:4,width:`${(cnt/maxProg)*100}%`},})
+              )
+            )
+          ))
+        )
+      )
+      , React.createElement(Card, null
+        , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.white,marginBottom:12},}, "Assets")
+        , React.createElement('div', { style: {display:"flex",gap:10,flexWrap:"wrap"},}
+          , assets.map(a=>(
+            React.createElement('div', { key: a.id, style: {background:T.surface,border:`1px solid ${a.status==="out"?T.red+"55":T.green+"44"}`,borderRadius:12,padding:"10px 14px",minWidth:150},}
+              , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.text},}, a.name)
+              , React.createElement('div', { style: {fontSize:11,color:T.muted,margin:"3px 0 6px"},}, a.status==="out"?`With ${a.assigned_to}`:"Available")
+              , React.createElement(Badge, { label: a.status==="out"?"Out":"Available", color: a.status==="out"?T.red:T.green,})
+            )
+          ))
+        )
+      )
+    )
   );
 };
 
@@ -442,43 +441,43 @@ const VisitorsTab = ({records,onSignOut,location}) => {
   };
 
   return (
-    <div>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:20,flexWrap:"wrap",gap:10}}>
-        <div>
-          <div style={{fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Visitor Register</div>
-          <div style={{fontSize:24,fontWeight:900,color:T.white}}>{visitors.filter(r=>r.status==="on-site").length} On Site · {visitors.length} Total Today</div>
-        </div>
-        <Btn onClick={exportCSV} color={T.green} small>⬇ Export CSV</Btn>
-      </div>
-      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:12}}>
-        <button onClick={()=>setProg("all")} style={{padding:"5px 12px",borderRadius:20,fontSize:12,fontWeight:600,cursor:"pointer",
-          background:prog==="all"?T.accent:"transparent",color:prog==="all"?T.bg:T.muted,border:`1px solid ${prog==="all"?T.accent:T.border}`}}>All</button>
-        {programs.map(p=>(
-          <button key={p} onClick={()=>setProg(p)} style={{padding:"5px 12px",borderRadius:20,fontSize:12,fontWeight:600,cursor:"pointer",
-            background:prog===p?T.accent:"transparent",color:prog===p?T.bg:T.muted,border:`1px solid ${prog===p?T.accent:T.border}`}}>{p}</button>
-        ))}
-      </div>
-      <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search by name…"
-        style={{width:"100%",padding:"10px 14px",background:T.surface,border:`1.5px solid ${T.border}`,borderRadius:10,color:T.text,fontSize:13,outline:"none",marginBottom:14,boxSizing:"border-box"}}/>
-      <div style={{display:"flex",flexDirection:"column",gap:10}}>
-        {shown.map(r=>(
-          <Card key={r.id} style={{padding:"14px 16px"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:8}}>
-              <div style={{flex:1}}>
-                <div style={{fontSize:14,fontWeight:800,color:T.white}}>{r.name}</div>
-                <div style={{fontSize:12,color:T.muted}}>{r.program} · {r.visit_purpose||r.purpose} · In {r.sign_in_time}{r.sign_out_time&&` · Out ${r.sign_out_time}`}</div>
-                {r.purpose&&r.visit_purpose&&<div style={{fontSize:11,color:T.muted,marginTop:2,fontStyle:"italic"}}>Notes: {r.purpose}</div>}
-              </div>
-              <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
-                <Badge label={r.status==="on-site"?"On Site":"Left"} color={r.status==="on-site"?T.green:T.muted}/>
-                {r.status==="on-site"&&<Btn onClick={()=>onSignOut(r.id)} color={T.red} outline small>Sign Out</Btn>}
-              </div>
-            </div>
-          </Card>
-        ))}
-        {shown.length===0&&<div style={{color:T.muted,fontSize:13,padding:20,textAlign:"center"}}>No visitors found.</div>}
-      </div>
-    </div>
+    React.createElement('div', null
+      , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:20,flexWrap:"wrap",gap:10},}
+        , React.createElement('div', null
+          , React.createElement('div', { style: {fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4},}, "Visitor Register" )
+          , React.createElement('div', { style: {fontSize:24,fontWeight:900,color:T.white},}, visitors.filter(r=>r.status==="on-site").length, " On Site · "    , visitors.length, " Total Today"  )
+        )
+        , React.createElement(Btn, { onClick: exportCSV, color: T.green, small: true,}, "⬇ Export CSV"  )
+      )
+      , React.createElement('div', { style: {display:"flex",gap:8,flexWrap:"wrap",marginBottom:12},}
+        , React.createElement('button', { onClick: ()=>setProg("all"), style: {padding:"5px 12px",borderRadius:20,fontSize:12,fontWeight:600,cursor:"pointer",
+          background:prog==="all"?T.accent:"transparent",color:prog==="all"?T.bg:T.muted,border:`1px solid ${prog==="all"?T.accent:T.border}`},}, "All")
+        , programs.map(p=>(
+          React.createElement('button', { key: p, onClick: ()=>setProg(p), style: {padding:"5px 12px",borderRadius:20,fontSize:12,fontWeight:600,cursor:"pointer",
+            background:prog===p?T.accent:"transparent",color:prog===p?T.bg:T.muted,border:`1px solid ${prog===p?T.accent:T.border}`},}, p)
+        ))
+      )
+      , React.createElement('input', { value: search, onChange: e=>setSearch(e.target.value), placeholder: "Search by name…"  ,
+        style: {width:"100%",padding:"10px 14px",background:T.surface,border:`1.5px solid ${T.border}`,borderRadius:10,color:T.text,fontSize:13,outline:"none",marginBottom:14,boxSizing:"border-box"},})
+      , React.createElement('div', { style: {display:"flex",flexDirection:"column",gap:10},}
+        , shown.map(r=>(
+          React.createElement(Card, { key: r.id, style: {padding:"14px 16px"},}
+            , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:8},}
+              , React.createElement('div', { style: {flex:1},}
+                , React.createElement('div', { style: {fontSize:14,fontWeight:800,color:T.white},}, r.name)
+                , React.createElement('div', { style: {fontSize:12,color:T.muted},}, r.program, " · "  , r.visit_purpose||r.purpose, " · In "   , r.sign_in_time, r.sign_out_time&&` · Out ${r.sign_out_time}`)
+                , r.purpose&&r.visit_purpose&&React.createElement('div', { style: {fontSize:11,color:T.muted,marginTop:2,fontStyle:"italic"},}, "Notes: " , r.purpose)
+              )
+              , React.createElement('div', { style: {display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"},}
+                , React.createElement(Badge, { label: r.status==="on-site"?"On Site":"Left", color: r.status==="on-site"?T.green:T.muted,})
+                , r.status==="on-site"&&React.createElement(Btn, { onClick: ()=>onSignOut(r.id), color: T.red, outline: true, small: true,}, "Sign Out" )
+              )
+            )
+          )
+        ))
+        , shown.length===0&&React.createElement('div', { style: {color:T.muted,fontSize:13,padding:20,textAlign:"center"},}, "No visitors found."  )
+      )
+    )
   );
 };
 
@@ -489,48 +488,48 @@ const ContractorsTab = ({records,onSignOut,location}) => {
   const [email,setEmail]=useState("");
   const contractors=records.filter(r=>r.type==="contractor"&&(!location||r.location===location));
   return (
-    <div>
-      <div style={{fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>WHS & Contractors</div>
-      <div style={{fontSize:24,fontWeight:900,color:T.white,marginBottom:20}}>Contractor Register</div>
-      {contractors.some(c=>c.compliance==="expiring")&&(
-        <div style={{background:T.amber+"22",border:`1px solid ${T.amber}44`,borderRadius:12,padding:"12px 16px",marginBottom:16,display:"flex",gap:10}}>
-          <span style={{fontSize:20}}>⚠️</span>
-          <div>
-            <div style={{fontSize:13,fontWeight:700,color:T.amber}}>Compliance Expiring Soon</div>
-            <div style={{fontSize:12,color:T.muted}}>{contractors.filter(c=>c.compliance==="expiring").map(c=>c.company).join(", ")} — forms due for renewal.</div>
-          </div>
-        </div>
-      )}
-      <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:20}}>
-        {contractors.map(r=>(
-          <Card key={r.id}>
-            <div style={{display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:8,marginBottom:10}}>
-              <div>
-                <div style={{fontSize:15,fontWeight:800,color:T.white}}>{r.company}</div>
-                <div style={{fontSize:12,color:T.muted}}>Contact: {r.contact_name} · {r.location}</div>
-                <div style={{fontSize:12,color:T.muted}}>In: {r.sign_in_time}{r.sign_out_time?` · Out: ${r.sign_out_time}`:""}</div>
-              </div>
-              <Badge label={r.status==="on-site"?"On Site":"Signed Out"} color={r.status==="on-site"?T.green:T.muted}/>
-            </div>
-            <Badge label={`Compliance: ${r.compliance||"Unknown"}`} color={r.compliance==="valid"?T.green:r.compliance==="expiring"?T.amber:T.red}/>
-            <div style={{display:"flex",gap:8,marginTop:12,flexWrap:"wrap"}}>
-              {r.status==="on-site"&&<Btn onClick={()=>onSignOut(r.id)} color={T.red} outline small>Sign Out</Btn>}
-              <Btn color={T.accent} outline small onClick={()=>alert(`Compliance form link sent to ${r.company}!`)}>Send Form</Btn>
-            </div>
-          </Card>
-        ))}
-        {contractors.length===0&&<div style={{color:T.muted,fontSize:13,padding:20,textAlign:"center"}}>No contractors today.</div>}
-      </div>
-      <Card>
-        <div style={{fontSize:14,fontWeight:700,color:T.white,marginBottom:6}}>Pre-send Compliance Forms</div>
-        <div style={{fontSize:12,color:T.muted,marginBottom:12}}>Send a compliance form link before their visit.</div>
-        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-          <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="contractor@email.com" type="email"
-            style={{flex:1,padding:"10px 12px",background:T.surface,border:`1.5px solid ${T.border}`,borderRadius:10,color:T.text,fontSize:13,outline:"none",minWidth:180}}/>
-          <Btn color={T.accent2} small onClick={()=>{alert("Form link sent!");setEmail("");}}>Send Link</Btn>
-        </div>
-      </Card>
-    </div>
+    React.createElement('div', null
+      , React.createElement('div', { style: {fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4},}, "WHS & Contractors"  )
+      , React.createElement('div', { style: {fontSize:24,fontWeight:900,color:T.white,marginBottom:20},}, "Contractor Register" )
+      , contractors.some(c=>c.compliance==="expiring")&&(
+        React.createElement('div', { style: {background:T.amber+"22",border:`1px solid ${T.amber}44`,borderRadius:12,padding:"12px 16px",marginBottom:16,display:"flex",gap:10},}
+          , React.createElement('span', { style: {fontSize:20},}, "⚠️")
+          , React.createElement('div', null
+            , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.amber},}, "Compliance Expiring Soon"  )
+            , React.createElement('div', { style: {fontSize:12,color:T.muted},}, contractors.filter(c=>c.compliance==="expiring").map(c=>c.company).join(", "), " — forms due for renewal."     )
+          )
+        )
+      )
+      , React.createElement('div', { style: {display:"flex",flexDirection:"column",gap:12,marginBottom:20},}
+        , contractors.map(r=>(
+          React.createElement(Card, { key: r.id,}
+            , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:8,marginBottom:10},}
+              , React.createElement('div', null
+                , React.createElement('div', { style: {fontSize:15,fontWeight:800,color:T.white},}, r.company)
+                , React.createElement('div', { style: {fontSize:12,color:T.muted},}, "Contact: " , r.contact_name, " · "  , r.location)
+                , React.createElement('div', { style: {fontSize:12,color:T.muted},}, "In: " , r.sign_in_time, r.sign_out_time?` · Out: ${r.sign_out_time}`:"")
+              )
+              , React.createElement(Badge, { label: r.status==="on-site"?"On Site":"Signed Out", color: r.status==="on-site"?T.green:T.muted,})
+            )
+            , React.createElement(Badge, { label: `Compliance: ${r.compliance||"Unknown"}`, color: r.compliance==="valid"?T.green:r.compliance==="expiring"?T.amber:T.red,})
+            , React.createElement('div', { style: {display:"flex",gap:8,marginTop:12,flexWrap:"wrap"},}
+              , r.status==="on-site"&&React.createElement(Btn, { onClick: ()=>onSignOut(r.id), color: T.red, outline: true, small: true,}, "Sign Out" )
+              , React.createElement(Btn, { color: T.accent, outline: true, small: true, onClick: ()=>alert(`Compliance form link sent to ${r.company}!`),}, "Send Form" )
+            )
+          )
+        ))
+        , contractors.length===0&&React.createElement('div', { style: {color:T.muted,fontSize:13,padding:20,textAlign:"center"},}, "No contractors today."  )
+      )
+      , React.createElement(Card, null
+        , React.createElement('div', { style: {fontSize:14,fontWeight:700,color:T.white,marginBottom:6},}, "Pre-send Compliance Forms"  )
+        , React.createElement('div', { style: {fontSize:12,color:T.muted,marginBottom:12},}, "Send a compliance form link before their visit."       )
+        , React.createElement('div', { style: {display:"flex",gap:10,flexWrap:"wrap"},}
+          , React.createElement('input', { value: email, onChange: e=>setEmail(e.target.value), placeholder: "contractor@email.com", type: "email",
+            style: {flex:1,padding:"10px 12px",background:T.surface,border:`1.5px solid ${T.border}`,borderRadius:10,color:T.text,fontSize:13,outline:"none",minWidth:180},})
+          , React.createElement(Btn, { color: T.accent2, small: true, onClick: ()=>{alert("Form link sent!");setEmail("");},}, "Send Link" )
+        )
+      )
+    )
   );
 };
 
@@ -543,81 +542,81 @@ const StaffTab = ({records,assets,onSignOut,onAssetAction,location}) => {
   const onOutreach = staff.filter(r=>r.status==="on-site"&&r.staff_status==="outreach");
 
   const StaffCard = ({r}) => (
-    <Card style={{borderLeft:`4px solid ${r.staff_status==="outreach"?T.purple:T.amber}`}}>
-      <div style={{width:40,height:40,borderRadius:"50%",background:(r.staff_status==="outreach"?T.purple:T.amber)+"33",
+    React.createElement(Card, { style: {borderLeft:`4px solid ${r.staff_status==="outreach"?T.purple:T.amber}`},}
+      , React.createElement('div', { style: {width:40,height:40,borderRadius:"50%",background:(r.staff_status==="outreach"?T.purple:T.amber)+"33",
         display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,fontWeight:900,
-        color:r.staff_status==="outreach"?T.purple:T.amber,marginBottom:10}}>
-        {(r.staff_name||"?")[0]}
-      </div>
-      <div style={{fontSize:14,fontWeight:800,color:T.white}}>{r.staff_name}</div>
-      <div style={{fontSize:12,color:T.muted,margin:"3px 0 6px"}}>📍 {r.location} · {r.sign_in_time}</div>
-      {r.staff_status==="outreach"&&r.outreach_purpose&&(
-        <div style={{fontSize:11,color:T.purple,marginBottom:8,padding:"6px 10px",background:T.purple+"15",borderRadius:8}}>
-          🚶 {r.outreach_purpose}
-        </div>
-      )}
-      <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
-        <Badge label={r.staff_status==="outreach"?"On Outreach":"In Centre"} color={r.staff_status==="outreach"?T.purple:T.amber}/>
-        {r.status==="on-site"&&<Btn onClick={()=>onSignOut(r.id)} color={T.red} outline small>Sign Out</Btn>}
-      </div>
-    </Card>
+        color:r.staff_status==="outreach"?T.purple:T.amber,marginBottom:10},}
+        , (r.staff_name||"?")[0]
+      )
+      , React.createElement('div', { style: {fontSize:14,fontWeight:800,color:T.white},}, r.staff_name)
+      , React.createElement('div', { style: {fontSize:12,color:T.muted,margin:"3px 0 6px"},}, "📍 " , r.location, " · "  , r.sign_in_time)
+      , r.staff_status==="outreach"&&r.outreach_purpose&&(
+        React.createElement('div', { style: {fontSize:11,color:T.purple,marginBottom:8,padding:"6px 10px",background:T.purple+"15",borderRadius:8},}, "🚶 "
+           , r.outreach_purpose
+        )
+      )
+      , React.createElement('div', { style: {display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"},}
+        , React.createElement(Badge, { label: r.staff_status==="outreach"?"On Outreach":"In Centre", color: r.staff_status==="outreach"?T.purple:T.amber,})
+        , r.status==="on-site"&&React.createElement(Btn, { onClick: ()=>onSignOut(r.id), color: T.red, outline: true, small: true,}, "Sign Out" )
+      )
+    )
   );
 
   return (
-    <div>
-      <div style={{fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Staff Whereabouts</div>
-      <div style={{fontSize:24,fontWeight:900,color:T.white,marginBottom:20}}>Staff & Assets</div>
+    React.createElement('div', null
+      , React.createElement('div', { style: {fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4},}, "Staff Whereabouts" )
+      , React.createElement('div', { style: {fontSize:24,fontWeight:900,color:T.white,marginBottom:20},}, "Staff & Assets"  )
 
-      {onOutreach.length>0&&(
-        <div style={{background:T.purple+"18",border:`1px solid ${T.purple}44`,borderRadius:12,padding:"14px 16px",marginBottom:20}}>
-          <div style={{fontSize:13,fontWeight:700,color:T.purple,marginBottom:10}}>🚶 Currently on Outreach ({onOutreach.length})</div>
-          {onOutreach.map(r=>(
-            <div key={r.id} style={{marginBottom:8,paddingBottom:8,borderBottom:`1px solid ${T.border}`}}>
-              <div style={{fontSize:13,fontWeight:700,color:T.text}}>{r.staff_name}</div>
-              <div style={{fontSize:12,color:T.muted}}>{r.outreach_purpose||"Purpose not recorded"} · Left {r.sign_in_time}</div>
-            </div>
-          ))}
-        </div>
-      )}
+      , onOutreach.length>0&&(
+        React.createElement('div', { style: {background:T.purple+"18",border:`1px solid ${T.purple}44`,borderRadius:12,padding:"14px 16px",marginBottom:20},}
+          , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.purple,marginBottom:10},}, "🚶 Currently on Outreach ("    , onOutreach.length, ")")
+          , onOutreach.map(r=>(
+            React.createElement('div', { key: r.id, style: {marginBottom:8,paddingBottom:8,borderBottom:`1px solid ${T.border}`},}
+              , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.text},}, r.staff_name)
+              , React.createElement('div', { style: {fontSize:12,color:T.muted},}, r.outreach_purpose||"Purpose not recorded", " · Left "   , r.sign_in_time)
+            )
+          ))
+        )
+      )
 
-      {inCentre.length>0&&(
-        <>
-          <div style={{fontSize:13,fontWeight:700,color:T.white,marginBottom:10}}>🏢 In Centre ({inCentre.length})</div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:12,marginBottom:24}}>
-            {inCentre.map(r=><StaffCard key={r.id} r={r}/>)}
-          </div>
-        </>
-      )}
+      , inCentre.length>0&&(
+        React.createElement(React.Fragment, null
+          , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.white,marginBottom:10},}, "🏢 In Centre ("   , inCentre.length, ")")
+          , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:12,marginBottom:24},}
+            , inCentre.map(r=>React.createElement(StaffCard, { key: r.id, r: r,}))
+          )
+        )
+      )
 
-      {onOutreach.length>0&&(
-        <>
-          <div style={{fontSize:13,fontWeight:700,color:T.white,marginBottom:10}}>🚶 On Outreach ({onOutreach.length})</div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:12,marginBottom:24}}>
-            {onOutreach.map(r=><StaffCard key={r.id} r={r}/>)}
-          </div>
-        </>
-      )}
+      , onOutreach.length>0&&(
+        React.createElement(React.Fragment, null
+          , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.white,marginBottom:10},}, "🚶 On Outreach ("   , onOutreach.length, ")")
+          , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:12,marginBottom:24},}
+            , onOutreach.map(r=>React.createElement(StaffCard, { key: r.id, r: r,}))
+          )
+        )
+      )
 
-      {staff.length===0&&<div style={{color:T.muted,fontSize:13,marginBottom:24}}>No staff signed in yet.</div>}
+      , staff.length===0&&React.createElement('div', { style: {color:T.muted,fontSize:13,marginBottom:24},}, "No staff signed in yet."    )
 
-      {/* Assets */}
-      <div style={{fontSize:14,fontWeight:800,color:T.white,marginBottom:12}}>Asset Sign In / Out</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:12}}>
-        {assets.map(a=>(
-          <Card key={a.id}>
-            <div style={{fontSize:26,marginBottom:8}}>{a.type==="Vehicle"?"🚗":a.type==="Duress Alarm"?"🔔":"📦"}</div>
-            <div style={{fontSize:13,fontWeight:700,color:T.white,marginBottom:4}}>{a.name}</div>
-            <div style={{fontSize:11,color:T.muted,marginBottom:10}}>{a.status==="out"?`With ${a.assigned_to}`:"Available"}</div>
-            <Badge label={a.status==="out"?"Checked Out":"Available"} color={a.status==="out"?T.red:T.green}/>
-            <div style={{marginTop:10}}>
-              {a.status==="out"
-                ?<Btn onClick={()=>onAssetAction(a.id,"return")} color={T.green} small>Return</Btn>
-                :<Btn onClick={()=>onAssetAction(a.id,"checkout")} color={T.accent} small>Check Out</Btn>}
-            </div>
-          </Card>
-        ))}
-      </div>
-    </div>
+      /* Assets */
+      , React.createElement('div', { style: {fontSize:14,fontWeight:800,color:T.white,marginBottom:12},}, "Asset Sign In / Out"    )
+      , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:12},}
+        , assets.map(a=>(
+          React.createElement(Card, { key: a.id,}
+            , React.createElement('div', { style: {fontSize:26,marginBottom:8},}, a.type==="Vehicle"?"🚗":a.type==="Duress Alarm"?"🔔":"📦")
+            , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.white,marginBottom:4},}, a.name)
+            , React.createElement('div', { style: {fontSize:11,color:T.muted,marginBottom:10},}, a.status==="out"?`With ${a.assigned_to}`:"Available")
+            , React.createElement(Badge, { label: a.status==="out"?"Checked Out":"Available", color: a.status==="out"?T.red:T.green,})
+            , React.createElement('div', { style: {marginTop:10},}
+              , a.status==="out"
+                ?React.createElement(Btn, { onClick: ()=>onAssetAction(a.id,"return"), color: T.green, small: true,}, "Return")
+                :React.createElement(Btn, { onClick: ()=>onAssetAction(a.id,"checkout"), color: T.accent, small: true,}, "Check Out" )
+            )
+          )
+        ))
+      )
+    )
   );
 };
 
@@ -650,84 +649,84 @@ const DuressTab = ({assets,setAssets,staffList,location}) => {
   };
 
   return (
-    <div>
-      <div style={{fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Safety Equipment</div>
-      <div style={{fontSize:24,fontWeight:900,color:T.white,marginBottom:4}}>Duress Alarms</div>
-      <div style={{fontSize:13,color:T.muted,marginBottom:20}}>Track who has each duress alarm at all times.</div>
-      {activeAlarms.length>0&&(
-        <div style={{background:T.amber+"22",border:`1px solid ${T.amber}55`,borderRadius:12,padding:"12px 16px",marginBottom:20,display:"flex",gap:10}}>
-          <span style={{fontSize:22}}>🔔</span>
-          <div>
-            <div style={{fontSize:13,fontWeight:700,color:T.amber}}>{activeAlarms.length} Alarm{activeAlarms.length>1?"s":""} Currently Out</div>
-            <div style={{fontSize:12,color:T.muted}}>{activeAlarms.map(a=>`${a.name} — ${a.assigned_to}`).join(" · ")}</div>
-          </div>
-        </div>
-      )}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:14,marginBottom:28}}>
-        {alarms.map(a=>(
-          <Card key={a.id} style={{borderLeft:`4px solid ${a.status==="out"?T.amber:T.green}`}}>
-            <div style={{fontSize:32,marginBottom:10}}>🔔</div>
-            <div style={{fontSize:15,fontWeight:800,color:T.white,marginBottom:2}}>{a.name}</div>
-            <div style={{fontSize:11,color:T.muted,marginBottom:8}}>Serial: {a.serial||"—"}</div>
-            {a.status==="out"?(
-              <>
-                <div style={{fontSize:12,color:T.amber,fontWeight:700,marginBottom:2}}>With: {a.assigned_to}</div>
-                <div style={{fontSize:11,color:T.muted,marginBottom:a.notes?4:10}}>Checked out: {a.checked_out}</div>
-                {a.notes&&<div style={{fontSize:11,color:T.muted,marginBottom:10}}>Note: {a.notes}</div>}
-                <Badge label="Currently Out" color={T.amber}/>
-                <div style={{marginTop:12}}><Btn onClick={()=>returnAlarm(a.id)} color={T.green} small full>✓ Return Alarm</Btn></div>
-              </>
+    React.createElement('div', null
+      , React.createElement('div', { style: {fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4},}, "Safety Equipment" )
+      , React.createElement('div', { style: {fontSize:24,fontWeight:900,color:T.white,marginBottom:4},}, "Duress Alarms" )
+      , React.createElement('div', { style: {fontSize:13,color:T.muted,marginBottom:20},}, "Track who has each duress alarm at all times."        )
+      , activeAlarms.length>0&&(
+        React.createElement('div', { style: {background:T.amber+"22",border:`1px solid ${T.amber}55`,borderRadius:12,padding:"12px 16px",marginBottom:20,display:"flex",gap:10},}
+          , React.createElement('span', { style: {fontSize:22},}, "🔔")
+          , React.createElement('div', null
+            , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.amber},}, activeAlarms.length, " Alarm" , activeAlarms.length>1?"s":"", " Currently Out"  )
+            , React.createElement('div', { style: {fontSize:12,color:T.muted},}, activeAlarms.map(a=>`${a.name} — ${a.assigned_to}`).join(" · "))
+          )
+        )
+      )
+      , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:14,marginBottom:28},}
+        , alarms.map(a=>(
+          React.createElement(Card, { key: a.id, style: {borderLeft:`4px solid ${a.status==="out"?T.amber:T.green}`},}
+            , React.createElement('div', { style: {fontSize:32,marginBottom:10},}, "🔔")
+            , React.createElement('div', { style: {fontSize:15,fontWeight:800,color:T.white,marginBottom:2},}, a.name)
+            , React.createElement('div', { style: {fontSize:11,color:T.muted,marginBottom:8},}, "Serial: " , a.serial||"—")
+            , a.status==="out"?(
+              React.createElement(React.Fragment, null
+                , React.createElement('div', { style: {fontSize:12,color:T.amber,fontWeight:700,marginBottom:2},}, "With: " , a.assigned_to)
+                , React.createElement('div', { style: {fontSize:11,color:T.muted,marginBottom:a.notes?4:10},}, "Checked out: "  , a.checked_out)
+                , a.notes&&React.createElement('div', { style: {fontSize:11,color:T.muted,marginBottom:10},}, "Note: " , a.notes)
+                , React.createElement(Badge, { label: "Currently Out" , color: T.amber,})
+                , React.createElement('div', { style: {marginTop:12},}, React.createElement(Btn, { onClick: ()=>returnAlarm(a.id), color: T.green, small: true, full: true,}, "✓ Return Alarm"  ))
+              )
             ):(
-              <>
-                <Badge label="Available" color={T.green}/>
-                <div style={{marginTop:12}}><Btn onClick={()=>{setCheckoutModal(a.id);setForm({staff:"",notes:"",loc:location||""}); }} color={T.amber} small full>Check Out</Btn></div>
-              </>
-            )}
-          </Card>
-        ))}
-        {alarms.length===0&&<div style={{color:T.muted,fontSize:13}}>No duress alarms in the system. Add them in Admin.</div>}
-      </div>
+              React.createElement(React.Fragment, null
+                , React.createElement(Badge, { label: "Available", color: T.green,})
+                , React.createElement('div', { style: {marginTop:12},}, React.createElement(Btn, { onClick: ()=>{setCheckoutModal(a.id);setForm({staff:"",notes:"",loc:location||""}); }, color: T.amber, small: true, full: true,}, "Check Out" ))
+              )
+            )
+          )
+        ))
+        , alarms.length===0&&React.createElement('div', { style: {color:T.muted,fontSize:13},}, "No duress alarms in the system. Add them in Admin."         )
+      )
 
-      <div style={{fontSize:14,fontWeight:800,color:T.white,marginBottom:12}}>📋 Duress Alarm Log</div>
-      <Card style={{padding:0,overflow:"hidden"}}>
-        <table style={{width:"100%",borderCollapse:"collapse"}}>
-          <thead><tr style={{background:T.surface}}>
-            {["Alarm","Staff Member","Date","Out","Returned","Notes"].map(h=>(
-              <th key={h} style={{padding:"10px 14px",textAlign:"left",fontSize:11,color:T.muted,fontWeight:700,textTransform:"uppercase"}}>{h}</th>
-            ))}
-          </tr></thead>
-          <tbody>
-            {history.map(h=>(
-              <tr key={h.id} style={{borderTop:`1px solid ${T.border}`}}>
-                <td style={{padding:"10px 14px",fontSize:13,fontWeight:700,color:T.text}}>🔔 {h.alarm}</td>
-                <td style={{padding:"10px 14px",fontSize:13,color:T.text}}>{h.staff}</td>
-                <td style={{padding:"10px 14px",fontSize:12,color:T.muted}}>{h.date}</td>
-                <td style={{padding:"10px 14px",fontSize:12,color:T.muted}}>{h.out}</td>
-                <td style={{padding:"10px 14px"}}><Badge label={h.returned||"Still Out"} color={h.returned?T.green:T.amber}/></td>
-                <td style={{padding:"10px 14px",fontSize:11,color:T.muted}}>{h.notes||"—"}</td>
-              </tr>
-            ))}
-            {history.length===0&&<tr><td colSpan={6} style={{padding:20,textAlign:"center",color:T.muted,fontSize:13}}>No history yet.</td></tr>}
-          </tbody>
-        </table>
-      </Card>
+      , React.createElement('div', { style: {fontSize:14,fontWeight:800,color:T.white,marginBottom:12},}, "📋 Duress Alarm Log"   )
+      , React.createElement(Card, { style: {padding:0,overflow:"hidden"},}
+        , React.createElement('table', { style: {width:"100%",borderCollapse:"collapse"},}
+          , React.createElement('thead', null, React.createElement('tr', { style: {background:T.surface},}
+            , ["Alarm","Staff Member","Date","Out","Returned","Notes"].map(h=>(
+              React.createElement('th', { key: h, style: {padding:"10px 14px",textAlign:"left",fontSize:11,color:T.muted,fontWeight:700,textTransform:"uppercase"},}, h)
+            ))
+          ))
+          , React.createElement('tbody', null
+            , history.map(h=>(
+              React.createElement('tr', { key: h.id, style: {borderTop:`1px solid ${T.border}`},}
+                , React.createElement('td', { style: {padding:"10px 14px",fontSize:13,fontWeight:700,color:T.text},}, "🔔 " , h.alarm)
+                , React.createElement('td', { style: {padding:"10px 14px",fontSize:13,color:T.text},}, h.staff)
+                , React.createElement('td', { style: {padding:"10px 14px",fontSize:12,color:T.muted},}, h.date)
+                , React.createElement('td', { style: {padding:"10px 14px",fontSize:12,color:T.muted},}, h.out)
+                , React.createElement('td', { style: {padding:"10px 14px"},}, React.createElement(Badge, { label: h.returned||"Still Out", color: h.returned?T.green:T.amber,}))
+                , React.createElement('td', { style: {padding:"10px 14px",fontSize:11,color:T.muted},}, h.notes||"—")
+              )
+            ))
+            , history.length===0&&React.createElement('tr', null, React.createElement('td', { colSpan: 6, style: {padding:20,textAlign:"center",color:T.muted,fontSize:13},}, "No history yet."  ))
+          )
+        )
+      )
 
-      {checkoutModal&&(
-        <div style={{position:"fixed",inset:0,background:"#000c",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={()=>setCheckoutModal(null)}>
-          <div style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:20,padding:28,width:"100%",maxWidth:420}} onClick={e=>e.stopPropagation()}>
-            <div style={{fontSize:11,color:T.amber,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>🔔 Duress Alarm Checkout</div>
-            <div style={{fontSize:18,fontWeight:900,color:T.white,marginBottom:20}}>{(assets.find(a=>a.id===checkoutModal)||{}).name}</div>
-            <Field label="Staff Member *" value={form.staff} onChange={v=>setForm(p=>({...p,staff:v}))} options={staffList.map(s=>s.name)}/>
-            <Field label="Location" value={form.loc} onChange={v=>setForm(p=>({...p,loc:v}))} options={ALL_LOCATIONS}/>
-            <Field label="Notes (optional)" value={form.notes} onChange={v=>setForm(p=>({...p,notes:v}))} placeholder="e.g. Field visit, home visit…"/>
-            <div style={{display:"flex",gap:10}}>
-              <Btn onClick={confirmCheckout} color={form.staff?T.amber:T.muted} style={{flex:1}}>✓ Check Out</Btn>
-              <Btn onClick={()=>setCheckoutModal(null)} color={T.muted} outline style={{flex:1}}>Cancel</Btn>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      , checkoutModal&&(
+        React.createElement('div', { style: {position:"fixed",inset:0,background:"#000c",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16}, onClick: ()=>setCheckoutModal(null),}
+          , React.createElement('div', { style: {background:T.card,border:`1px solid ${T.border}`,borderRadius:20,padding:28,width:"100%",maxWidth:420}, onClick: e=>e.stopPropagation(),}
+            , React.createElement('div', { style: {fontSize:11,color:T.amber,letterSpacing:2,textTransform:"uppercase",marginBottom:4},}, "🔔 Duress Alarm Checkout"   )
+            , React.createElement('div', { style: {fontSize:18,fontWeight:900,color:T.white,marginBottom:20},}, (assets.find(a=>a.id===checkoutModal)||{}).name)
+            , React.createElement(Field, { label: "Staff Member *"  , value: form.staff, onChange: v=>setForm(p=>({...p,staff:v})), options: staffList.map(s=>s.name),})
+            , React.createElement(Field, { label: "Location", value: form.loc, onChange: v=>setForm(p=>({...p,loc:v})), options: ALL_LOCATIONS,})
+            , React.createElement(Field, { label: "Notes (optional)" , value: form.notes, onChange: v=>setForm(p=>({...p,notes:v})), placeholder: "e.g. Field visit, home visit…"    ,})
+            , React.createElement('div', { style: {display:"flex",gap:10},}
+              , React.createElement(Btn, { onClick: confirmCheckout, color: form.staff?T.amber:T.muted, style: {flex:1},}, "✓ Check Out"  )
+              , React.createElement(Btn, { onClick: ()=>setCheckoutModal(null), color: T.muted, outline: true, style: {flex:1},}, "Cancel")
+            )
+          )
+        )
+      )
+    )
   );
 };
 
@@ -772,105 +771,105 @@ const VehiclesTab = ({assets,setAssets,staffList,location}) => {
   };
 
   return (
-    <div>
-      <div style={{fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Fleet Management</div>
-      <div style={{fontSize:24,fontWeight:900,color:T.white,marginBottom:4}}>Vehicles</div>
-      <div style={{fontSize:13,color:T.muted,marginBottom:20}}>Track sign out, driver, destination and odometer readings.</div>
-      {activeVehicles.length>0&&(
-        <div style={{background:T.accent+"22",border:`1px solid ${T.accent}55`,borderRadius:12,padding:"12px 16px",marginBottom:20,display:"flex",gap:10}}>
-          <span style={{fontSize:22}}>🚗</span>
-          <div>
-            <div style={{fontSize:13,fontWeight:700,color:T.accent}}>{activeVehicles.length} Vehicle{activeVehicles.length>1?"s":""} Currently Out</div>
-            <div style={{fontSize:12,color:T.muted}}>{activeVehicles.map(v=>`${v.name} — ${v.assigned_to} → ${v.destination||"?"}`).join(" · ")}</div>
-          </div>
-        </div>
-      )}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:14,marginBottom:28}}>
-        {vehicles.map(v=>(
-          <Card key={v.id} style={{borderLeft:`4px solid ${v.status==="out"?T.accent2:T.green}`}}>
-            <div style={{fontSize:32,marginBottom:10}}>🚗</div>
-            <div style={{fontSize:15,fontWeight:800,color:T.white,marginBottom:2}}>{v.name}</div>
-            <div style={{fontSize:12,color:T.muted,marginBottom:8}}>Rego: <strong style={{color:T.text}}>{v.rego||"—"}</strong></div>
-            {v.status==="out"?(
-              <>
-                <div style={{fontSize:12,color:T.accent2,fontWeight:700,marginBottom:2}}>Driver: {v.assigned_to}</div>
-                <div style={{fontSize:11,color:T.muted,marginBottom:2}}>Out: {v.checked_out}</div>
-                {v.destination&&<div style={{fontSize:11,color:T.muted,marginBottom:8}}>→ {v.destination}</div>}
-                <Badge label="Out" color={T.accent2}/>
-                <div style={{marginTop:12}}><Btn onClick={()=>{setReturnModal(v.id);setReturnForm({odometer_in:"",notes:""});}} color={T.green} small full>✓ Return Vehicle</Btn></div>
-              </>
+    React.createElement('div', null
+      , React.createElement('div', { style: {fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4},}, "Fleet Management" )
+      , React.createElement('div', { style: {fontSize:24,fontWeight:900,color:T.white,marginBottom:4},}, "Vehicles")
+      , React.createElement('div', { style: {fontSize:13,color:T.muted,marginBottom:20},}, "Track sign out, driver, destination and odometer readings."       )
+      , activeVehicles.length>0&&(
+        React.createElement('div', { style: {background:T.accent+"22",border:`1px solid ${T.accent}55`,borderRadius:12,padding:"12px 16px",marginBottom:20,display:"flex",gap:10},}
+          , React.createElement('span', { style: {fontSize:22},}, "🚗")
+          , React.createElement('div', null
+            , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.accent},}, activeVehicles.length, " Vehicle" , activeVehicles.length>1?"s":"", " Currently Out"  )
+            , React.createElement('div', { style: {fontSize:12,color:T.muted},}, activeVehicles.map(v=>`${v.name} — ${v.assigned_to} → ${v.destination||"?"}`).join(" · "))
+          )
+        )
+      )
+      , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:14,marginBottom:28},}
+        , vehicles.map(v=>(
+          React.createElement(Card, { key: v.id, style: {borderLeft:`4px solid ${v.status==="out"?T.accent2:T.green}`},}
+            , React.createElement('div', { style: {fontSize:32,marginBottom:10},}, "🚗")
+            , React.createElement('div', { style: {fontSize:15,fontWeight:800,color:T.white,marginBottom:2},}, v.name)
+            , React.createElement('div', { style: {fontSize:12,color:T.muted,marginBottom:8},}, "Rego: " , React.createElement('strong', { style: {color:T.text},}, v.rego||"—"))
+            , v.status==="out"?(
+              React.createElement(React.Fragment, null
+                , React.createElement('div', { style: {fontSize:12,color:T.accent2,fontWeight:700,marginBottom:2},}, "Driver: " , v.assigned_to)
+                , React.createElement('div', { style: {fontSize:11,color:T.muted,marginBottom:2},}, "Out: " , v.checked_out)
+                , v.destination&&React.createElement('div', { style: {fontSize:11,color:T.muted,marginBottom:8},}, "→ " , v.destination)
+                , React.createElement(Badge, { label: "Out", color: T.accent2,})
+                , React.createElement('div', { style: {marginTop:12},}, React.createElement(Btn, { onClick: ()=>{setReturnModal(v.id);setReturnForm({odometer_in:"",notes:""});}, color: T.green, small: true, full: true,}, "✓ Return Vehicle"  ))
+              )
             ):(
-              <>
-                <Badge label="Available" color={T.green}/>
-                <div style={{marginTop:12}}><Btn onClick={()=>{setCheckoutModal(v.id);setForm({driver:"",destination:"",purpose:"",odometer_out:""}); }} color={T.accent2} small full>Sign Out Vehicle</Btn></div>
-              </>
-            )}
-          </Card>
-        ))}
-        {vehicles.length===0&&<div style={{color:T.muted,fontSize:13}}>No vehicles in the system. Add them in Admin.</div>}
-      </div>
+              React.createElement(React.Fragment, null
+                , React.createElement(Badge, { label: "Available", color: T.green,})
+                , React.createElement('div', { style: {marginTop:12},}, React.createElement(Btn, { onClick: ()=>{setCheckoutModal(v.id);setForm({driver:"",destination:"",purpose:"",odometer_out:""}); }, color: T.accent2, small: true, full: true,}, "Sign Out Vehicle"  ))
+              )
+            )
+          )
+        ))
+        , vehicles.length===0&&React.createElement('div', { style: {color:T.muted,fontSize:13},}, "No vehicles in the system. Add them in Admin."        )
+      )
 
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,flexWrap:"wrap",gap:8}}>
-        <div style={{fontSize:14,fontWeight:800,color:T.white}}>📋 Vehicle Trip Log</div>
-        <Btn onClick={exportLog} color={T.green} small>⬇ Export Log</Btn>
-      </div>
-      <Card style={{padding:0,overflow:"hidden",overflowX:"auto"}}>
-        <table style={{width:"100%",borderCollapse:"collapse",minWidth:700}}>
-          <thead><tr style={{background:T.surface}}>
-            {["Vehicle","Driver","Date","Out","Returned","Destination","Purpose","Odo Out","Odo In"].map(h=>(
-              <th key={h} style={{padding:"10px 14px",textAlign:"left",fontSize:11,color:T.muted,fontWeight:700,textTransform:"uppercase",whiteSpace:"nowrap"}}>{h}</th>
-            ))}
-          </tr></thead>
-          <tbody>
-            {history.map(h=>(
-              <tr key={h.id} style={{borderTop:`1px solid ${T.border}`}}>
-                <td style={{padding:"10px 14px",fontSize:13,fontWeight:700,color:T.text}}>🚗 {h.vehicle}<br/><span style={{fontSize:10,color:T.muted,fontWeight:400}}>{h.rego}</span></td>
-                <td style={{padding:"10px 14px",fontSize:13,color:T.text}}>{h.driver}</td>
-                <td style={{padding:"10px 14px",fontSize:12,color:T.muted}}>{h.date}</td>
-                <td style={{padding:"10px 14px",fontSize:12,color:T.muted}}>{h.out}</td>
-                <td style={{padding:"10px 14px"}}><Badge label={h.returned||"Out"} color={h.returned?T.green:T.accent2}/></td>
-                <td style={{padding:"10px 14px",fontSize:12,color:T.muted}}>{h.destination||"—"}</td>
-                <td style={{padding:"10px 14px",fontSize:12,color:T.muted}}>{h.purpose||"—"}</td>
-                <td style={{padding:"10px 14px",fontSize:12,color:T.muted}}>{h.odometer_out?`${h.odometer_out} km`:"—"}</td>
-                <td style={{padding:"10px 14px",fontSize:12,color:T.muted}}>{h.odometer_in?`${h.odometer_in} km`:"—"}</td>
-              </tr>
-            ))}
-            {history.length===0&&<tr><td colSpan={9} style={{padding:20,textAlign:"center",color:T.muted,fontSize:13}}>No trips yet.</td></tr>}
-          </tbody>
-        </table>
-      </Card>
+      , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,flexWrap:"wrap",gap:8},}
+        , React.createElement('div', { style: {fontSize:14,fontWeight:800,color:T.white},}, "📋 Vehicle Trip Log"   )
+        , React.createElement(Btn, { onClick: exportLog, color: T.green, small: true,}, "⬇ Export Log"  )
+      )
+      , React.createElement(Card, { style: {padding:0,overflow:"hidden",overflowX:"auto"},}
+        , React.createElement('table', { style: {width:"100%",borderCollapse:"collapse",minWidth:700},}
+          , React.createElement('thead', null, React.createElement('tr', { style: {background:T.surface},}
+            , ["Vehicle","Driver","Date","Out","Returned","Destination","Purpose","Odo Out","Odo In"].map(h=>(
+              React.createElement('th', { key: h, style: {padding:"10px 14px",textAlign:"left",fontSize:11,color:T.muted,fontWeight:700,textTransform:"uppercase",whiteSpace:"nowrap"},}, h)
+            ))
+          ))
+          , React.createElement('tbody', null
+            , history.map(h=>(
+              React.createElement('tr', { key: h.id, style: {borderTop:`1px solid ${T.border}`},}
+                , React.createElement('td', { style: {padding:"10px 14px",fontSize:13,fontWeight:700,color:T.text},}, "🚗 " , h.vehicle, React.createElement('br', null), React.createElement('span', { style: {fontSize:10,color:T.muted,fontWeight:400},}, h.rego))
+                , React.createElement('td', { style: {padding:"10px 14px",fontSize:13,color:T.text},}, h.driver)
+                , React.createElement('td', { style: {padding:"10px 14px",fontSize:12,color:T.muted},}, h.date)
+                , React.createElement('td', { style: {padding:"10px 14px",fontSize:12,color:T.muted},}, h.out)
+                , React.createElement('td', { style: {padding:"10px 14px"},}, React.createElement(Badge, { label: h.returned||"Out", color: h.returned?T.green:T.accent2,}))
+                , React.createElement('td', { style: {padding:"10px 14px",fontSize:12,color:T.muted},}, h.destination||"—")
+                , React.createElement('td', { style: {padding:"10px 14px",fontSize:12,color:T.muted},}, h.purpose||"—")
+                , React.createElement('td', { style: {padding:"10px 14px",fontSize:12,color:T.muted},}, h.odometer_out?`${h.odometer_out} km`:"—")
+                , React.createElement('td', { style: {padding:"10px 14px",fontSize:12,color:T.muted},}, h.odometer_in?`${h.odometer_in} km`:"—")
+              )
+            ))
+            , history.length===0&&React.createElement('tr', null, React.createElement('td', { colSpan: 9, style: {padding:20,textAlign:"center",color:T.muted,fontSize:13},}, "No trips yet."  ))
+          )
+        )
+      )
 
-      {checkoutModal&&(
-        <div style={{position:"fixed",inset:0,background:"#000c",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={()=>setCheckoutModal(null)}>
-          <div style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:20,padding:28,width:"100%",maxWidth:440,maxHeight:"92vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
-            <div style={{fontSize:11,color:T.accent2,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>🚗 Vehicle Sign Out</div>
-            <div style={{fontSize:18,fontWeight:900,color:T.white,marginBottom:20}}>{(assets.find(a=>a.id===checkoutModal)||{}).name} — {(assets.find(a=>a.id===checkoutModal)||{}).rego}</div>
-            <Field label="Driver *" value={form.driver} onChange={v=>setForm(p=>({...p,driver:v}))} options={staffList.map(s=>s.name)}/>
-            <Field label="Destination *" value={form.destination} onChange={v=>setForm(p=>({...p,destination:v}))} placeholder="e.g. Doomadgee, Mount Isa CBD…"/>
-            <Field label="Purpose" value={form.purpose} onChange={v=>setForm(p=>({...p,purpose:v}))} options={["Community Visit","Client Transport","Field Work","Supply Run","Staff Travel","Meeting","Other"]}/>
-            <Field label="Odometer Reading (km)" value={form.odometer_out} onChange={v=>setForm(p=>({...p,odometer_out:v}))} type="number" placeholder="e.g. 45230"/>
-            <div style={{display:"flex",gap:10}}>
-              <Btn onClick={confirmCheckout} color={(form.driver&&form.destination)?T.accent2:T.muted} style={{flex:1}}>✓ Sign Out</Btn>
-              <Btn onClick={()=>setCheckoutModal(null)} color={T.muted} outline style={{flex:1}}>Cancel</Btn>
-            </div>
-          </div>
-        </div>
-      )}
-      {returnModal&&(
-        <div style={{position:"fixed",inset:0,background:"#000c",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={()=>setReturnModal(null)}>
-          <div style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:20,padding:28,width:"100%",maxWidth:420}} onClick={e=>e.stopPropagation()}>
-            <div style={{fontSize:11,color:T.green,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>🚗 Return Vehicle</div>
-            <div style={{fontSize:18,fontWeight:900,color:T.white,marginBottom:20}}>{(assets.find(a=>a.id===returnModal)||{}).name}</div>
-            <Field label="Odometer on Return (km)" value={returnForm.odometer_in} onChange={v=>setReturnForm(p=>({...p,odometer_in:v}))} type="number" placeholder="e.g. 45680"/>
-            <Field label="Any issues to report?" value={returnForm.notes} onChange={v=>setReturnForm(p=>({...p,notes:v}))} placeholder="e.g. No issues / Low fuel / Damage…"/>
-            <div style={{display:"flex",gap:10}}>
-              <Btn onClick={confirmReturn} color={T.green} style={{flex:1}}>✓ Confirm Return</Btn>
-              <Btn onClick={()=>setReturnModal(null)} color={T.muted} outline style={{flex:1}}>Cancel</Btn>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      , checkoutModal&&(
+        React.createElement('div', { style: {position:"fixed",inset:0,background:"#000c",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16}, onClick: ()=>setCheckoutModal(null),}
+          , React.createElement('div', { style: {background:T.card,border:`1px solid ${T.border}`,borderRadius:20,padding:28,width:"100%",maxWidth:440,maxHeight:"92vh",overflowY:"auto"}, onClick: e=>e.stopPropagation(),}
+            , React.createElement('div', { style: {fontSize:11,color:T.accent2,letterSpacing:2,textTransform:"uppercase",marginBottom:4},}, "🚗 Vehicle Sign Out"   )
+            , React.createElement('div', { style: {fontSize:18,fontWeight:900,color:T.white,marginBottom:20},}, (assets.find(a=>a.id===checkoutModal)||{}).name, " — "  , (assets.find(a=>a.id===checkoutModal)||{}).rego)
+            , React.createElement(Field, { label: "Driver *" , value: form.driver, onChange: v=>setForm(p=>({...p,driver:v})), options: staffList.map(s=>s.name),})
+            , React.createElement(Field, { label: "Destination *" , value: form.destination, onChange: v=>setForm(p=>({...p,destination:v})), placeholder: "e.g. Doomadgee, Mount Isa CBD…"    ,})
+            , React.createElement(Field, { label: "Purpose", value: form.purpose, onChange: v=>setForm(p=>({...p,purpose:v})), options: ["Community Visit","Client Transport","Field Work","Supply Run","Staff Travel","Meeting","Other"],})
+            , React.createElement(Field, { label: "Odometer Reading (km)"  , value: form.odometer_out, onChange: v=>setForm(p=>({...p,odometer_out:v})), type: "number", placeholder: "e.g. 45230" ,})
+            , React.createElement('div', { style: {display:"flex",gap:10},}
+              , React.createElement(Btn, { onClick: confirmCheckout, color: (form.driver&&form.destination)?T.accent2:T.muted, style: {flex:1},}, "✓ Sign Out"  )
+              , React.createElement(Btn, { onClick: ()=>setCheckoutModal(null), color: T.muted, outline: true, style: {flex:1},}, "Cancel")
+            )
+          )
+        )
+      )
+      , returnModal&&(
+        React.createElement('div', { style: {position:"fixed",inset:0,background:"#000c",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16}, onClick: ()=>setReturnModal(null),}
+          , React.createElement('div', { style: {background:T.card,border:`1px solid ${T.border}`,borderRadius:20,padding:28,width:"100%",maxWidth:420}, onClick: e=>e.stopPropagation(),}
+            , React.createElement('div', { style: {fontSize:11,color:T.green,letterSpacing:2,textTransform:"uppercase",marginBottom:4},}, "🚗 Return Vehicle"  )
+            , React.createElement('div', { style: {fontSize:18,fontWeight:900,color:T.white,marginBottom:20},}, (assets.find(a=>a.id===returnModal)||{}).name)
+            , React.createElement(Field, { label: "Odometer on Return (km)"   , value: returnForm.odometer_in, onChange: v=>setReturnForm(p=>({...p,odometer_in:v})), type: "number", placeholder: "e.g. 45680" ,})
+            , React.createElement(Field, { label: "Any issues to report?"   , value: returnForm.notes, onChange: v=>setReturnForm(p=>({...p,notes:v})), placeholder: "e.g. No issues / Low fuel / Damage…"       ,})
+            , React.createElement('div', { style: {display:"flex",gap:10},}
+              , React.createElement(Btn, { onClick: confirmReturn, color: T.green, style: {flex:1},}, "✓ Confirm Return"  )
+              , React.createElement(Btn, { onClick: ()=>setReturnModal(null), color: T.muted, outline: true, style: {flex:1},}, "Cancel")
+            )
+          )
+        )
+      )
+    )
   );
 };
 
@@ -880,26 +879,26 @@ const VehiclesTab = ({assets,setAssets,staffList,location}) => {
 const EmergencyTab = ({records,location}) => {
   const onSite=records.filter(r=>r.status==="on-site"&&(!location||r.location===location));
   return (
-    <div>
-      <div style={{background:T.red+"22",border:`1px solid ${T.red}44`,borderRadius:16,padding:"18px 24px",marginBottom:20}}>
-        <div style={{fontSize:22,fontWeight:900,color:T.red,marginBottom:4}}>🚨 Emergency Roll Call</div>
-        <div style={{fontSize:13,color:T.muted}}>Live list of everyone on site. Use for evacuations.</div>
-      </div>
-      <div style={{fontSize:20,fontWeight:800,color:T.white,marginBottom:4}}>{onSite.length} People On Site</div>
-      <div style={{fontSize:12,color:T.muted,marginBottom:16}}>As of {nowStr()}, {dateStr()} · {location}</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:10}}>
-        {onSite.map(r=>(
-          <Card key={r.id} style={{borderLeft:`4px solid ${r.type==="visitor"?T.accent:r.type==="contractor"?T.accent2:r.staff_status==="outreach"?T.purple:T.amber}`,padding:"12px 16px"}}>
-            <div style={{fontSize:13,fontWeight:800,color:T.white}}>{r.name||r.company||r.staff_name}</div>
-            <div style={{fontSize:11,color:T.muted,marginTop:2}}>
-              {r.type==="visitor"?`Visitor · ${r.program}`:r.type==="contractor"?`Contractor · ${r.contact_name}`:r.staff_status==="outreach"?"Staff · On Outreach":`Staff · ${r.location}`}
-            </div>
-            <div style={{fontSize:11,color:T.muted}}>In: {r.sign_in_time}</div>
-          </Card>
-        ))}
-        {onSite.length===0&&<div style={{color:T.muted,fontSize:13}}>Nobody on site right now.</div>}
-      </div>
-    </div>
+    React.createElement('div', null
+      , React.createElement('div', { style: {background:T.red+"22",border:`1px solid ${T.red}44`,borderRadius:16,padding:"18px 24px",marginBottom:20},}
+        , React.createElement('div', { style: {fontSize:22,fontWeight:900,color:T.red,marginBottom:4},}, "🚨 Emergency Roll Call"   )
+        , React.createElement('div', { style: {fontSize:13,color:T.muted},}, "Live list of everyone on site. Use for evacuations."        )
+      )
+      , React.createElement('div', { style: {fontSize:20,fontWeight:800,color:T.white,marginBottom:4},}, onSite.length, " People On Site"   )
+      , React.createElement('div', { style: {fontSize:12,color:T.muted,marginBottom:16},}, "As of "  , nowStr(), ", " , dateStr(), " · "  , location)
+      , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:10},}
+        , onSite.map(r=>(
+          React.createElement(Card, { key: r.id, style: {borderLeft:`4px solid ${r.type==="visitor"?T.accent:r.type==="contractor"?T.accent2:r.staff_status==="outreach"?T.purple:T.amber}`,padding:"12px 16px"},}
+            , React.createElement('div', { style: {fontSize:13,fontWeight:800,color:T.white},}, r.name||r.company||r.staff_name)
+            , React.createElement('div', { style: {fontSize:11,color:T.muted,marginTop:2},}
+              , r.type==="visitor"?`Visitor · ${r.program}`:r.type==="contractor"?`Contractor · ${r.contact_name}`:r.staff_status==="outreach"?"Staff · On Outreach":`Staff · ${r.location}`
+            )
+            , React.createElement('div', { style: {fontSize:11,color:T.muted},}, "In: " , r.sign_in_time)
+          )
+        ))
+        , onSite.length===0&&React.createElement('div', { style: {color:T.muted,fontSize:13},}, "Nobody on site right now."    )
+      )
+    )
   );
 };
 
@@ -1013,113 +1012,113 @@ const ReportTab = ({records,assets}) => {
   const reportText = activeReport==="combined" ? buildCombinedReport() : buildProgramReport(activeReport);
 
   return (
-    <div>
-      <div style={{fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Daily Reports</div>
-      <div style={{fontSize:24,fontWeight:900,color:T.white,marginBottom:4}}>End of Day Reports</div>
-      <div style={{fontSize:13,color:T.muted,marginBottom:20}}>Reports auto-send at midnight. Use buttons below to send manually any time.</div>
+    React.createElement('div', null
+      , React.createElement('div', { style: {fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4},}, "Daily Reports" )
+      , React.createElement('div', { style: {fontSize:24,fontWeight:900,color:T.white,marginBottom:4},}, "End of Day Reports"   )
+      , React.createElement('div', { style: {fontSize:13,color:T.muted,marginBottom:20},}, "Reports auto-send at midnight. Use buttons below to send manually any time."           )
 
-      {/* Summary stats */}
-      <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:24}}>
-        {[
+      /* Summary stats */
+      , React.createElement('div', { style: {display:"flex",gap:10,flexWrap:"wrap",marginBottom:24},}
+        , [
           {icon:"👤",val:visitors.length,label:"Visitors",color:T.accent},
           {icon:"🔧",val:contractors.length,label:"Contractors",color:T.accent2},
           {icon:"👷",val:staffRec.length,label:"Staff",color:T.amber},
           {icon:"⚠️",val:stillOnSite.length,label:"Still On Site",color:stillOnSite.length>0?T.red:T.green},
           {icon:"🚗",val:assetsOut.length,label:"Assets Out",color:assetsOut.length>0?T.red:T.green},
         ].map(({icon,val,label,color})=>(
-          <Card key={label} style={{flex:1,minWidth:90,textAlign:"center"}}>
-            <div style={{fontSize:20,marginBottom:4}}>{icon}</div>
-            <div style={{fontSize:26,fontWeight:900,color,lineHeight:1}}>{val}</div>
-            <div style={{fontSize:10,color:T.muted,marginTop:4,textTransform:"uppercase"}}>{label}</div>
-          </Card>
-        ))}
-      </div>
+          React.createElement(Card, { key: label, style: {flex:1,minWidth:90,textAlign:"center"},}
+            , React.createElement('div', { style: {fontSize:20,marginBottom:4},}, icon)
+            , React.createElement('div', { style: {fontSize:26,fontWeight:900,color,lineHeight:1},}, val)
+            , React.createElement('div', { style: {fontSize:10,color:T.muted,marginTop:4,textTransform:"uppercase"},}, label)
+          )
+        ))
+      )
 
-      {/* Report selector */}
-      <div style={{marginBottom:16}}>
-        <div style={{fontSize:13,fontWeight:700,color:T.white,marginBottom:10}}>Select Report to Preview</div>
-        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-          <button onClick={()=>setActiveReport("combined")} style={{padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:700,cursor:"pointer",
-            background:activeReport==="combined"?CEO_EMAIL?T.accent:T.accent:T.accent,color:T.bg,border:`1px solid ${T.accent}`,opacity:activeReport==="combined"?1:.5}}>
-            📋 Combined Report
-          </button>
-          {Object.entries(PROGRAM_EMAILS).map(([prog,info])=>(
-            <button key={prog} onClick={()=>setActiveReport(prog)} style={{padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:600,cursor:"pointer",
-              background:activeReport===prog?T.accent2:"transparent",color:activeReport===prog?T.bg:T.muted,border:`1px solid ${activeReport===prog?T.accent2:T.border}`}}>
-              {prog}
-            </button>
-          ))}
-        </div>
-      </div>
+      /* Report selector */
+      , React.createElement('div', { style: {marginBottom:16},}
+        , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.white,marginBottom:10},}, "Select Report to Preview"   )
+        , React.createElement('div', { style: {display:"flex",gap:8,flexWrap:"wrap"},}
+          , React.createElement('button', { onClick: ()=>setActiveReport("combined"), style: {padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:700,cursor:"pointer",
+            background:activeReport==="combined"?CEO_EMAIL?T.accent:T.accent:T.accent,color:T.bg,border:`1px solid ${T.accent}`,opacity:activeReport==="combined"?1:.5},}, "📋 Combined Report"
 
-      {/* Preview */}
-      <Card style={{marginBottom:20}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,flexWrap:"wrap",gap:8}}>
-          <div style={{fontSize:13,fontWeight:700,color:T.white}}>
-            {activeReport==="combined"?"Combined Report Preview":`${activeReport} — Report Preview`}
-          </div>
-          {activeReport!=="combined"&&PROGRAM_EMAILS[activeReport]&&(
-            <div style={{fontSize:12,color:T.muted}}>
-              Sent to: <span style={{color:T.accent}}>{PROGRAM_EMAILS[activeReport].manager}</span> + HR + WHS
-            </div>
-          )}
-        </div>
-        <pre style={{fontSize:11,color:T.text,lineHeight:1.7,whiteSpace:"pre-wrap",fontFamily:"monospace",
-          background:T.surface,padding:16,borderRadius:10,maxHeight:300,overflowY:"auto"}}>
-          {reportText}
-        </pre>
-      </Card>
+          )
+          , Object.entries(PROGRAM_EMAILS).map(([prog,info])=>(
+            React.createElement('button', { key: prog, onClick: ()=>setActiveReport(prog), style: {padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:600,cursor:"pointer",
+              background:activeReport===prog?T.accent2:"transparent",color:activeReport===prog?T.bg:T.muted,border:`1px solid ${activeReport===prog?T.accent2:T.border}`},}
+              , prog
+            )
+          ))
+        )
+      )
 
-      {/* Action buttons */}
-      <div style={{fontSize:13,fontWeight:700,color:T.white,marginBottom:10}}>Send Reports</div>
-      <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:20}}>
-        <Btn onClick={emailCombined} color={T.accent} style={{flex:1,minWidth:200}}>
-          📧 Email Combined Report → CEO + HR + WHS
-        </Btn>
-        <Btn onClick={exportCSV} color={T.green} style={{flex:1,minWidth:200}}>
-          📊 Export Full CSV
-        </Btn>
-      </div>
+      /* Preview */
+      , React.createElement(Card, { style: {marginBottom:20},}
+        , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,flexWrap:"wrap",gap:8},}
+          , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.white},}
+            , activeReport==="combined"?"Combined Report Preview":`${activeReport} — Report Preview`
+          )
+          , activeReport!=="combined"&&PROGRAM_EMAILS[activeReport]&&(
+            React.createElement('div', { style: {fontSize:12,color:T.muted},}, "Sent to: "
+                , React.createElement('span', { style: {color:T.accent},}, PROGRAM_EMAILS[activeReport].manager), " + HR + WHS"
+            )
+          )
+        )
+        , React.createElement('pre', { style: {fontSize:11,color:T.text,lineHeight:1.7,whiteSpace:"pre-wrap",fontFamily:"monospace",
+          background:T.surface,padding:16,borderRadius:10,maxHeight:300,overflowY:"auto"},}
+          , reportText
+        )
+      )
 
-      {/* Per-program send buttons */}
-      <div style={{fontSize:13,fontWeight:700,color:T.white,marginBottom:10}}>Send Program Reports</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:10,marginBottom:24}}>
-        {Object.entries(PROGRAM_EMAILS).map(([prog,info])=>{
+      /* Action buttons */
+      , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.white,marginBottom:10},}, "Send Reports" )
+      , React.createElement('div', { style: {display:"flex",gap:10,flexWrap:"wrap",marginBottom:20},}
+        , React.createElement(Btn, { onClick: emailCombined, color: T.accent, style: {flex:1,minWidth:200},}, "📧 Email Combined Report → CEO + HR + WHS"
+
+        )
+        , React.createElement(Btn, { onClick: exportCSV, color: T.green, style: {flex:1,minWidth:200},}, "📊 Export Full CSV"
+
+        )
+      )
+
+      /* Per-program send buttons */
+      , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.white,marginBottom:10},}, "Send Program Reports"  )
+      , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:10,marginBottom:24},}
+        , Object.entries(PROGRAM_EMAILS).map(([prog,info])=>{
           const count = visitors.filter(v=>v.program===prog).length;
           return (
-            <div key={prog} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:"12px 14px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}>
-              <div>
-                <div style={{fontSize:13,fontWeight:700,color:T.white}}>{prog}</div>
-                <div style={{fontSize:11,color:T.muted}}>{info.manager} · {count} visitor{count!==1?"s":""} today</div>
-              </div>
-              <Btn onClick={()=>emailProgram(prog)} color={count>0?T.accent2:T.muted} outline small>Send</Btn>
-            </div>
+            React.createElement('div', { key: prog, style: {background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:"12px 14px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8},}
+              , React.createElement('div', null
+                , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.white},}, prog)
+                , React.createElement('div', { style: {fontSize:11,color:T.muted},}, info.manager, " · "  , count, " visitor" , count!==1?"s":"", " today" )
+              )
+              , React.createElement(Btn, { onClick: ()=>emailProgram(prog), color: count>0?T.accent2:T.muted, outline: true, small: true,}, "Send")
+            )
           );
-        })}
-      </div>
+        })
+      )
 
-      {/* Auto-send info */}
-      <Card>
-        <div style={{fontSize:13,fontWeight:700,color:T.amber,marginBottom:8}}>🕛 Automatic Midnight Reports</div>
-        <div style={{fontSize:12,color:T.text,lineHeight:1.8}}>
-          Once you connect the app to a database (Supabase), all reports will be sent automatically at <strong style={{color:T.accent}}>12:00 AM every night</strong> to the relevant recipients below:
-        </div>
-        <div style={{marginTop:12,display:"flex",flexDirection:"column",gap:6}}>
-          {[
+      /* Auto-send info */
+      , React.createElement(Card, null
+        , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.amber,marginBottom:8},}, "🕛 Automatic Midnight Reports"   )
+        , React.createElement('div', { style: {fontSize:12,color:T.text,lineHeight:1.8},}, "Once you connect the app to a database (Supabase), all reports will be sent automatically at "
+                          , React.createElement('strong', { style: {color:T.accent},}, "12:00 AM every night"   ), " to the relevant recipients below:"
+        )
+        , React.createElement('div', { style: {marginTop:12,display:"flex",flexDirection:"column",gap:6},}
+          , [
             {label:"Combined (all data)",to:`${CEO_EMAIL}, ${HR_EMAIL}, ${WHS_EMAIL}`},
             ...Object.entries(PROGRAM_EMAILS).map(([prog,info])=>({label:prog,to:`${info.manager}, ${HR_EMAIL}, ${WHS_EMAIL}`}))
           ].map(({label,to})=>(
-            <div key={label} style={{display:"flex",gap:10,fontSize:12,padding:"6px 0",borderBottom:`1px solid ${T.border}`}}>
-              <span style={{color:T.text,minWidth:220,fontWeight:600}}>{label}</span>
-              <span style={{color:T.accent}}>{to}</span>
-            </div>
-          ))}
-        </div>
-        <div style={{fontSize:11,color:T.muted,marginTop:12}}>
-          To enable auto-send: connect the app to Supabase using the Setup Guide, then set up a scheduled function. I can walk you through this step by step.
-        </div>
-      </Card>
-    </div>
+            React.createElement('div', { key: label, style: {display:"flex",gap:10,fontSize:12,padding:"6px 0",borderBottom:`1px solid ${T.border}`},}
+              , React.createElement('span', { style: {color:T.text,minWidth:220,fontWeight:600},}, label)
+              , React.createElement('span', { style: {color:T.accent},}, to)
+            )
+          ))
+        )
+        , React.createElement('div', { style: {fontSize:11,color:T.muted,marginTop:12},}, "To enable auto-send: connect the app to Supabase using the Setup Guide, then set up a scheduled function. I can walk you through this step by step."
+
+        )
+      )
+    )
   );
 };
 
@@ -1202,148 +1201,148 @@ const AdminTab = ({staffList,setStaffList,assets,setAssets}) => {
   };
 
   const navBtn=(id,label)=>(
-    <button onClick={()=>setSection(id)} style={{padding:"8px 18px",borderRadius:10,fontSize:13,fontWeight:700,cursor:"pointer",
+    React.createElement('button', { onClick: ()=>setSection(id), style: {padding:"8px 18px",borderRadius:10,fontSize:13,fontWeight:700,cursor:"pointer",
       background:activeSection===id?T.accent:"transparent",color:activeSection===id?T.bg:T.muted,
-      border:`1.5px solid ${activeSection===id?T.accent:T.border}`}}>{label}</button>
+      border:`1.5px solid ${activeSection===id?T.accent:T.border}`},}, label)
   );
 
   return (
-    <div>
-      <div style={{fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Admin Panel</div>
-      <div style={{fontSize:24,fontWeight:900,color:T.white,marginBottom:20}}>Manage Staff & Assets</div>
-      <div style={{display:"flex",gap:8,marginBottom:24,flexWrap:"wrap"}}>
-        {navBtn("staff","👷 Staff")}
-        {navBtn("assets","🚗 Vehicles & Assets")}
-        {navBtn("settings","⚙️ Settings")}
-      </div>
+    React.createElement('div', null
+      , React.createElement('div', { style: {fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4},}, "Admin Panel" )
+      , React.createElement('div', { style: {fontSize:24,fontWeight:900,color:T.white,marginBottom:20},}, "Manage Staff & Assets"   )
+      , React.createElement('div', { style: {display:"flex",gap:8,marginBottom:24,flexWrap:"wrap"},}
+        , navBtn("staff","👷 Staff")
+        , navBtn("assets","🚗 Vehicles & Assets")
+        , navBtn("settings","⚙️ Settings")
+      )
 
-      {activeSection==="staff"&&(
-        <div>
-          <Section title={`Staff List (${staffList.length} members)`}>
-            <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
-              {staffList.map(s=>(
-                <div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:T.surface,padding:"10px 14px",borderRadius:10,border:`1px solid ${T.border}`,flexWrap:"wrap",gap:8}}>
-                  <div>
-                    <div style={{fontSize:13,fontWeight:700,color:T.white}}>{s.name}</div>
-                    <div style={{fontSize:11,color:T.muted}}>{s.role}{s.email?` · ${s.email}`:""}</div>
-                  </div>
-                  <Btn onClick={()=>removeStaff(s.id)} color={T.red} outline small>Remove</Btn>
-                </div>
-              ))}
-            </div>
-          </Section>
-          <Section title="➕ Add Staff Member">
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-              <Field label="Full Name *" value={newStaff.name} onChange={v=>setNewStaff(p=>({...p,name:v}))} placeholder="Full name"/>
-              <Field label="Role" value={newStaff.role} onChange={v=>setNewStaff(p=>({...p,role:v}))} placeholder="e.g. Program Manager"/>
-              <Field label="Email" value={newStaff.email} onChange={v=>setNewStaff(p=>({...p,email:v}))} placeholder="email@nwqicss.org" type="email"/>
-              <Field label="Phone" value={newStaff.phone} onChange={v=>setNewStaff(p=>({...p,phone:v}))} placeholder="0400 000 000" type="tel"/>
-            </div>
-            <Btn onClick={addStaff} color={T.green} small>+ Add Staff Member</Btn>
-          </Section>
-          <Section title="📋 Paste a List">
-            <div style={{fontSize:12,color:T.muted,marginBottom:8}}>One per line, or: <code style={{color:T.accent}}>Name, Role, Email, Phone</code></div>
-            <textarea value={pasteText} onChange={e=>setPasteText(e.target.value)} rows={4}
-              placeholder={"John Smith, Field Officer, john@nwqicss.org, 0400000000\nJane Doe, Admin"}
-              style={{width:"100%",padding:"10px 12px",background:T.surface,border:`1.5px solid ${T.border}`,borderRadius:10,color:T.text,fontSize:13,outline:"none",boxSizing:"border-box",resize:"vertical",marginBottom:10}}/>
-            <Btn onClick={importPasteList} color={T.accent} small>Import List</Btn>
-          </Section>
-          <Section title="📁 Upload CSV / Excel">
-            <div style={{fontSize:12,color:T.muted,marginBottom:12}}>Columns: <code style={{color:T.accent}}>Name, Role, Email, Phone</code></div>
-            <div style={{display:"flex",gap:10,flexWrap:"wrap",alignItems:"center"}}>
-              <Btn onClick={()=>downloadTemplate("staff")} color={T.muted} outline small>⬇ Download Template</Btn>
-              <label style={{background:T.accent,color:T.bg,border:`1.5px solid ${T.accent}`,borderRadius:10,padding:"7px 14px",fontSize:12,fontWeight:700,cursor:"pointer"}}>
-                📁 Choose File
-                <input type="file" accept=".csv,.txt" onChange={handleFileUpload} style={{display:"none"}}/>
-              </label>
-            </div>
-            <div style={{fontSize:11,color:T.muted,marginTop:8}}>For .xlsx: open in Excel → File → Save As → CSV, then upload here.</div>
-          </Section>
-        </div>
-      )}
+      , activeSection==="staff"&&(
+        React.createElement('div', null
+          , React.createElement(Section, { title: `Staff List (${staffList.length} members)`,}
+            , React.createElement('div', { style: {display:"flex",flexDirection:"column",gap:8,marginBottom:16},}
+              , staffList.map(s=>(
+                React.createElement('div', { key: s.id, style: {display:"flex",justifyContent:"space-between",alignItems:"center",background:T.surface,padding:"10px 14px",borderRadius:10,border:`1px solid ${T.border}`,flexWrap:"wrap",gap:8},}
+                  , React.createElement('div', null
+                    , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.white},}, s.name)
+                    , React.createElement('div', { style: {fontSize:11,color:T.muted},}, s.role, s.email?` · ${s.email}`:"")
+                  )
+                  , React.createElement(Btn, { onClick: ()=>removeStaff(s.id), color: T.red, outline: true, small: true,}, "Remove")
+                )
+              ))
+            )
+          )
+          , React.createElement(Section, { title: "➕ Add Staff Member"   ,}
+            , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"1fr 1fr",gap:10},}
+              , React.createElement(Field, { label: "Full Name *"  , value: newStaff.name, onChange: v=>setNewStaff(p=>({...p,name:v})), placeholder: "Full name" ,})
+              , React.createElement(Field, { label: "Role", value: newStaff.role, onChange: v=>setNewStaff(p=>({...p,role:v})), placeholder: "e.g. Program Manager"  ,})
+              , React.createElement(Field, { label: "Email", value: newStaff.email, onChange: v=>setNewStaff(p=>({...p,email:v})), placeholder: "email@nwqicss.org", type: "email",})
+              , React.createElement(Field, { label: "Phone", value: newStaff.phone, onChange: v=>setNewStaff(p=>({...p,phone:v})), placeholder: "0400 000 000"  , type: "tel",})
+            )
+            , React.createElement(Btn, { onClick: addStaff, color: T.green, small: true,}, "+ Add Staff Member"   )
+          )
+          , React.createElement(Section, { title: "📋 Paste a List"   ,}
+            , React.createElement('div', { style: {fontSize:12,color:T.muted,marginBottom:8},}, "One per line, or: "    , React.createElement('code', { style: {color:T.accent},}, "Name, Role, Email, Phone"   ))
+            , React.createElement('textarea', { value: pasteText, onChange: e=>setPasteText(e.target.value), rows: 4,
+              placeholder: "John Smith, Field Officer, john@nwqicss.org, 0400000000\nJane Doe, Admin",
+              style: {width:"100%",padding:"10px 12px",background:T.surface,border:`1.5px solid ${T.border}`,borderRadius:10,color:T.text,fontSize:13,outline:"none",boxSizing:"border-box",resize:"vertical",marginBottom:10},})
+            , React.createElement(Btn, { onClick: importPasteList, color: T.accent, small: true,}, "Import List" )
+          )
+          , React.createElement(Section, { title: "📁 Upload CSV / Excel"    ,}
+            , React.createElement('div', { style: {fontSize:12,color:T.muted,marginBottom:12},}, "Columns: " , React.createElement('code', { style: {color:T.accent},}, "Name, Role, Email, Phone"   ))
+            , React.createElement('div', { style: {display:"flex",gap:10,flexWrap:"wrap",alignItems:"center"},}
+              , React.createElement(Btn, { onClick: ()=>downloadTemplate("staff"), color: T.muted, outline: true, small: true,}, "⬇ Download Template"  )
+              , React.createElement('label', { style: {background:T.accent,color:T.bg,border:`1.5px solid ${T.accent}`,borderRadius:10,padding:"7px 14px",fontSize:12,fontWeight:700,cursor:"pointer"},}, "📁 Choose File"
 
-      {activeSection==="assets"&&(
-        <div>
-          <Section title={`Asset Register (${assets.length} assets)`}>
-            <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
-              {assets.map(a=>(
-                <div key={a.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:T.surface,padding:"10px 14px",borderRadius:10,border:`1px solid ${T.border}`,flexWrap:"wrap",gap:8}}>
-                  <div>
-                    <div style={{fontSize:13,fontWeight:700,color:T.white}}>{a.type==="Vehicle"?"🚗":a.type==="Duress Alarm"?"🔔":"📦"} {a.name}</div>
-                    <div style={{fontSize:11,color:T.muted}}>{a.type}{a.rego?` · Rego: ${a.rego}`:""}  {a.serial?`· Serial: ${a.serial}`:""}</div>
-                  </div>
-                  <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                    <Badge label={a.status==="out"?"Out":"Available"} color={a.status==="out"?T.red:T.green}/>
-                    <Btn onClick={()=>removeAsset(a.id)} color={T.red} outline small>Remove</Btn>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Section>
-          <Section title="➕ Add Asset">
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-              <Field label="Type *" value={newAsset.type} onChange={v=>setNewAsset(p=>({...p,type:v}))} options={["Vehicle","Duress Alarm","Equipment","Laptop","Other"]}/>
-              <Field label="Name *" value={newAsset.name} onChange={v=>setNewAsset(p=>({...p,name:v}))} placeholder="e.g. Toyota Hilux"/>
-              <Field label="Rego (vehicles)" value={newAsset.rego} onChange={v=>setNewAsset(p=>({...p,rego:v}))} placeholder="e.g. 123ABC"/>
-              <Field label="Serial Number" value={newAsset.serial} onChange={v=>setNewAsset(p=>({...p,serial:v}))} placeholder="e.g. DA001"/>
-            </div>
-            <Btn onClick={addAsset} color={T.green} small>+ Add Asset</Btn>
-          </Section>
-          <Section title="📁 Upload Assets CSV">
-            <div style={{fontSize:12,color:T.muted,marginBottom:12}}>Columns: <code style={{color:T.accent}}>Type, Name, Rego, Serial</code></div>
-            <div style={{display:"flex",gap:10,flexWrap:"wrap",alignItems:"center"}}>
-              <Btn onClick={()=>downloadTemplate("assets")} color={T.muted} outline small>⬇ Download Template</Btn>
-              <label style={{background:T.accent,color:T.bg,border:`1.5px solid ${T.accent}`,borderRadius:10,padding:"7px 14px",fontSize:12,fontWeight:700,cursor:"pointer"}}>
-                📁 Choose File
-                <input type="file" accept=".csv,.txt" onChange={handleAssetFileUpload} style={{display:"none"}}/>
-              </label>
-            </div>
-          </Section>
-        </div>
-      )}
+                , React.createElement('input', { type: "file", accept: ".csv,.txt", onChange: handleFileUpload, style: {display:"none"},})
+              )
+            )
+            , React.createElement('div', { style: {fontSize:11,color:T.muted,marginTop:8},}, "For .xlsx: open in Excel → File → Save As → CSV, then upload here."              )
+          )
+        )
+      )
 
-      {activeSection==="settings"&&(
-        <div>
-          <Section title="🌐 Website & App Link">
-            <Card>
-              <div style={{fontSize:13,color:T.text,marginBottom:8}}>Your app will be available at:</div>
-              <div style={{background:T.surface,padding:"10px 14px",borderRadius:10,fontSize:14,fontWeight:700,color:T.accent,marginBottom:12}}>{SITE_URL}</div>
-              <div style={{fontSize:12,color:T.muted,lineHeight:1.7}}>
-                This link works on <strong style={{color:T.text}}>iPhone, Android, iPad, and desktop</strong>.<br/>
-                To add to home screen on iPhone: open in Safari → Share → Add to Home Screen.<br/>
-                To add to home screen on Android: open in Chrome → Menu (⋮) → Add to Home Screen.
-              </div>
-            </Card>
-          </Section>
-          <Section title="📧 Report Email Recipients">
-            <Card>
-              <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                {[
+      , activeSection==="assets"&&(
+        React.createElement('div', null
+          , React.createElement(Section, { title: `Asset Register (${assets.length} assets)`,}
+            , React.createElement('div', { style: {display:"flex",flexDirection:"column",gap:8,marginBottom:16},}
+              , assets.map(a=>(
+                React.createElement('div', { key: a.id, style: {display:"flex",justifyContent:"space-between",alignItems:"center",background:T.surface,padding:"10px 14px",borderRadius:10,border:`1px solid ${T.border}`,flexWrap:"wrap",gap:8},}
+                  , React.createElement('div', null
+                    , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.white},}, a.type==="Vehicle"?"🚗":a.type==="Duress Alarm"?"🔔":"📦", " " , a.name)
+                    , React.createElement('div', { style: {fontSize:11,color:T.muted},}, a.type, a.rego?` · Rego: ${a.rego}`:"", "  "  , a.serial?`· Serial: ${a.serial}`:"")
+                  )
+                  , React.createElement('div', { style: {display:"flex",gap:8,alignItems:"center"},}
+                    , React.createElement(Badge, { label: a.status==="out"?"Out":"Available", color: a.status==="out"?T.red:T.green,})
+                    , React.createElement(Btn, { onClick: ()=>removeAsset(a.id), color: T.red, outline: true, small: true,}, "Remove")
+                  )
+                )
+              ))
+            )
+          )
+          , React.createElement(Section, { title: "➕ Add Asset"  ,}
+            , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"1fr 1fr",gap:10},}
+              , React.createElement(Field, { label: "Type *" , value: newAsset.type, onChange: v=>setNewAsset(p=>({...p,type:v})), options: ["Vehicle","Duress Alarm","Equipment","Laptop","Other"],})
+              , React.createElement(Field, { label: "Name *" , value: newAsset.name, onChange: v=>setNewAsset(p=>({...p,name:v})), placeholder: "e.g. Toyota Hilux"  ,})
+              , React.createElement(Field, { label: "Rego (vehicles)" , value: newAsset.rego, onChange: v=>setNewAsset(p=>({...p,rego:v})), placeholder: "e.g. 123ABC" ,})
+              , React.createElement(Field, { label: "Serial Number" , value: newAsset.serial, onChange: v=>setNewAsset(p=>({...p,serial:v})), placeholder: "e.g. DA001" ,})
+            )
+            , React.createElement(Btn, { onClick: addAsset, color: T.green, small: true,}, "+ Add Asset"  )
+          )
+          , React.createElement(Section, { title: "📁 Upload Assets CSV"   ,}
+            , React.createElement('div', { style: {fontSize:12,color:T.muted,marginBottom:12},}, "Columns: " , React.createElement('code', { style: {color:T.accent},}, "Type, Name, Rego, Serial"   ))
+            , React.createElement('div', { style: {display:"flex",gap:10,flexWrap:"wrap",alignItems:"center"},}
+              , React.createElement(Btn, { onClick: ()=>downloadTemplate("assets"), color: T.muted, outline: true, small: true,}, "⬇ Download Template"  )
+              , React.createElement('label', { style: {background:T.accent,color:T.bg,border:`1.5px solid ${T.accent}`,borderRadius:10,padding:"7px 14px",fontSize:12,fontWeight:700,cursor:"pointer"},}, "📁 Choose File"
+
+                , React.createElement('input', { type: "file", accept: ".csv,.txt", onChange: handleAssetFileUpload, style: {display:"none"},})
+              )
+            )
+          )
+        )
+      )
+
+      , activeSection==="settings"&&(
+        React.createElement('div', null
+          , React.createElement(Section, { title: "🌐 Website & App Link"    ,}
+            , React.createElement(Card, null
+              , React.createElement('div', { style: {fontSize:13,color:T.text,marginBottom:8},}, "Your app will be available at:"     )
+              , React.createElement('div', { style: {background:T.surface,padding:"10px 14px",borderRadius:10,fontSize:14,fontWeight:700,color:T.accent,marginBottom:12},}, SITE_URL)
+              , React.createElement('div', { style: {fontSize:12,color:T.muted,lineHeight:1.7},}, "This link works on "
+                    , React.createElement('strong', { style: {color:T.text},}, "iPhone, Android, iPad, and desktop"    ), ".", React.createElement('br', null), "To add to home screen on iPhone: open in Safari → Share → Add to Home Screen."
+                                , React.createElement('br', null), "To add to home screen on Android: open in Chrome → Menu (⋮) → Add to Home Screen."
+
+              )
+            )
+          )
+          , React.createElement(Section, { title: "📧 Report Email Recipients"   ,}
+            , React.createElement(Card, null
+              , React.createElement('div', { style: {display:"flex",flexDirection:"column",gap:8},}
+                , [
                   {label:"Combined Report",to:`${CEO_EMAIL}, ${HR_EMAIL}, ${WHS_EMAIL}`},
                   ...Object.entries(PROGRAM_EMAILS).map(([prog,info])=>({label:prog,to:`${info.manager}, ${HR_EMAIL}, ${WHS_EMAIL}`}))
                 ].map(({label,to})=>(
-                  <div key={label} style={{display:"flex",gap:10,fontSize:12,padding:"8px 0",borderBottom:`1px solid ${T.border}`,flexWrap:"wrap"}}>
-                    <span style={{color:T.text,fontWeight:700,minWidth:200}}>{label}</span>
-                    <span style={{color:T.accent}}>{to}</span>
-                  </div>
-                ))}
-              </div>
-              <div style={{fontSize:11,color:T.muted,marginTop:12}}>To change any email address, edit the PROGRAM_EMAILS or HR_EMAIL/WHS_EMAIL/CEO_EMAIL at the top of App.jsx.</div>
-            </Card>
-          </Section>
-          <Section title="📍 Locations & Programs">
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:12}}>
-              {Object.entries(LOCATION_PROGRAMS).map(([loc,progs])=>(
-                <Card key={loc} style={{padding:"14px 16px"}}>
-                  <div style={{fontSize:13,fontWeight:800,color:T.accent,marginBottom:8}}>📍 {loc}</div>
-                  {progs.map(p=><div key={p} style={{fontSize:12,color:T.text,padding:"3px 0",borderBottom:`1px solid ${T.border}`}}>• {p}</div>)}
-                </Card>
-              ))}
-            </div>
-          </Section>
-        </div>
-      )}
-    </div>
+                  React.createElement('div', { key: label, style: {display:"flex",gap:10,fontSize:12,padding:"8px 0",borderBottom:`1px solid ${T.border}`,flexWrap:"wrap"},}
+                    , React.createElement('span', { style: {color:T.text,fontWeight:700,minWidth:200},}, label)
+                    , React.createElement('span', { style: {color:T.accent},}, to)
+                  )
+                ))
+              )
+              , React.createElement('div', { style: {fontSize:11,color:T.muted,marginTop:12},}, "To change any email address, edit the PROGRAM_EMAILS or HR_EMAIL/WHS_EMAIL/CEO_EMAIL at the top of App.jsx."              )
+            )
+          )
+          , React.createElement(Section, { title: "📍 Locations & Programs"   ,}
+            , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:12},}
+              , Object.entries(LOCATION_PROGRAMS).map(([loc,progs])=>(
+                React.createElement(Card, { key: loc, style: {padding:"14px 16px"},}
+                  , React.createElement('div', { style: {fontSize:13,fontWeight:800,color:T.accent,marginBottom:8},}, "📍 " , loc)
+                  , progs.map(p=>React.createElement('div', { key: p, style: {fontSize:12,color:T.text,padding:"3px 0",borderBottom:`1px solid ${T.border}`},}, "• " , p))
+                )
+              ))
+            )
+          )
+        )
+      )
+    )
   );
 };
 
@@ -1473,105 +1472,106 @@ function App() {
   ];
 
   return (
-    <div style={{minHeight:"100vh",background:T.bg,color:T.text,fontFamily:"'Segoe UI',system-ui,sans-serif",fontSize:14}}>
+    React.createElement('div', { style: {minHeight:"100vh",background:T.bg,color:T.text,fontFamily:"'Segoe UI',system-ui,sans-serif",fontSize:14},}
 
-      {/* Header */}
-      <div style={{background:T.surface,borderBottom:`1px solid ${T.border}`,padding:"0 16px",position:"sticky",top:0,zIndex:100}}>
-        <div style={{maxWidth:1100,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",height:52}}>
-          <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{width:32,height:32,borderRadius:8,background:T.accent,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:900,color:T.bg}}>N</div>
-            <div>
-              <div style={{fontSize:13,fontWeight:900,color:T.white,lineHeight:1.1}}>NWQICSS</div>
-              <div style={{fontSize:9,color:T.muted,letterSpacing:.6,textTransform:"uppercase"}}>Compliance Portal</div>
-            </div>
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
-              <span style={{width:7,height:7,borderRadius:"50%",background:T.green,display:"inline-block",boxShadow:`0 0 6px ${T.green}`}}/>
-              <span style={{color:T.green,fontWeight:700}}>{onSiteCount}</span>
-              <span style={{color:T.muted}}>on site</span>
-            </div>
-            <span style={{display:"flex",alignItems:"center",gap:4,fontSize:11}}>
-              <span style={{width:6,height:6,borderRadius:"50%",background:dbReady?T.green:T.amber,display:"inline-block"}}/>
-              <span style={{color:dbReady?T.green:T.amber}}>{dbReady?"Live":"..."}</span>
-            </span>
-            <span style={{fontSize:11,color:T.muted}}>{time}</span>
-          </div>
-        </div>
-      </div>
+      /* Header */
+      , React.createElement('div', { style: {background:T.surface,borderBottom:`1px solid ${T.border}`,padding:"0 16px",position:"sticky",top:0,zIndex:100},}
+        , React.createElement('div', { style: {maxWidth:1100,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"space-between",height:52},}
+          , React.createElement('div', { style: {display:"flex",alignItems:"center",gap:10},}
+            , React.createElement('div', { style: {width:32,height:32,borderRadius:8,background:T.accent,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:900,color:T.bg},}, "N")
+            , React.createElement('div', null
+              , React.createElement('div', { style: {fontSize:13,fontWeight:900,color:T.white,lineHeight:1.1},}, "NWQICSS")
+              , React.createElement('div', { style: {fontSize:9,color:T.muted,letterSpacing:.6,textTransform:"uppercase"},}, "Compliance Portal" )
+            )
+          )
+          , React.createElement('div', { style: {display:"flex",alignItems:"center",gap:10},}
+            , React.createElement('div', { style: {display:"flex",alignItems:"center",gap:5,fontSize:12},}
+              , React.createElement('span', { style: {width:7,height:7,borderRadius:"50%",background:T.green,display:"inline-block",boxShadow:`0 0 6px ${T.green}`},})
+              , React.createElement('span', { style: {color:T.green,fontWeight:700},}, onSiteCount)
+              , React.createElement('span', { style: {color:T.muted},}, "on site" )
+            )
+            , React.createElement('span', { style: {display:"flex",alignItems:"center",gap:4,fontSize:11},}
+              , React.createElement('span', { style: {width:6,height:6,borderRadius:"50%",background:dbReady?T.green:T.amber,display:"inline-block"},})
+              , React.createElement('span', { style: {color:dbReady?T.green:T.amber},}, dbReady?"Live":"...")
+            )
+            , React.createElement('span', { style: {fontSize:11,color:T.muted},}, time)
+          )
+        )
+      )
 
-      {/* Location selector */}
-      <div style={{background:T.surface,borderBottom:`1px solid ${T.border}`,padding:"8px 16px"}}>
-        <div style={{maxWidth:1100,margin:"0 auto",display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-          <span style={{fontSize:11,color:T.muted,fontWeight:700}}>📍</span>
-          {ALL_LOCATIONS.map(l=>(
-            <button key={l} onClick={()=>setLoc(l)} style={{padding:"5px 14px",borderRadius:20,fontSize:12,fontWeight:600,cursor:"pointer",
+      /* Location selector */
+      , React.createElement('div', { style: {background:T.surface,borderBottom:`1px solid ${T.border}`,padding:"8px 16px"},}
+        , React.createElement('div', { style: {maxWidth:1100,margin:"0 auto",display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"},}
+          , React.createElement('span', { style: {fontSize:11,color:T.muted,fontWeight:700},}, "📍")
+          , ALL_LOCATIONS.map(l=>(
+            React.createElement('button', { key: l, onClick: ()=>setLoc(l), style: {padding:"5px 14px",borderRadius:20,fontSize:12,fontWeight:600,cursor:"pointer",
               background:location===l?T.accent:"transparent",color:location===l?T.bg:T.muted,
-              border:`1px solid ${location===l?T.accent:T.border}`,transition:"all .15s"}}>{l}</button>
-          ))}
-        </div>
-      </div>
+              border:`1px solid ${location===l?T.accent:T.border}`,transition:"all .15s"},}, l)
+          ))
+        )
+      )
 
-      {/* Tab bar */}
-      <div style={{background:T.surface,borderBottom:`1px solid ${T.border}`,padding:"0 16px",overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
-        <div style={{maxWidth:1100,margin:"0 auto",display:"flex",gap:0}}>
-          {TABS.map(t=>(
-            <button key={t.id} onClick={()=>setTab(t.id)} style={{
+      /* Tab bar */
+      , React.createElement('div', { style: {background:T.surface,borderBottom:`1px solid ${T.border}`,padding:"0 16px",overflowX:"auto",WebkitOverflowScrolling:"touch"},}
+        , React.createElement('div', { style: {maxWidth:1100,margin:"0 auto",display:"flex",gap:0},}
+          , TABS.map(t=>(
+            React.createElement('button', { key: t.id, onClick: ()=>setTab(t.id), style: {
               padding:"11px 12px",background:"transparent",border:"none",
               borderBottom:`2px solid ${tab===t.id?T.accent:"transparent"}`,
               color:tab===t.id?T.accent:T.muted,fontWeight:700,fontSize:12,
               cursor:"pointer",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:4,
-              WebkitTapHighlightColor:"transparent"}}>
-              {t.icon} {t.label}
-              {t.id==="emergency"&&onSiteCount>0&&(
-                <span style={{background:T.red,color:"#fff",borderRadius:20,fontSize:10,fontWeight:900,padding:"1px 6px"}}>{onSiteCount}</span>
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
+              WebkitTapHighlightColor:"transparent"},}
+              , t.icon, " " , t.label
+              , t.id==="emergency"&&onSiteCount>0&&(
+                React.createElement('span', { style: {background:T.red,color:"#fff",borderRadius:20,fontSize:10,fontWeight:900,padding:"1px 6px"},}, onSiteCount)
+              )
+            )
+          ))
+        )
+      )
 
-      {/* Page content */}
-      <div style={{maxWidth:1100,margin:"0 auto",padding:"20px 16px"}}>
-        {tab==="dashboard"   &&<Dashboard records={records} assets={assets} location={location}/>}
-        {tab==="signin"      &&(
-          <div>
-            <div style={{fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Sign In Kiosk</div>
-            <div style={{fontSize:22,fontWeight:900,color:T.white,marginBottom:4}}>Who's signing in today?</div>
-            <div style={{fontSize:13,color:T.accent,marginBottom:20}}>📍 {location}</div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:14}}>
-              {[
+      /* Page content */
+      , React.createElement('div', { style: {maxWidth:1100,margin:"0 auto",padding:"20px 16px"},}
+        , tab==="dashboard"   &&React.createElement(Dashboard, { records: records, assets: assets, location: location,})
+        , tab==="signin"      &&(
+          React.createElement('div', null
+            , React.createElement('div', { style: {fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4},}, "Sign In Kiosk"  )
+            , React.createElement('div', { style: {fontSize:22,fontWeight:900,color:T.white,marginBottom:4},}, "Who's signing in today?"   )
+            , React.createElement('div', { style: {fontSize:13,color:T.accent,marginBottom:20},}, "📍 " , location)
+            , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:14},}
+              , [
                 {type:"visitor",   icon:"👤",label:"Visitor",    desc:"Programs, clinics, meetings",color:T.accent},
                 {type:"contractor",icon:"🔧",label:"Contractor", desc:"WHS compliance sign in",    color:T.accent2},
                 {type:"staff",     icon:"👷",label:"Staff",      desc:"Arriving at centre or leaving for outreach",color:T.amber},
               ].map(({type,icon,label,desc,color})=>(
-                <Card key={type} style={{cursor:"pointer",textAlign:"center"}} onClick={()=>setModal(type)}>
-                  <div style={{fontSize:44,marginBottom:12}}>{icon}</div>
-                  <div style={{fontSize:17,fontWeight:800,color:T.white,marginBottom:6}}>{label}</div>
-                  <div style={{fontSize:12,color:T.muted,marginBottom:16}}>{desc}</div>
-                  <Btn onClick={e=>{e.stopPropagation();setModal(type);}} color={color} full small>Tap to Sign In</Btn>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
-        {tab==="visitors"    &&<VisitorsTab records={records} onSignOut={handleSignOut} location={location}/>}
-        {tab==="contractors" &&<ContractorsTab records={records} onSignOut={handleSignOut} location={location}/>}
-        {tab==="staff"       &&<StaffTab records={records} assets={assets} onSignOut={handleSignOut} onAssetAction={handleAsset} location={location}/>}
-        {tab==="duress"      &&<DuressTab assets={assets} setAssets={setAssets} staffList={staffList} location={location}/>}
-        {tab==="vehicles"    &&<VehiclesTab assets={assets} setAssets={setAssets} staffList={staffList} location={location}/>}
-        {tab==="report"      &&<ReportTab records={records} assets={assets}/>}
-        {tab==="emergency"   &&<EmergencyTab records={records} location={location}/>}
-        {tab==="admin"       &&<AdminTab staffList={staffList} setStaffList={setStaff} assets={assets} setAssets={setAssets}/>}
-      </div>
+                React.createElement(Card, { key: type, style: {cursor:"pointer",textAlign:"center"}, onClick: ()=>setModal(type),}
+                  , React.createElement('div', { style: {fontSize:44,marginBottom:12},}, icon)
+                  , React.createElement('div', { style: {fontSize:17,fontWeight:800,color:T.white,marginBottom:6},}, label)
+                  , React.createElement('div', { style: {fontSize:12,color:T.muted,marginBottom:16},}, desc)
+                  , React.createElement(Btn, { onClick: e=>{e.stopPropagation();setModal(type);}, color: color, full: true, small: true,}, "Tap to Sign In"   )
+                )
+              ))
+            )
+          )
+        )
+        , tab==="visitors"    &&React.createElement(VisitorsTab, { records: records, onSignOut: handleSignOut, location: location,})
+        , tab==="contractors" &&React.createElement(ContractorsTab, { records: records, onSignOut: handleSignOut, location: location,})
+        , tab==="staff"       &&React.createElement(StaffTab, { records: records, assets: assets, onSignOut: handleSignOut, onAssetAction: handleAsset, location: location,})
+        , tab==="duress"      &&React.createElement(DuressTab, { assets: assets, setAssets: setAssets, staffList: staffList, location: location,})
+        , tab==="vehicles"    &&React.createElement(VehiclesTab, { assets: assets, setAssets: setAssets, staffList: staffList, location: location,})
+        , tab==="report"      &&React.createElement(ReportTab, { records: records, assets: assets,})
+        , tab==="emergency"   &&React.createElement(EmergencyTab, { records: records, location: location,})
+        , tab==="admin"       &&React.createElement(AdminTab, { staffList: staffList, setStaffList: setStaff, assets: assets, setAssets: setAssets,})
+      )
 
-      {modal&&<SignInModal type={modal} location={location} staffList={staffList} onClose={()=>setModal(null)} onSubmit={handleSignIn}/>}
-    </div>
+      , modal&&React.createElement(SignInModal, { type: modal, location: location, staffList: staffList, onClose: ()=>setModal(null), onSubmit: handleSignIn,})
+    )
   );
 }
 
+
     const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
+    root.render(React.createElement(App));
   </script>
 </body>
 </html>

@@ -20,41 +20,32 @@
     select, input, textarea, button { font-family: inherit; }
     .spinner { width:40px;height:40px;border:3px solid #1a2d4a;border-top-color:#4a9eff;border-radius:50%;animation:spin 0.8s linear infinite; }
     @keyframes spin { to { transform:rotate(360deg); } }
-    #load { display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:16px; }
   </style>
 </head>
 <body>
   <div id="root">
-    <div id="load">
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:16px">
       <div class="spinner"></div>
       <div style="color:#e2eaf6;font-size:16px">Loading NWQICSS Portal...</div>
-      <div id="load-status" style="color:#4a6a8a;font-size:13px">Initialising...</div>
     </div>
   </div>
   <script>
-    // Show error if Babel takes too long or fails
     window.onerror = function(msg, src, line, col, err) {
       document.getElementById("root").innerHTML =
         '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:12px;padding:20px;text-align:center">' +
         '<div style="font-size:40px">⚠️</div>' +
         '<div style="color:#e2eaf6;font-size:18px;font-weight:700">Portal failed to load</div>' +
-        '<div style="color:#4a6a8a;font-size:13px">Error: ' + msg + '</div>' +
-        '<div style="color:#4a6a8a;font-size:12px">Line: ' + line + '</div>' +
+        '<div style="color:#8ab;font-size:13px;max-width:400px">' + msg + '</div>' +
+        '<div style="color:#567;font-size:11px">Line ' + line + '</div>' +
         '<button onclick="location.reload()" style="margin-top:12px;padding:12px 24px;background:#4a9eff;color:#fff;border:none;border-radius:8px;font-size:15px;cursor:pointer">🔄 Reload</button>' +
         '</div>';
       return true;
     };
-    setTimeout(function(){
-      var s = document.getElementById("load-status");
-      if(s) s.textContent = "Compiling app — this takes a few seconds...";
-    }, 1000);
-    setTimeout(function(){
-      var s = document.getElementById("load-status");
-      if(s) s.textContent = "Almost ready...";
-    }, 4000);
   </script>
+
+  <!-- Chunk 1/5 — Config, UI primitives, Dashboard, Visitors, Contractors, Staff -->
   <script type="text/babel" data-presets="react">
-const { useState, useEffect, useRef, Component } = React;
+const { useState, useEffect, useRef } = React;
 
 // ─────────────────────────────────────────────────────────────
 //  CONFIG
@@ -613,6 +604,9 @@ const StaffTab = ({records,assets,onSignOut,onAssetAction,location}) => {
 // ─────────────────────────────────────────────────────────────
 //  DURESS ALARMS TAB
 // ─────────────────────────────────────────────────────────────
+  </script>
+  <!-- Chunk 2/5 — Duress, Vehicles -->
+  <script type="text/babel" data-presets="react">
 const DuressTab = ({assets,setAssets,staffList,location}) => {
   const [checkoutModal,setCheckoutModal] = useState(null);
   const [form,setForm] = useState({staff:"",notes:"",loc:location||""});
@@ -866,6 +860,9 @@ const VehiclesTab = ({assets,setAssets,staffList,location}) => {
 // ─────────────────────────────────────────────────────────────
 //  EMERGENCY TAB
 // ─────────────────────────────────────────────────────────────
+  </script>
+  <!-- Chunk 3/5 — Emergency, ReturnConfirm, Kiosk -->
+  <script type="text/babel" data-presets="react">
 const EmergencyTab = ({records,location}) => {
   const onSite=records.filter(r=>r.status==="on-site"&&(!location||r.location===location));
   return (
@@ -1343,6 +1340,9 @@ const KioskTab = ({records, onSignIn, onSignOut, location, staffList}) => {
 // ─────────────────────────────────────────────────────────────
 //  DAILY REPORT TAB
 // ─────────────────────────────────────────────────────────────
+  </script>
+  <!-- Chunk 4/5 — Reports -->
+  <script type="text/babel" data-presets="react">
 const ReportTab = ({records,assets}) => {
   const [activeReport,setActiveReport] = useState("combined");
   const today       = records.filter(r=>r.date===todayISO());
@@ -1584,6 +1584,9 @@ const ReportTab = ({records,assets}) => {
 // ─────────────────────────────────────────────────────────────
 //  ADMIN TAB
 // ─────────────────────────────────────────────────────────────
+  </script>
+  <!-- Chunk 5/5 — Admin, App -->
+  <script type="text/babel" data-presets="react">
 const AdminTab = ({staffList,setStaffList,assets,setAssets}) => {
   const [activeSection,setSection] = useState("staff");
   const [newStaff,setNewStaff]   = useState({name:"",role:"",email:"",phone:""});
@@ -2100,9 +2103,10 @@ function App() {
     </div>
   );
 }
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
+  </script>
+  <script type="text/babel" data-presets="react">
+    const domRoot = ReactDOM.createRoot(document.getElementById('root'));
+    domRoot.render(React.createElement(App));
   </script>
 </body>
 </html>

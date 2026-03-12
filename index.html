@@ -8,8 +8,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="apple-mobile-web-app-title" content="NWQICSS"/>
   <title>NWQICSS Compliance Portal</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: #07101f; color: #e2eaf6; font-family: 'Segoe UI', system-ui, sans-serif; }
@@ -17,17 +17,15 @@
     ::-webkit-scrollbar-track { background: #0f1d33; }
     ::-webkit-scrollbar-thumb { background: #1a2d4a; border-radius: 3px; }
     select, input, textarea, button { font-family: inherit; }
-    .spinner { width:40px;height:40px;border:3px solid #1a2d4a;border-top-color:#4a9eff;border-radius:50%;animation:spin 0.8s linear infinite; }
-    @keyframes spin { to { transform:rotate(360deg); } }
+    #err { position:fixed;top:0;left:0;right:0;background:#c0392b;color:#fff;padding:12px 16px;font-size:13px;z-index:9999;display:none;white-space:pre-wrap;word-break:break-all;max-height:40vh;overflow:auto; }
   </style>
 </head>
 <body>
-  <div id="root">
-    <div style="display:flex;align-items:center;justify-content:center;height:100vh;gap:16px;flex-direction:column">
-      <div class="spinner"></div>
-      <div style="color:#e2eaf6;font-size:15px">Loading NWQICSS Portal...</div>
-    </div>
-  </div>
+  <div id="err"></div>
+  <div id="root"></div>
+  <script>
+window.onerror=function(m,s,l,c,e){var d=document.getElementById('err');d.style.display='block';d.textContent='ERROR: '+m+'\nLine: '+l+'\n'+(e&&e.stack?e.stack:'');return true;};
+  </script>
   <script>
 const { useState, useEffect, useRef } = React;
 
@@ -102,11 +100,24 @@ const DEFAULT_STAFF = [
 ];
 
 const DEFAULT_ASSETS = [
-  {id:1,type:"Vehicle",      name:"Toyota Hilux",   rego:"123ABC",status:"available",assigned_to:null,checked_out:null},
-  {id:2,type:"Vehicle",      name:"Ford Ranger",    rego:"456DEF",status:"available",assigned_to:null,checked_out:null},
-  {id:3,type:"Duress Alarm", name:"Duress Alarm #1",serial:"DA001",status:"available",assigned_to:null,checked_out:null},
-  {id:4,type:"Duress Alarm", name:"Duress Alarm #2",serial:"DA002",status:"available",assigned_to:null,checked_out:null},
-  {id:5,type:"Equipment",    name:"Camera Kit",     serial:"CK001",status:"available",assigned_to:null,checked_out:null},
+  // Mount Isa vehicles
+  {id:1, type:"Vehicle", name:"Toyota Hilux",      rego:"123ABC", programme:"Main Office",    location:"Mount Isa",  status:"available",assigned_to:null,checked_out:null,destination:null,odometer_out:null},
+  {id:2, type:"Vehicle", name:"Ford Ranger",       rego:"456DEF", programme:"Youth Hub",      location:"Mount Isa",  status:"available",assigned_to:null,checked_out:null,destination:null,odometer_out:null},
+  {id:3, type:"Vehicle", name:"Toyota Landcruiser", rego:"789GHI", programme:"CFC",           location:"Mount Isa",  status:"available",assigned_to:null,checked_out:null,destination:null,odometer_out:null},
+  // Doomadgee vehicles
+  {id:4, type:"Vehicle", name:"Toyota Hilux",      rego:"DOO001", programme:"Doomadgee Women's Shelter", location:"Doomadgee", status:"available",assigned_to:null,checked_out:null,destination:null,odometer_out:null},
+  {id:5, type:"Vehicle", name:"Ford Ranger",       rego:"DOO002", programme:"Doomadgee Community Justice Group", location:"Doomadgee", status:"available",assigned_to:null,checked_out:null,destination:null,odometer_out:null},
+  // Boulia vehicles
+  {id:6, type:"Vehicle", name:"Toyota Hilux",      rego:"BOU001", programme:"Boulia Community Support Service", location:"Boulia", status:"available",assigned_to:null,checked_out:null,destination:null,odometer_out:null},
+  // Mount Isa duress alarms
+  {id:7, type:"Duress Alarm", name:"Duress Alarm #1", serial:"DA001", location:"Mount Isa",  status:"available",assigned_to:null,checked_out:null},
+  {id:8, type:"Duress Alarm", name:"Duress Alarm #2", serial:"DA002", location:"Mount Isa",  status:"available",assigned_to:null,checked_out:null},
+  {id:9, type:"Duress Alarm", name:"Duress Alarm #3", serial:"DA003", location:"Mount Isa",  status:"available",assigned_to:null,checked_out:null},
+  // Doomadgee duress alarms
+  {id:10,type:"Duress Alarm", name:"Duress Alarm #1", serial:"DD001", location:"Doomadgee",  status:"available",assigned_to:null,checked_out:null},
+  {id:11,type:"Duress Alarm", name:"Duress Alarm #2", serial:"DD002", location:"Doomadgee",  status:"available",assigned_to:null,checked_out:null},
+  // Boulia duress alarms
+  {id:12,type:"Duress Alarm", name:"Duress Alarm #1", serial:"DB001", location:"Boulia",     status:"available",assigned_to:null,checked_out:null},
 ];
 
 const DEMO_RECORDS = [];
@@ -250,6 +261,7 @@ const SignInModal = ({type,location,staffList,onClose,onSubmit}) => {
         /* -- STAFF -- */
         , type==="staff"&&React.createElement(React.Fragment, null
           , React.createElement(Field, { label: "Staff Member *"  , value: f.staff, onChange: v=>set("staff",v), options: staffList.map(s=>s.name),})
+          , React.createElement(Field, { label: "Programme / Area *"   , value: f.programme||"", onChange: v=>set("programme",v), options: ["CFC","Youth Hub","APDC","RAGOSS","RAGOSS Youth","Brilla Brilla","Main Office","AICC","Doomadgee Women's Shelter","Doomadgee Community Justice Group","Boulia Community Support Service","Other"],})
 
           /* Toggle: signing in to centre vs going out on outreach */
           , React.createElement('div', { style: {marginBottom:16},}
@@ -625,7 +637,9 @@ const StaffTab = ({records,assets,onSignOut,onAssetAction,location}) => {
 // --------------------
 const DuressTab = ({assets,setAssets,staffList,location}) => {
   const [checkoutModal,setCheckoutModal] = useState(null);
-  const [form,setForm] = useState({staff:"",notes:"",loc:location||""});
+  const [form,setForm] = useState({staff:"",notes:"",loc:location||"",programme:"",serial:"",time_out:""});
+  const [returnTimeModal,setReturnTimeModal] = useState(null);
+  const [returnTime,setReturnTime] = useState("");
   const [history,setHistory] = useState([
     {id:1,alarm:"Duress Alarm #1",staff:"Sarah Williams",out:"08:00",returned:"16:30",date:dateStr(),notes:"Field visit"},
     {id:2,alarm:"Duress Alarm #2",staff:"John Murray",out:"08:15",returned:null,date:dateStr(),notes:"Doomadgee run"},
@@ -636,16 +650,26 @@ const DuressTab = ({assets,setAssets,staffList,location}) => {
   const confirmCheckout = () => {
     if(!form.staff) return;
     const asset = assets.find(a=>a.id===checkoutModal);
-    setAssets(p=>p.map(a=>a.id===checkoutModal?{...a,status:"out",assigned_to:form.staff,checked_out:nowStr(),notes:form.notes}:a));
-    setHistory(p=>[{id:Date.now(),alarm:asset.name,staff:form.staff,out:nowStr(),returned:null,date:dateStr(),notes:form.notes},...p]);
-    setForm({staff:"",notes:"",loc:location||""});
+    const t_out = form.time_out || nowStr();
+    setAssets(p=>p.map(a=>a.id===checkoutModal?{...a,status:"out",assigned_to:form.staff,checked_out:t_out,notes:form.notes,programme:form.programme||a.programme||"",serial:form.serial||a.serial||""}:a));
+    setHistory(p=>[{id:Date.now(),alarm:asset.name,serial:form.serial||asset.serial||"",staff:form.staff,out:t_out,returned:null,date:dateStr(),notes:form.notes,programme:form.programme||""},...p]);
+    setForm({staff:"",notes:"",loc:location||"",programme:"",serial:"",time_out:""});
     setCheckoutModal(null);
   };
 
   const returnAlarm = id => {
+    setReturnTimeModal(id);
+    setReturnTime(nowStr());
+  };
+
+  const confirmReturnAlarm = () => {
+    const id = returnTimeModal;
     const asset = assets.find(a=>a.id===id);
+    const t_in = returnTime || nowStr();
     setAssets(p=>p.map(a=>a.id===id?{...a,status:"available",assigned_to:null,checked_out:null,notes:""}:a));
-    setHistory(p=>p.map(h=>h.alarm===asset.name&&!h.returned?{...h,returned:nowStr()}:h));
+    setHistory(p=>p.map(h=>h.alarm===asset.name&&!h.returned?{...h,returned:t_in}:h));
+    setReturnTimeModal(null);
+    setReturnTime("");
   };
 
   return (
@@ -675,11 +699,13 @@ const DuressTab = ({assets,setAssets,staffList,location}) => {
                 , a.notes&&React.createElement('div', { style: {fontSize:11,color:T.muted,marginBottom:10},}, "Note: " , a.notes)
                 , React.createElement(Badge, { label: "Currently Out" , color: T.amber,})
                 , React.createElement('div', { style: {marginTop:12},}, React.createElement(Btn, { onClick: ()=>returnAlarm(a.id), color: T.green, small: true, full: true,}, "✓ Return Alarm"  ))
+                , a.programme&&React.createElement('div', { style: {fontSize:11,color:T.muted,marginTop:4},}, "📌 " , a.programme)
               )
             ):(
               React.createElement(React.Fragment, null
-                , React.createElement(Badge, { label: "Available", color: T.green,})
-                , React.createElement('div', { style: {marginTop:12},}, React.createElement(Btn, { onClick: ()=>{setCheckoutModal(a.id);setForm({staff:"",notes:"",loc:location||""}); }, color: T.amber, small: true, full: true,}, "Check Out" ))
+                , a.programme&&React.createElement('div', { style: {fontSize:11,color:T.muted,marginBottom:6},}, "📌 " , a.programme)
+              , React.createElement(Badge, { label: "Available", color: T.green,})
+                , React.createElement('div', { style: {marginTop:12},}, React.createElement(Btn, { onClick: ()=>{setCheckoutModal(a.id);setForm({staff:"",notes:"",loc:location||"",programme:a.programme||"",serial:a.serial||"",time_out:""}); }, color: T.amber, small: true, full: true,}, "Check Out" ))
               )
             )
           )
@@ -691,7 +717,7 @@ const DuressTab = ({assets,setAssets,staffList,location}) => {
       , React.createElement(Card, { style: {padding:0,overflow:"hidden"},}
         , React.createElement('table', { style: {width:"100%",borderCollapse:"collapse"},}
           , React.createElement('thead', null, React.createElement('tr', { style: {background:T.surface},}
-            , ["Alarm","Staff Member","Date","Out","Returned","Notes"].map(h=>(
+            , ["Alarm","Serial","Programme","Staff Member","Date","Out","Returned","Notes"].map(h=>(
               React.createElement('th', { key: h, style: {padding:"10px 14px",textAlign:"left",fontSize:11,color:T.muted,fontWeight:700,textTransform:"uppercase"},}, h)
             ))
           ))
@@ -699,6 +725,8 @@ const DuressTab = ({assets,setAssets,staffList,location}) => {
             , history.map(h=>(
               React.createElement('tr', { key: h.id, style: {borderTop:`1px solid ${T.border}`},}
                 , React.createElement('td', { style: {padding:"10px 14px",fontSize:13,fontWeight:700,color:T.text},}, "🔔 " , h.alarm)
+                , React.createElement('td', { style: {padding:"10px 14px",fontSize:12,color:T.muted},}, h.serial||"—")
+                , React.createElement('td', { style: {padding:"10px 14px",fontSize:12,color:T.muted},}, h.programme||"—")
                 , React.createElement('td', { style: {padding:"10px 14px",fontSize:13,color:T.text},}, h.staff)
                 , React.createElement('td', { style: {padding:"10px 14px",fontSize:12,color:T.muted},}, h.date)
                 , React.createElement('td', { style: {padding:"10px 14px",fontSize:12,color:T.muted},}, h.out)
@@ -717,11 +745,27 @@ const DuressTab = ({assets,setAssets,staffList,location}) => {
             , React.createElement('div', { style: {fontSize:11,color:T.amber,letterSpacing:2,textTransform:"uppercase",marginBottom:4},}, "🔔 Duress Alarm Checkout"   )
             , React.createElement('div', { style: {fontSize:18,fontWeight:900,color:T.white,marginBottom:20},}, (assets.find(a=>a.id===checkoutModal)||{}).name)
             , React.createElement(Field, { label: "Staff Member *"  , value: form.staff, onChange: v=>setForm(p=>({...p,staff:v})), options: staffList.map(s=>s.name),})
-            , React.createElement(Field, { label: "Location", value: form.loc, onChange: v=>setForm(p=>({...p,loc:v})), options: ALL_LOCATIONS,})
+            , React.createElement(Field, { label: "Alarm Serial / Number"   , value: form.serial, onChange: v=>setForm(p=>({...p,serial:v})), placeholder: "e.g. DA001" ,})
+            , React.createElement(Field, { label: "Programme / Area"  , value: form.programme, onChange: v=>setForm(p=>({...p,programme:v})), options: ["CFC","Youth Hub","APDC","RAGOSS","RAGOSS Youth","Brilla Brilla","Main Office","AICC","Doomadgee Women's Shelter","Doomadgee Community Justice Group","Boulia Community Support Service","Other"],})
+            , React.createElement(Field, { label: "Time Out" , value: form.time_out, onChange: v=>setForm(p=>({...p,time_out:v})), type: "time",})
             , React.createElement(Field, { label: "Notes (optional)" , value: form.notes, onChange: v=>setForm(p=>({...p,notes:v})), placeholder: "e.g. Field visit, home visit…"    ,})
             , React.createElement('div', { style: {display:"flex",gap:10},}
               , React.createElement(Btn, { onClick: confirmCheckout, color: form.staff?T.amber:T.muted, style: {flex:1},}, "✓ Check Out"  )
               , React.createElement(Btn, { onClick: ()=>setCheckoutModal(null), color: T.muted, outline: true, style: {flex:1},}, "Cancel")
+            )
+          )
+        )
+      )
+      , returnTimeModal&&(
+        React.createElement('div', { style: {position:"fixed",inset:0,background:"#000c",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16}, onClick: ()=>setReturnTimeModal(null),}
+          , React.createElement('div', { style: {background:T.card,border:`1px solid ${T.border}`,borderRadius:20,padding:28,width:"100%",maxWidth:400}, onClick: e=>e.stopPropagation(),}
+            , React.createElement('div', { style: {fontSize:11,color:T.green,letterSpacing:2,textTransform:"uppercase",marginBottom:4},}, "✓ Return Duress Alarm"   )
+            , React.createElement('div', { style: {fontSize:18,fontWeight:900,color:T.white,marginBottom:16},}, (assets.find(a=>a.id===returnTimeModal)||{}).name)
+            , React.createElement('div', { style: {fontSize:13,color:T.muted,marginBottom:16},}, "Was with: "  , (assets.find(a=>a.id===returnTimeModal)||{}).assigned_to)
+            , React.createElement(Field, { label: "Time Returned" , value: returnTime, onChange: v=>setReturnTime(v), type: "time",})
+            , React.createElement('div', { style: {display:"flex",gap:10,marginTop:8},}
+              , React.createElement(Btn, { onClick: confirmReturnAlarm, color: T.green, style: {flex:1},}, "✓ Confirm Return"  )
+              , React.createElement(Btn, { onClick: ()=>setReturnTimeModal(null), color: T.muted, outline: true, style: {flex:1},}, "Cancel")
             )
           )
         )
@@ -736,8 +780,8 @@ const DuressTab = ({assets,setAssets,staffList,location}) => {
 const VehiclesTab = ({assets,setAssets,staffList,location}) => {
   const [checkoutModal,setCheckoutModal] = useState(null);
   const [returnModal,setReturnModal]     = useState(null);
-  const [form,setForm]           = useState({driver:"",destination:"",purpose:"",odometer_out:""});
-  const [returnForm,setReturnForm] = useState({odometer_in:"",notes:""});
+  const [form,setForm]           = useState({driver:"",destination:"",purpose:"",rego:"",odometer_out:"",time_out:"",programme:""});
+  const [returnForm,setReturnForm] = useState({odometer_in:"",notes:"",time_in:""});
   const [history,setHistory] = useState([
     {id:1,vehicle:"Toyota Hilux",rego:"123ABC",driver:"John Murray",out:"08:15",returned:"17:00",date:dateStr(),destination:"Doomadgee",purpose:"Community Visit",odometer_out:"45230",odometer_in:"45680"},
     {id:2,vehicle:"Ford Ranger",rego:"456DEF",driver:"Sarah Williams",out:"09:00",returned:null,date:dateStr(),destination:"Mount Isa CBD",purpose:"Supply Run",odometer_out:"32100",odometer_in:null},
@@ -748,17 +792,20 @@ const VehiclesTab = ({assets,setAssets,staffList,location}) => {
   const confirmCheckout = () => {
     if(!form.driver||!form.destination) return;
     const asset = assets.find(a=>a.id===checkoutModal);
-    setAssets(p=>p.map(a=>a.id===checkoutModal?{...a,status:"out",assigned_to:form.driver,checked_out:nowStr(),destination:form.destination,purpose:form.purpose,odometer_out:form.odometer_out}:a));
-    setHistory(p=>[{id:Date.now(),vehicle:asset.name,rego:asset.rego,driver:form.driver,out:nowStr(),returned:null,date:dateStr(),destination:form.destination,purpose:form.purpose,odometer_out:form.odometer_out,odometer_in:null},...p]);
-    setForm({driver:"",destination:"",purpose:"",odometer_out:""});
+    const t_out = form.time_out || nowStr();
+    const rego  = form.rego || asset.rego || "";
+    setAssets(p=>p.map(a=>a.id===checkoutModal?{...a,status:"out",assigned_to:form.driver,checked_out:t_out,destination:form.destination,purpose:form.purpose,odometer_out:form.odometer_out,rego,programme:form.programme||a.programme||""}:a));
+    setHistory(p=>[{id:Date.now(),vehicle:asset.name,rego,driver:form.driver,out:t_out,returned:null,date:dateStr(),destination:form.destination,purpose:form.purpose,programme:form.programme||asset.programme||"",odometer_out:form.odometer_out,odometer_in:null},...p]);
+    setForm({driver:"",destination:"",purpose:"",rego:"",odometer_out:"",time_out:"",programme:""});
     setCheckoutModal(null);
   };
 
   const confirmReturn = () => {
     const asset = assets.find(a=>a.id===returnModal);
+    const t_in = returnForm.time_in || nowStr();
     setAssets(p=>p.map(a=>a.id===returnModal?{...a,status:"available",assigned_to:null,checked_out:null,destination:null}:a));
-    setHistory(p=>p.map(h=>h.vehicle===asset.name&&!h.returned?{...h,returned:nowStr(),odometer_in:returnForm.odometer_in,notes:returnForm.notes}:h));
-    setReturnForm({odometer_in:"",notes:""});
+    setHistory(p=>p.map(h=>h.vehicle===asset.name&&!h.returned?{...h,returned:t_in,odometer_in:returnForm.odometer_in,notes:returnForm.notes}:h));
+    setReturnForm({odometer_in:"",notes:"",time_in:""});
     setReturnModal(null);
   };
 
@@ -793,15 +840,17 @@ const VehiclesTab = ({assets,setAssets,staffList,location}) => {
             , v.status==="out"?(
               React.createElement(React.Fragment, null
                 , React.createElement('div', { style: {fontSize:12,color:T.accent2,fontWeight:700,marginBottom:2},}, "Driver: " , v.assigned_to)
+                , v.programme&&React.createElement('div', { style: {fontSize:11,color:T.muted,marginBottom:2},}, "📌 " , v.programme)
                 , React.createElement('div', { style: {fontSize:11,color:T.muted,marginBottom:2},}, "Out: " , v.checked_out)
                 , v.destination&&React.createElement('div', { style: {fontSize:11,color:T.muted,marginBottom:8},}, "→ " , v.destination)
                 , React.createElement(Badge, { label: "Out", color: T.accent2,})
-                , React.createElement('div', { style: {marginTop:12},}, React.createElement(Btn, { onClick: ()=>{setReturnModal(v.id);setReturnForm({odometer_in:"",notes:""});}, color: T.green, small: true, full: true,}, "✓ Return Vehicle"  ))
+                , React.createElement('div', { style: {marginTop:12},}, React.createElement(Btn, { onClick: ()=>{setReturnModal(v.id);setReturnForm({odometer_in:"",notes:"",time_in:""});}, color: T.green, small: true, full: true,}, "✓ Return Vehicle"  ))
               )
             ):(
               React.createElement(React.Fragment, null
-                , React.createElement(Badge, { label: "Available", color: T.green,})
-                , React.createElement('div', { style: {marginTop:12},}, React.createElement(Btn, { onClick: ()=>{setCheckoutModal(v.id);setForm({driver:"",destination:"",purpose:"",odometer_out:""}); }, color: T.accent2, small: true, full: true,}, "Sign Out Vehicle"  ))
+                , v.programme&&React.createElement('div', { style: {fontSize:11,color:T.muted,marginBottom:6},}, "📌 " , v.programme)
+              , React.createElement(Badge, { label: "Available", color: T.green,})
+                , React.createElement('div', { style: {marginTop:12},}, React.createElement(Btn, { onClick: ()=>{setCheckoutModal(v.id);setForm({driver:"",destination:"",purpose:"",rego:v.rego||"",odometer_out:"",time_out:"",programme:v.programme||""}); }, color: T.accent2, small: true, full: true,}, "Sign Out Vehicle"  ))
               )
             )
           )
@@ -816,14 +865,16 @@ const VehiclesTab = ({assets,setAssets,staffList,location}) => {
       , React.createElement(Card, { style: {padding:0,overflow:"hidden",overflowX:"auto"},}
         , React.createElement('table', { style: {width:"100%",borderCollapse:"collapse",minWidth:700},}
           , React.createElement('thead', null, React.createElement('tr', { style: {background:T.surface},}
-            , ["Vehicle","Driver","Date","Out","Returned","Destination","Purpose","Odo Out","Odo In"].map(h=>(
+            , ["Vehicle","Rego","Programme","Driver","Date","Out","Returned","Destination","Purpose","Odo Out","Odo In"].map(h=>(
               React.createElement('th', { key: h, style: {padding:"10px 14px",textAlign:"left",fontSize:11,color:T.muted,fontWeight:700,textTransform:"uppercase",whiteSpace:"nowrap"},}, h)
             ))
           ))
           , React.createElement('tbody', null
             , history.map(h=>(
               React.createElement('tr', { key: h.id, style: {borderTop:`1px solid ${T.border}`},}
-                , React.createElement('td', { style: {padding:"10px 14px",fontSize:13,fontWeight:700,color:T.text},}, "🚗 " , h.vehicle, React.createElement('br', null), React.createElement('span', { style: {fontSize:10,color:T.muted,fontWeight:400},}, h.rego))
+                , React.createElement('td', { style: {padding:"10px 14px",fontSize:13,fontWeight:700,color:T.text},}, "🚗 " , h.vehicle)
+                , React.createElement('td', { style: {padding:"10px 14px",fontSize:12,color:T.muted},}, h.rego||"—")
+                , React.createElement('td', { style: {padding:"10px 14px",fontSize:12,color:T.muted},}, h.programme||"—")
                 , React.createElement('td', { style: {padding:"10px 14px",fontSize:13,color:T.text},}, h.driver)
                 , React.createElement('td', { style: {padding:"10px 14px",fontSize:12,color:T.muted},}, h.date)
                 , React.createElement('td', { style: {padding:"10px 14px",fontSize:12,color:T.muted},}, h.out)
@@ -834,7 +885,7 @@ const VehiclesTab = ({assets,setAssets,staffList,location}) => {
                 , React.createElement('td', { style: {padding:"10px 14px",fontSize:12,color:T.muted},}, h.odometer_in?`${h.odometer_in} km`:"—")
               )
             ))
-            , history.length===0&&React.createElement('tr', null, React.createElement('td', { colSpan: 9, style: {padding:20,textAlign:"center",color:T.muted,fontSize:13},}, "No trips yet."  ))
+            , history.length===0&&React.createElement('tr', null, React.createElement('td', { colSpan: 11, style: {padding:20,textAlign:"center",color:T.muted,fontSize:13},}, "No trips yet."  ))
           )
         )
       )
@@ -845,8 +896,11 @@ const VehiclesTab = ({assets,setAssets,staffList,location}) => {
             , React.createElement('div', { style: {fontSize:11,color:T.accent2,letterSpacing:2,textTransform:"uppercase",marginBottom:4},}, "🚗 Vehicle Sign Out"   )
             , React.createElement('div', { style: {fontSize:18,fontWeight:900,color:T.white,marginBottom:20},}, (assets.find(a=>a.id===checkoutModal)||{}).name, " — "  , (assets.find(a=>a.id===checkoutModal)||{}).rego)
             , React.createElement(Field, { label: "Driver *" , value: form.driver, onChange: v=>setForm(p=>({...p,driver:v})), options: staffList.map(s=>s.name),})
+            , React.createElement(Field, { label: "Vehicle Rego *"  , value: form.rego, onChange: v=>setForm(p=>({...p,rego:v})), placeholder: (assets.find(a=>a.id===checkoutModal)||{}).rego||"Enter rego plate",})
+            , React.createElement(Field, { label: "Programme / Area"  , value: form.programme, onChange: v=>setForm(p=>({...p,programme:v})), options: ["CFC","Youth Hub","APDC","RAGOSS","RAGOSS Youth","Brilla Brilla","Main Office","AICC","Doomadgee Women's Shelter","Doomadgee Community Justice Group","Boulia Community Support Service","Other"],})
             , React.createElement(Field, { label: "Destination *" , value: form.destination, onChange: v=>setForm(p=>({...p,destination:v})), placeholder: "e.g. Doomadgee, Mount Isa CBD…"    ,})
             , React.createElement(Field, { label: "Purpose", value: form.purpose, onChange: v=>setForm(p=>({...p,purpose:v})), options: ["Community Visit","Client Transport","Field Work","Supply Run","Staff Travel","Meeting","Other"],})
+            , React.createElement(Field, { label: "Time Out" , value: form.time_out||"", onChange: v=>setForm(p=>({...p,time_out:v})), type: "time",})
             , React.createElement(Field, { label: "Odometer Reading (km)"  , value: form.odometer_out, onChange: v=>setForm(p=>({...p,odometer_out:v})), type: "number", placeholder: "e.g. 45230" ,})
             , React.createElement('div', { style: {display:"flex",gap:10},}
               , React.createElement(Btn, { onClick: confirmCheckout, color: (form.driver&&form.destination)?T.accent2:T.muted, style: {flex:1},}, "✓ Sign Out"  )
@@ -860,6 +914,7 @@ const VehiclesTab = ({assets,setAssets,staffList,location}) => {
           , React.createElement('div', { style: {background:T.card,border:`1px solid ${T.border}`,borderRadius:20,padding:28,width:"100%",maxWidth:420}, onClick: e=>e.stopPropagation(),}
             , React.createElement('div', { style: {fontSize:11,color:T.green,letterSpacing:2,textTransform:"uppercase",marginBottom:4},}, "🚗 Return Vehicle"  )
             , React.createElement('div', { style: {fontSize:18,fontWeight:900,color:T.white,marginBottom:20},}, (assets.find(a=>a.id===returnModal)||{}).name)
+            , React.createElement(Field, { label: "Time Returned" , value: returnForm.time_in||"", onChange: v=>setReturnForm(p=>({...p,time_in:v})), type: "time",})
             , React.createElement(Field, { label: "Odometer on Return (km)"   , value: returnForm.odometer_in, onChange: v=>setReturnForm(p=>({...p,odometer_in:v})), type: "number", placeholder: "e.g. 45680" ,})
             , React.createElement(Field, { label: "Any issues to report?"   , value: returnForm.notes, onChange: v=>setReturnForm(p=>({...p,notes:v})), placeholder: "e.g. No issues / Low fuel / Damage…"       ,})
             , React.createElement('div', { style: {display:"flex",gap:10},}
@@ -1385,12 +1440,280 @@ const dbUpdate = async (id, patch) => {
   } catch(e){}
 };
 
+
+const ASSET_TEMPLATE_CSV = "data:text/csv;charset=utf-8,Vehicle Name,Rego,Programme,Location,Type%0AToyota Hilux,123ABC,Main Office,Mount Isa,Vehicle%0ADuress Alarm %231,DA001,Main Office,Mount Isa,Duress Alarm";
+
+// ==============================================================
+//  ASSET CHECKOUT TAB  (inside Kiosk — vehicles + duress alarms)
+// ==============================================================
+const AssetCheckoutTab = ({assets, setAssets, staffList, location}) => {
+  const [subTab, setSubTab]           = useState("vehicles");   // "vehicles" | "duress"
+  const [checkoutModal, setCheckoutModal] = useState(null);
+  const [returnModal, setReturnModal]     = useState(null);
+  const [importModal, setImportModal]     = useState(false);
+  const [importRows, setImportRows]       = useState([]);
+  const [importError, setImportError]     = useState("");
+
+  // Checkout form state
+  const [form, setForm] = useState({driver:"", destination:"", purpose:"", odometer_out:"", notes:""});
+  const [returnForm, setReturnForm] = useState({odometer_in:"", notes:""});
+
+  const vehicles = assets.filter(a => a.type==="Vehicle" && (!location || a.location===location));
+  const alarms   = assets.filter(a => a.type==="Duress Alarm" && (!location || a.location===location));
+
+  // ── Checkout ──────────────────────────────────────────────
+  const openCheckout = (id) => {
+    setCheckoutModal(id);
+    setForm({driver:"", destination:"", purpose:"", odometer_out:"", notes:""});
+  };
+  const openReturn = (id) => {
+    setReturnModal(id);
+    setReturnForm({odometer_in:"", notes:""});
+  };
+
+  const confirmCheckout = () => {
+    if(!form.driver) return;
+    const asset = assets.find(a => a.id===checkoutModal);
+    const isVehicle = asset.type==="Vehicle";
+    setAssets(p => p.map(a => a.id===checkoutModal ? {
+      ...a, status:"out", assigned_to:form.driver, checked_out:nowStr(),
+      ...(isVehicle && {destination:form.destination, purpose:form.purpose, odometer_out:form.odometer_out}),
+      notes:form.notes
+    } : a));
+    setCheckoutModal(null);
+  };
+
+  const confirmReturn = () => {
+    const asset = assets.find(a => a.id===returnModal);
+    const isVehicle = asset.type==="Vehicle";
+    setAssets(p => p.map(a => a.id===returnModal ? {
+      ...a, status:"available", assigned_to:null, checked_out:null,
+      ...(isVehicle && {destination:null, odometer_out:null}),
+      odometer_in:returnForm.odometer_in, notes:returnForm.notes
+    } : a));
+    setReturnModal(null);
+  };
+
+  // ── Excel/CSV import ──────────────────────────────────────
+  const handleFileUpload = (e) => {
+    setImportError("");
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const text = ev.target.result;
+        const lines = text.trim().split("\n").filter(l => l.trim());
+        const headers = lines[0].split(",").map(h => h.trim().toLowerCase().replace(/[^a-z_]/g,"_"));
+        const rows = lines.slice(1).map((line, idx) => {
+          const vals = line.split(",").map(v => v.trim().replace(/^"|"$/g,""));
+          const row = {};
+          headers.forEach((h,i) => row[h]=vals[i]||"");
+          // Map common header variants
+          const name = row.vehicle_name || row.name || row.vehicle || "";
+          const rego = row.rego || row.registration || row.plate || "";
+          const prog = row.programme || row.program || row.service || "";
+          const loc  = row.location || row.centre || row.center || "Mount Isa";
+          const type = (row.type||"Vehicle").includes("Duress")?"Duress Alarm":"Vehicle";
+          const serial = row.serial || row.serial_number || rego;
+          if(!name && !rego) return null;
+          return {id:Date.now()+idx, type, name:name||rego, rego, serial, programme:prog, location:loc,
+            status:"available", assigned_to:null, checked_out:null, destination:null, odometer_out:null};
+        }).filter(Boolean);
+        setImportRows(rows);
+        if(rows.length===0) setImportError("No valid rows found. Check your CSV columns.");
+      } catch(err) {
+        setImportError("Could not read file: "+err.message);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value="";
+  };
+
+  const confirmImport = () => {
+    setAssets(p => [...p, ...importRows]);
+    setImportRows([]);
+    setImportModal(false);
+  };
+
+  // ── Asset card ─────────────────────────────────────────────
+  const AssetCard = ({a}) => {
+    const isVehicle = a.type==="Vehicle";
+    const color = isVehicle ? T.accent2 : T.amber;
+    const icon  = isVehicle ? "🚗" : "🔔";
+    return (
+      React.createElement(Card, { style: {borderLeft:`4px solid ${a.status==="out"?color:T.green}`},}
+        , React.createElement('div', { style: {fontSize:28,marginBottom:8},}, icon)
+        , React.createElement('div', { style: {fontSize:14,fontWeight:800,color:T.white,marginBottom:2},}, a.name)
+        , isVehicle && React.createElement('div', { style: {fontSize:12,color:T.muted,marginBottom:2},}, "Rego: " , React.createElement('strong', { style: {color:T.text},}, a.rego||"—"))
+        , !isVehicle && React.createElement('div', { style: {fontSize:12,color:T.muted,marginBottom:2},}, "Serial: " , React.createElement('strong', { style: {color:T.text},}, a.serial||"—"))
+        , a.programme && React.createElement('div', { style: {fontSize:11,color:T.muted,marginBottom:6},}, "📌 " , a.programme)
+        , a.status==="out" ? (React.createElement(React.Fragment, null
+          , React.createElement('div', { style: {fontSize:12,color:color,fontWeight:700,marginBottom:2},}, "With: " , a.assigned_to)
+          , React.createElement('div', { style: {fontSize:11,color:T.muted,marginBottom:4},}, "Since: " , a.checked_out)
+          , isVehicle&&a.destination&&React.createElement('div', { style: {fontSize:11,color:T.muted,marginBottom:4},}, "→ " , a.destination)
+          , React.createElement(Badge, { label: "Out", color: color,})
+          , React.createElement('div', { style: {marginTop:10},}
+            , React.createElement(Btn, { onClick: ()=>openReturn(a.id), color: T.green, small: true, full: true,}, "✓ Return" )
+          )
+        )) : (React.createElement(React.Fragment, null
+          , React.createElement(Badge, { label: "Available", color: T.green,})
+          , React.createElement('div', { style: {marginTop:10},}
+            , React.createElement(Btn, { onClick: ()=>openCheckout(a.id), color: color, small: true, full: true,}, "Check Out" )
+          )
+        ))
+      )
+    );
+  };
+
+  const currentAsset = assets.find(a=>a.id===(checkoutModal||returnModal));
+  const isVehicleModal = currentAsset && currentAsset.type==="Vehicle";
+
+  return (
+    React.createElement('div', null
+      /* Sub-tab bar */
+      , React.createElement('div', { style: {display:"flex",gap:0,marginBottom:24,borderBottom:`2px solid ${T.border}`},}
+        , [{id:"vehicles",icon:"🚗",label:"Vehicles"},{id:"duress",icon:"🔔",label:"Duress Alarms"}].map(st=>(
+          React.createElement('button', { key: st.id, onClick: ()=>setSubTab(st.id), style: {
+            padding:"10px 20px",background:"transparent",border:"none",
+            borderBottom:`3px solid ${subTab===st.id?T.accent:"transparent"}`,
+            color:subTab===st.id?T.accent:T.muted,fontWeight:700,fontSize:13,
+            cursor:"pointer",display:"flex",alignItems:"center",gap:6},}
+            , st.icon, " " , st.label
+            , React.createElement('span', { style: {background:subTab===st.id?T.accent+"33":"transparent",color:subTab===st.id?T.accent:T.muted,
+              borderRadius:20,padding:"1px 8px",fontSize:11,fontWeight:900},}
+              , st.id==="vehicles"?vehicles.length:alarms.length
+            )
+          )
+        ))
+        , React.createElement('div', { style: {flex:1},})
+        , React.createElement(Btn, { onClick: ()=>{setImportModal(true);setImportRows([]);setImportError("");}, color: T.green, small: true,}, "⬆ Import from CSV/Excel"
+
+        )
+      )
+
+      /* Vehicle grid */
+      , subTab==="vehicles"&&(React.createElement(React.Fragment, null
+        , vehicles.filter(v=>v.status==="out").length>0&&(
+          React.createElement('div', { style: {background:T.accent2+"22",border:`1px solid ${T.accent2}55`,borderRadius:12,padding:"12px 16px",marginBottom:16,display:"flex",gap:10,alignItems:"center"},}
+            , React.createElement('span', { style: {fontSize:20},}, "🚗")
+            , React.createElement('div', null
+              , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.accent2},}, vehicles.filter(v=>v.status==="out").length, " Vehicle" , vehicles.filter(v=>v.status==="out").length>1?"s":"", " Currently Out"  )
+              , React.createElement('div', { style: {fontSize:12,color:T.muted},}, vehicles.filter(v=>v.status==="out").map(v=>`${v.name} (${v.rego}) — ${v.assigned_to}`).join(" · "))
+            )
+          )
+        )
+        , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:14},}
+          , vehicles.map(v=>React.createElement(AssetCard, { key: v.id, a: v,}))
+          , vehicles.length===0&&React.createElement('div', { style: {color:T.muted,fontSize:13,gridColumn:"1/-1"},}, "No vehicles for "   , location, ". Import from CSV or add in Admin."       )
+        )
+      ))
+
+      /* Duress alarm grid */
+      , subTab==="duress"&&(React.createElement(React.Fragment, null
+        , alarms.filter(a=>a.status==="out").length>0&&(
+          React.createElement('div', { style: {background:T.amber+"22",border:`1px solid ${T.amber}55`,borderRadius:12,padding:"12px 16px",marginBottom:16,display:"flex",gap:10,alignItems:"center"},}
+            , React.createElement('span', { style: {fontSize:20},}, "🔔")
+            , React.createElement('div', null
+              , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.amber},}, alarms.filter(a=>a.status==="out").length, " Alarm" , alarms.filter(a=>a.status==="out").length>1?"s":"", " Currently Out"  )
+              , React.createElement('div', { style: {fontSize:12,color:T.muted},}, alarms.filter(a=>a.status==="out").map(a=>`${a.name} — ${a.assigned_to}`).join(" · "))
+            )
+          )
+        )
+        , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(220px,1fr))",gap:14},}
+          , alarms.map(a=>React.createElement(AssetCard, { key: a.id, a: a,}))
+          , alarms.length===0&&React.createElement('div', { style: {color:T.muted,fontSize:13,gridColumn:"1/-1"},}, "No duress alarms for "    , location, ". Import from CSV or add in Admin."       )
+        )
+      ))
+
+      /* Checkout modal */
+      , checkoutModal&&currentAsset&&(
+        React.createElement('div', { style: {position:"fixed",inset:0,background:"#000c",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16}, onClick: ()=>setCheckoutModal(null),}
+          , React.createElement('div', { style: {background:T.card,border:`1px solid ${T.border}`,borderRadius:20,padding:28,width:"100%",maxWidth:440}, onClick: e=>e.stopPropagation(),}
+            , React.createElement('div', { style: {fontSize:11,color:isVehicleModal?T.accent2:T.amber,letterSpacing:2,textTransform:"uppercase",marginBottom:4},}, isVehicleModal?"🚗 Vehicle":"🔔 Duress Alarm", " Checkout" )
+            , React.createElement('div', { style: {fontSize:18,fontWeight:900,color:T.white,marginBottom:16},}, currentAsset.name, isVehicleModal&&currentAsset.rego?` · ${currentAsset.rego}`:"")
+            , React.createElement(Field, { label: "Staff Member *"  , value: form.driver, onChange: v=>setForm(p=>({...p,driver:v})), options: staffList.map(s=>s.name), placeholder: "Select staff" ,})
+            , isVehicleModal&&React.createElement(React.Fragment, null
+              , React.createElement(Field, { label: "Destination *" , value: form.destination, onChange: v=>setForm(p=>({...p,destination:v})), placeholder: "Where are you going?"   ,})
+              , React.createElement(Field, { label: "Purpose", value: form.purpose, onChange: v=>setForm(p=>({...p,purpose:v})), options: ["Community Visit","Supply Run","Client Transport","Meeting","Medical","Training","Other"],})
+              , React.createElement(Field, { label: "Odometer Out (km)"  , value: form.odometer_out, onChange: v=>setForm(p=>({...p,odometer_out:v})), type: "number", placeholder: "Current odometer reading"  ,})
+            )
+            , React.createElement(Field, { label: "Notes (optional)" , value: form.notes, onChange: v=>setForm(p=>({...p,notes:v})), placeholder: "Any notes..." ,})
+            , React.createElement('div', { style: {display:"flex",gap:10,marginTop:16},}
+              , React.createElement(Btn, { onClick: confirmCheckout, color: form.driver?T.green:T.muted, style: {flex:1},}, "✓ Confirm Checkout"  )
+              , React.createElement(Btn, { onClick: ()=>setCheckoutModal(null), color: T.muted, outline: true, style: {flex:1},}, "Cancel")
+            )
+          )
+        )
+      )
+
+      /* Return modal */
+      , returnModal&&currentAsset&&(
+        React.createElement('div', { style: {position:"fixed",inset:0,background:"#000c",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16}, onClick: ()=>setReturnModal(null),}
+          , React.createElement('div', { style: {background:T.card,border:`1px solid ${T.border}`,borderRadius:20,padding:28,width:"100%",maxWidth:440}, onClick: e=>e.stopPropagation(),}
+            , React.createElement('div', { style: {fontSize:11,color:T.green,letterSpacing:2,textTransform:"uppercase",marginBottom:4},}, "Return " , isVehicleModal?"Vehicle":"Duress Alarm")
+            , React.createElement('div', { style: {fontSize:18,fontWeight:900,color:T.white,marginBottom:4},}, currentAsset.name)
+            , React.createElement('div', { style: {fontSize:13,color:T.muted,marginBottom:16},}, "Was with: "  , currentAsset.assigned_to, " since "  , currentAsset.checked_out)
+            , isVehicleModal&&React.createElement(Field, { label: "Odometer on Return (km)"   , value: returnForm.odometer_in, onChange: v=>setReturnForm(p=>({...p,odometer_in:v})), type: "number", placeholder: "Current odometer reading"  ,})
+            , React.createElement(Field, { label: "Any issues to report?"   , value: returnForm.notes, onChange: v=>setReturnForm(p=>({...p,notes:v})), placeholder: "Damage, fuel level, faults..."   ,})
+            , React.createElement('div', { style: {display:"flex",gap:10,marginTop:16},}
+              , React.createElement(Btn, { onClick: confirmReturn, color: T.green, style: {flex:1},}, "✓ Confirm Return"  )
+              , React.createElement(Btn, { onClick: ()=>setReturnModal(null), color: T.muted, outline: true, style: {flex:1},}, "Cancel")
+            )
+          )
+        )
+      )
+
+      /* Import modal */
+      , importModal&&(
+        React.createElement('div', { style: {position:"fixed",inset:0,background:"#000c",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16}, onClick: ()=>{setImportModal(false);setImportRows([]);},}
+          , React.createElement('div', { style: {background:T.card,border:`1px solid ${T.border}`,borderRadius:20,padding:28,width:"100%",maxWidth:560,maxHeight:"80vh",overflowY:"auto"}, onClick: e=>e.stopPropagation(),}
+            , React.createElement('div', { style: {fontSize:11,color:T.green,letterSpacing:2,textTransform:"uppercase",marginBottom:4},}, "⬆ Bulk Import"  )
+            , React.createElement('div', { style: {fontSize:18,fontWeight:900,color:T.white,marginBottom:8},}, "Import Vehicles / Duress Alarms"    )
+            , React.createElement('div', { style: {background:T.surface,borderRadius:10,padding:"12px 14px",marginBottom:16,fontSize:12,color:T.muted},}
+              , React.createElement('div', { style: {fontWeight:700,color:T.text,marginBottom:6},}, "CSV column headers (any order):"    )
+              , React.createElement('div', { style: {fontFamily:"monospace",fontSize:11,color:T.accent},}, "Vehicle Name, Rego, Programme, Location, Type"     )
+              , React.createElement('div', { style: {marginTop:6},}, "• " , React.createElement('strong', null, "Type"), ": \"Vehicle\" or \"Duress Alarm\""    )
+              , React.createElement('div', null, "• " , React.createElement('strong', null, "Location"), ": Mount Isa, Doomadgee, or Boulia"     )
+              , React.createElement('div', null, "• " , React.createElement('strong', null, "Programme"), ": CFC, Youth Hub, APDC, etc."     )
+              , React.createElement('div', { style: {marginTop:8,color:T.accent,fontWeight:600},}
+                , React.createElement('a', { href: ASSET_TEMPLATE_CSV, download: "asset_template.csv", style: {color:T.accent},}, "⬇ Download template CSV"   )
+              )
+            )
+            , React.createElement('label', { style: {display:"block",padding:"16px",border:`2px dashed ${T.accent}`,borderRadius:12,textAlign:"center",cursor:"pointer",marginBottom:16,color:T.accent,fontWeight:700},}, "📂 Click to select CSV or Excel file"
+
+              , React.createElement('input', { type: "file", accept: ".csv,.txt", style: {display:"none"}, onChange: handleFileUpload,})
+            )
+            , importError&&React.createElement('div', { style: {background:T.red+"22",border:`1px solid ${T.red}`,borderRadius:10,padding:"10px 14px",marginBottom:12,fontSize:12,color:T.red},}, importError)
+            , importRows.length>0&&(React.createElement(React.Fragment, null
+              , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.green,marginBottom:8},}, "✓ " , importRows.length, " records ready to import:"    )
+              , React.createElement('div', { style: {background:T.surface,borderRadius:10,padding:"10px 14px",marginBottom:16,maxHeight:200,overflowY:"auto"},}
+                , importRows.map((r,i)=>(
+                  React.createElement('div', { key: i, style: {fontSize:12,color:T.text,padding:"4px 0",borderBottom:`1px solid ${T.border}`},}
+                    , r.type==="Vehicle"?"🚗":"🔔", " " , React.createElement('strong', null, r.name), " " , r.rego&&`· ${r.rego}`, " · "  , r.programme||"No programme", " · "  , r.location
+                  )
+                ))
+              )
+              , React.createElement('div', { style: {display:"flex",gap:10},}
+                , React.createElement(Btn, { onClick: confirmImport, color: T.green, style: {flex:1},}, "⬆ Import "  , importRows.length, " Records" )
+                , React.createElement(Btn, { onClick: ()=>{setImportRows([]);setImportModal(false);}, color: T.muted, outline: true, style: {flex:1},}, "Cancel")
+              )
+            ))
+            , importRows.length===0&&!importError&&(
+              React.createElement(Btn, { onClick: ()=>setImportModal(false), color: T.muted, outline: true, full: true,}, "Close")
+            )
+          )
+        )
+      )
+    )
+  );
+};
+
 function App() {
   const [tab,setTab]         = useState("dashboard");
   const [dbReady,setDbReady] = useState(false);
   const [location,setLoc]    = useState("Mount Isa");
   const [records,setRecs]    = useState([]);
-  const [dbReady,setDbReady] = useState(false);
   const [assets,setAssets]   = useState(DEFAULT_ASSETS);
   const [staffList,setStaff] = useState(DEFAULT_STAFF);
   const [modal,setModal]     = useState(null);
@@ -1459,16 +1782,16 @@ function App() {
   const onSiteCount = records.filter(r=>r.status==="on-site"&&(!location||r.location===location)).length;
 
   const TABS = [
-    {id:"dashboard",   icon:"📊",label:"Dashboard"},
-    {id:"signin",      icon:"✍️", label:"Sign In"},
-    {id:"visitors",    icon:"👤",label:"Visitors"},
-    {id:"contractors", icon:"🔧",label:"WHS"},
-    {id:"staff",       icon:"👷",label:"Staff"},
-    {id:"duress",      icon:"🔔",label:"Duress"},
-    {id:"vehicles",    icon:"🚗",label:"Vehicles"},
-    {id:"report",      icon:"📋",label:"Reports"},
-    {id:"emergency",   icon:"🚨",label:"Emergency"},
-    {id:"admin",       icon:"⚙️", label:"Admin"},
+    {id:"dashboard",   icon:"📊", label:"Dashboard"},
+    {id:"kiosk",       icon:"🖥️",  label:"Kiosk"},
+    {id:"visitors",    icon:"👤", label:"Visitors"},
+    {id:"contractors", icon:"🔧", label:"WHS"},
+    {id:"staff",       icon:"👷", label:"Staff"},
+    {id:"duress",      icon:"🔔", label:"Duress Alarms"},
+    {id:"vehicles",    icon:"🚗", label:"Vehicles"},
+    {id:"report",      icon:"📋", label:"Reports"},
+    {id:"emergency",   icon:"🚨", label:"Emergency"},
+    {id:"admin",       icon:"⚙️",  label:"Admin"},
   ];
 
   return (
@@ -1533,12 +1856,12 @@ function App() {
       /* Page content */
       , React.createElement('div', { style: {maxWidth:1100,margin:"0 auto",padding:"20px 16px"},}
         , tab==="dashboard"   &&React.createElement(Dashboard, { records: records, assets: assets, location: location,})
-        , tab==="signin"      &&(
+        , tab==="kiosk"&&(
           React.createElement('div', null
             , React.createElement('div', { style: {fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4},}, "Sign In Kiosk"  )
             , React.createElement('div', { style: {fontSize:22,fontWeight:900,color:T.white,marginBottom:4},}, "Who's signing in today?"   )
             , React.createElement('div', { style: {fontSize:13,color:T.accent,marginBottom:20},}, "📍 " , location)
-            , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:14},}
+            , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:14,marginBottom:32},}
               , [
                 {type:"visitor",   icon:"👤",label:"Visitor",    desc:"Programs, clinics, meetings",color:T.accent},
                 {type:"contractor",icon:"🔧",label:"Contractor", desc:"WHS compliance sign in",    color:T.accent2},
@@ -1552,6 +1875,7 @@ function App() {
                 )
               ))
             )
+
           )
         )
         , tab==="visitors"    &&React.createElement(VisitorsTab, { records: records, onSignOut: handleSignOut, location: location,})
@@ -1569,9 +1893,12 @@ function App() {
   );
 }
 
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(React.createElement(App));
+try {
+  ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+} catch(e) {
+  var d=document.getElementById('err');d.style.display='block';
+  d.textContent='RENDER CRASH: '+e.message+'\n'+e.stack;
+}
   </script>
 </body>
 </html>

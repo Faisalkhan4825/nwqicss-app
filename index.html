@@ -5,52 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
   <meta name="theme-color" content="#07101f"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="NWQICSS"/>
   <title>NWQICSS Compliance Portal</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{background:#07101f;color:#e2eaf6;font-family:'Segoe UI',system-ui,sans-serif}
-    ::-webkit-scrollbar{width:6px}
-    ::-webkit-scrollbar-track{background:#0f1d33}
-    ::-webkit-scrollbar-thumb{background:#1a2d4a;border-radius:3px}
-    select,input,textarea,button{font-family:inherit}
-    .spinner{width:40px;height:40px;border:3px solid #1a2d4a;border-top-color:#4a9eff;border-radius:50%;animation:spin 0.8s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #07101f; color: #e2eaf6; font-family: 'Segoe UI', system-ui, sans-serif; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f1d33; }
+    ::-webkit-scrollbar-thumb { background: #1a2d4a; border-radius: 3px; }
+    select, input, textarea, button { font-family: inherit; }
+    .spinner { width:40px;height:40px;border:3px solid #1a2d4a;border-top-color:#4a9eff;border-radius:50%;animation:spin 0.8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
   </style>
 </head>
 <body>
   <div id="root">
-    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:16px">
+    <div style="display:flex;align-items:center;justify-content:center;height:100vh;gap:16px;flex-direction:column">
       <div class="spinner"></div>
-      <div style="color:#e2eaf6;font-size:16px">Loading NWQICSS Portal...</div>
+      <div style="color:#e2eaf6;font-size:15px">Loading NWQICSS Portal...</div>
     </div>
   </div>
-  <script>
-    window.onerror = function(msg,src,line) {
-      document.getElementById("root").innerHTML =
-        '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:16px;padding:24px;text-align:center">'+
-        '<div style="font-size:48px">⚠️</div>'+
-        '<div style="color:#e2eaf6;font-size:20px;font-weight:700">Portal failed to load</div>'+
-        '<pre style="color:#8ab;font-size:12px;max-width:500px;white-space:pre-wrap;background:#0f1d33;padding:12px;border-radius:8px;text-align:left">'+msg+'\nLine: '+line+'</pre>'+
-        '<button onclick="location.reload()" style="padding:14px 28px;background:#4a9eff;color:#fff;border:none;border-radius:8px;font-size:16px;cursor:pointer;font-weight:700">🔄 Reload</button>'+
-        '</div>';
-      return true;
-    };
-  </script>
-
-  <!-- 1/5 Config + UI + Dashboard + Visitors + Contractors + Staff -->
   <script type="text/babel">
 const { useState, useEffect, useRef } = React;
 
-// ─────────────────────────────────────────────────────────────
+// --------------------
 //  CONFIG
-// ─────────────────────────────────────────────────────────────
+// --------------------
 const ORG_NAME  = "NWQICSS";
 const SITE_URL  = "https://nwqicsscompliance.org";
 const HR_EMAIL  = "hr@nwqicss.org";
 const WHS_EMAIL = "whs@nwqicss.org";
+const CEO_EMAIL = "ceo@nwqicss.org";
 
 // Programs by location
 const LOCATION_PROGRAMS = {
@@ -77,17 +66,17 @@ const PROGRAM_EMAILS = {
   "APDC":                             {manager:"apdc@nwqicss.org",          label:"APDC Manager"},
   "RAGOSS":                           {manager:"ragossmanager@nwqicss.org", label:"RAGOSS Manager"},
   "RAGOSS Youth":                     {manager:"ragossmanager@nwqicss.org", label:"RAGOSS Manager"},
-  "Brilla Brilla":                    {manager:HR_EMAIL, label:"HR Manager"},
-  "Main Office":                      {manager:HR_EMAIL, label:"HR Manager"},
+  "Brilla Brilla":                    {manager:CEO_EMAIL,                   label:"CEO"},
+  "Main Office":                      {manager:CEO_EMAIL,                   label:"CEO"},
   "AICC":                             {manager:"dhankin@nwqicss.org",       label:"D. Hankin"},
   "Boulia Community Support Service": {manager:"jnorton@nwqicss.org",      label:"J. Norton"},
   "Doomadgee Women's Shelter":        {manager:"clogan@nwqicss.org",        label:"C. Logan"},
   "Doomadgee Community Justice Group":{manager:"clogan@nwqicss.org",        label:"C. Logan"},
 };
 
-// ─────────────────────────────────────────────────────────────
+// --------------------
 //  THEME
-// ─────────────────────────────────────────────────────────────
+// --------------------
 const T = {
   bg:"#07101f", surface:"#0f1d33", card:"#132040", border:"#1a2d4a",
   accent:"#00b4d8", accent2:"#f77f00", green:"#06d6a0", red:"#ef233c",
@@ -95,22 +84,17 @@ const T = {
   purple:"#9b72ff",
 };
 
-// ─────────────────────────────────────────────────────────────
+// --------------------
 //  HELPERS
-// ─────────────────────────────────────────────────────────────
-const AUS_TZ   = "Australia/Brisbane"; // AEST — no DST, consistent year-round
-const nowStr   = () => new Date().toLocaleTimeString("en-AU",{hour:"2-digit",minute:"2-digit",timeZone:AUS_TZ});
-const dateStr  = () => new Date().toLocaleDateString("en-AU",{day:"2-digit",month:"short",year:"numeric",timeZone:AUS_TZ});
-const todayISO = () => {
-  const d = new Date();
-  const s = d.toLocaleDateString("en-CA",{timeZone:AUS_TZ}); // en-CA gives YYYY-MM-DD
-  return s;
-};
+// --------------------
+const nowStr   = () => new Date().toLocaleTimeString("en-AU",{hour:"2-digit",minute:"2-digit"});
+const dateStr  = () => new Date().toLocaleDateString("en-AU",{day:"2-digit",month:"short",year:"numeric"});
+const todayISO = () => new Date().toISOString().split("T")[0];
 const programsForLocation = loc => LOCATION_PROGRAMS[loc] || [];
 
-// ─────────────────────────────────────────────────────────────
+// --------------------
 //  DEFAULT DATA
-// ─────────────────────────────────────────────────────────────
+// --------------------
 const DEFAULT_STAFF = [
   {id:1,name:"Faisal Khan",   role:"CEO",            email:"ceo@nwqicss.org",   phone:"0400000001"},
   {id:2,name:"Sarah Williams",role:"Program Manager",email:"sarah@nwqicss.org", phone:"0400000002"},
@@ -126,11 +110,11 @@ const DEFAULT_ASSETS = [
   {id:5,type:"Equipment",    name:"Camera Kit",     serial:"CK001",status:"available",assigned_to:null,checked_out:null},
 ];
 
-const DEMO_RECORDS = []; // Live data from Supabase
+const DEMO_RECORDS = [];
 
-// ─────────────────────────────────────────────────────────────
+// --------------------
 //  REUSABLE UI
-// ─────────────────────────────────────────────────────────────
+// --------------------
 const Badge = ({label,color}) => (
   <span style={{display:"inline-block",padding:"3px 10px",borderRadius:20,fontSize:11,fontWeight:700,
     background:color+"22",color,border:`1px solid ${color}44`,letterSpacing:".4px",textTransform:"uppercase",whiteSpace:"nowrap"}}>{label}</span>
@@ -169,9 +153,9 @@ const Section = ({title,children}) => (
   </div>
 );
 
-// ─────────────────────────────────────────────────────────────
+// --------------------
 //  SIGN IN MODAL  (visitor / contractor / staff)
-// ─────────────────────────────────────────────────────────────
+// --------------------
 const SignInModal = ({type,location,staffList,onClose,onSubmit}) => {
   const programs = programsForLocation(location);
   const [f,setF] = useState({
@@ -201,7 +185,7 @@ const SignInModal = ({type,location,staffList,onClose,onSubmit}) => {
         <div style={{fontSize:18,fontWeight:900,color:T.white,marginBottom:4}}>{dateStr()} — {nowStr()}</div>
         <div style={{fontSize:12,color:T.accent,marginBottom:18}}>📍 {location}</div>
 
-        {/* ── VISITOR ── */}
+        {/* -- VISITOR -- */}
         {type==="visitor"&&<>
           <Field label="Full Name *" value={f.name} onChange={v=>set("name",v)} placeholder="Enter full name"/>
           <Field label="Phone (optional)" value={f.phone} onChange={v=>set("phone",v)} type="tel" placeholder="Mobile number"/>
@@ -212,18 +196,59 @@ const SignInModal = ({type,location,staffList,onClose,onSubmit}) => {
             <textarea value={f.purpose} onChange={e=>set("purpose",e.target.value)} placeholder="Any additional details about the visit…" rows={2}
               style={{...inputSt,resize:"vertical"}}/>
           </div>
+          <div style={{marginBottom:14}}>
+            <div onClick={()=>set("has_children",!f.has_children)}
+              style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",cursor:"pointer",
+                background:f.has_children?T.accent+"18":T.surface,borderRadius:10,
+                border:`2px solid ${f.has_children?T.accent:T.border}`,marginBottom:f.has_children?10:0}}>
+              <div style={{width:22,height:22,borderRadius:6,border:`2px solid ${f.has_children?T.accent:T.muted}`,
+                background:f.has_children?T.accent:"transparent",display:"flex",alignItems:"center",justifyContent:"center",
+                fontSize:13,color:"#07101f",flexShrink:0}}>{f.has_children?"✓":""}</div>
+              <span style={{fontSize:13,color:T.text}}>🧒 Children are accompanying me today (optional)</span>
+            </div>
+            {f.has_children&&(
+              <div style={{background:T.surface,borderRadius:10,padding:"12px 14px",border:`1px solid ${T.border}`}}>
+                <div style={{fontSize:11,color:T.muted,marginBottom:8,textTransform:"uppercase",letterSpacing:1}}>Children names (up to 7, optional)</div>
+                {[0,1,2,3,4,5,6].map(i=>(
+                  <input key={i} value={(f.children&&f.children[i])||""} placeholder={"Child "+(i+1)+" name"}
+                    onChange={e=>{const a=[...((f.children)||["","","","","","",""])];a[i]=e.target.value;set("children",a);}}
+                    style={{...inputSt,marginBottom:6}}/>
+                ))}
+              </div>
+            )}
+          </div>
         </>}
 
-        {/* ── CONTRACTOR ── */}
+        {/* -- CONTRACTOR -- */}
         {type==="contractor"&&<>
           <Field label="Company Name *" value={f.company} onChange={v=>set("company",v)} placeholder="Company name"/>
           <Field label="Your Name *" value={f.contact} onChange={v=>set("contact",v)} placeholder="Contact person"/>
           <Field label="Phone (optional)" value={f.phone} onChange={v=>set("phone",v)} type="tel" placeholder="Mobile number"/>
-          <Field label="Purpose of Visit" value={f.purpose} onChange={v=>set("purpose",v)} options={["Maintenance","Cleaning","Delivery","IT Support","Inspection","Other"]}/>
-          <Field label="Program Area Visited" value={f.program} onChange={v=>set("program",v)} options={PROGRAM_VISIT_PURPOSES}/>
+          <Field label="Purpose" value={f.purpose} onChange={v=>set("purpose",v)} options={["Maintenance","Cleaning","Delivery","IT Support","Inspection","Other"]}/>
+          <Field label="Program Area Visiting" value={f.program} onChange={v=>set("program",v)} options={PROGRAM_VISIT_PURPOSES}/>
+          <div style={{fontSize:12,fontWeight:700,color:T.white,marginBottom:8,marginTop:4}}>Compliance Declaration</div>
+          {[
+            {k:"has_insurance",label:"I have current Public Liability Insurance and can provide a copy to NWQICSS"},
+            {k:"has_code_of_conduct",label:"I have received and signed the NWQICSS Code of Conduct"},
+            {k:"has_safety_forms",label:"I have completed and signed all safety forms required by NWQICSS"},
+          ].map(({k,label})=>(
+            <div key={k} onClick={()=>set(k,!f[k])}
+              style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",cursor:"pointer",marginBottom:8,
+                background:f[k]?T.green+"18":T.surface,borderRadius:10,border:`2px solid ${f[k]?T.green:T.border}`}}>
+              <div style={{width:22,height:22,borderRadius:6,flexShrink:0,border:`2px solid ${f[k]?T.green:T.muted}`,
+                background:f[k]?T.green:"transparent",display:"flex",alignItems:"center",justifyContent:"center",
+                fontSize:13,color:"#07101f"}}>{f[k]?"✓":""}</div>
+              <span style={{fontSize:12,color:T.text}}>✅ {label}</span>
+            </div>
+          ))}
+          {(!f.has_insurance||!f.has_code_of_conduct||!f.has_safety_forms)&&(
+            <div style={{background:T.red+"18",border:`1px solid ${T.red}44`,borderRadius:10,padding:"10px 14px",marginBottom:8,fontSize:12,color:T.red,fontWeight:600}}>
+              ⚠️ If required forms are not signed before commencing work, please contact reception before proceeding.
+            </div>
+          )}
         </>}
 
-        {/* ── STAFF ── */}
+        {/* -- STAFF -- */}
         {type==="staff"&&<>
           <Field label="Staff Member *" value={f.staff} onChange={v=>set("staff",v)} options={staffList.map(s=>s.name)}/>
 
@@ -247,16 +272,46 @@ const SignInModal = ({type,location,staffList,onClose,onSubmit}) => {
             </div>
           </div>
 
-          {f.staff_mode==="outreach"&&(
+          {f.staff_mode==="outreach"&&(<>
             <div style={{marginBottom:14}}>
-              <FLabel text="Purpose of Outreach Visit *"/>
-              <textarea value={f.outreach_purpose} onChange={e=>set("outreach_purpose",e.target.value)}
-                placeholder="Describe the purpose of this outreach visit…" rows={3}
-                style={{...inputSt,resize:"vertical"}}/>
-              <div style={{fontSize:11,color:T.muted,marginTop:4}}>Include client name, address or area if safe to do so.</div>
+              <FLabel text="Purpose of Outreach *"/>
+              <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:8}}>
+                {["Family Support","Centrelink","Health","Job Network","Housing","Home Visit","Meeting","NWQICSS Support"].map(p=>(
+                  <div key={p} onClick={()=>set("outreach_purpose",p)}
+                    style={{padding:"8px 14px",borderRadius:20,cursor:"pointer",fontSize:12,fontWeight:600,
+                      border:`2px solid ${f.outreach_purpose===p?T.accent:T.border}`,
+                      background:f.outreach_purpose===p?T.accent+"22":T.surface,
+                      color:f.outreach_purpose===p?T.accent:T.text}}>{p}</div>
+                ))}
+              </div>
+              <input value={f.outreach_notes||""} onChange={e=>set("outreach_notes",e.target.value)}
+                placeholder="Additional notes (optional)" style={{...inputSt}}/>
             </div>
-          )}
-          <Field label="Program Area" value={f.program} onChange={v=>set("program",v)} options={PROGRAM_VISIT_PURPOSES}/>
+            <div style={{background:T.amber+"18",border:`2px solid ${T.amber}44`,borderRadius:10,padding:"12px 14px",marginBottom:12}}>
+              <div style={{fontSize:12,fontWeight:700,color:T.amber,marginBottom:8}}>🔔 Duress Alarm</div>
+              <div onClick={()=>set("has_duress",!f.has_duress)}
+                style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",marginBottom:f.has_duress?8:0}}>
+                <div style={{width:20,height:20,borderRadius:5,flexShrink:0,border:`2px solid ${f.has_duress?T.amber:T.muted}`,
+                  background:f.has_duress?T.amber:"transparent",display:"flex",alignItems:"center",justifyContent:"center",
+                  fontSize:12,color:"#07101f"}}>{f.has_duress?"✓":""}</div>
+                <span style={{fontSize:13,color:T.text}}>I have a duress alarm with me</span>
+              </div>
+              {f.has_duress&&<input value={f.duress_number||""} onChange={e=>set("duress_number",e.target.value)}
+                placeholder="Duress alarm number / ID" style={{...inputSt,borderColor:T.amber+"44"}}/>}
+            </div>
+            <div style={{background:T.accent+"18",border:`2px solid ${T.accent}44`,borderRadius:10,padding:"12px 14px",marginBottom:12}}>
+              <div style={{fontSize:12,fontWeight:700,color:T.accent,marginBottom:8}}>🚗 Vehicle</div>
+              <div onClick={()=>set("has_vehicle",!f.has_vehicle)}
+                style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",marginBottom:f.has_vehicle?8:0}}>
+                <div style={{width:20,height:20,borderRadius:5,flexShrink:0,border:`2px solid ${f.has_vehicle?T.accent:T.muted}`,
+                  background:f.has_vehicle?T.accent:"transparent",display:"flex",alignItems:"center",justifyContent:"center",
+                  fontSize:12,color:"#07101f"}}>{f.has_vehicle?"✓":""}</div>
+                <span style={{fontSize:13,color:T.text}}>I have a vehicle signed out</span>
+              </div>
+              {f.has_vehicle&&<input value={f.vehicle_rego||""} onChange={e=>set("vehicle_rego",e.target.value)}
+                placeholder="Vehicle registration (e.g. 123 ABC)" style={{...inputSt,borderColor:T.accent+"44"}}/>}
+            </div>
+          </>)}
           <Field label="Location" value={f.loc} onChange={v=>set("loc",v)} options={ALL_LOCATIONS}/>
         </>}
 
@@ -270,9 +325,9 @@ const SignInModal = ({type,location,staffList,onClose,onSubmit}) => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────
+// --------------------
 //  DASHBOARD
-// ─────────────────────────────────────────────────────────────
+// --------------------
 const Dashboard = ({records,assets,location}) => {
   const loc    = r => !location||r.location===location;
   const onSite = records.filter(r=>r.status==="on-site"&&loc(r));
@@ -351,57 +406,25 @@ const Dashboard = ({records,assets,location}) => {
           ))}
         </Card>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:14,marginBottom:0}}>
-        <Card>
-          <div style={{fontSize:13,fontWeight:700,color:T.white,marginBottom:12}}>🚗 Assets Status</div>
-          <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-            {assets.map(a=>(
-              <div key={a.id} style={{background:T.surface,border:`1px solid ${a.status==="out"?T.red+"55":T.green+"44"}`,borderRadius:12,padding:"10px 14px",minWidth:140}}>
-                <div style={{fontSize:13,fontWeight:700,color:T.text}}>{a.name}</div>
-                <div style={{fontSize:11,color:T.muted,margin:"3px 0 6px"}}>{a.status==="out"?`With ${a.assigned_to}`:"Available"}</div>
-                <Badge label={a.status==="out"?"Out":"Available"} color={a.status==="out"?T.red:T.green}/>
-              </div>
-            ))}
-            {assets.length===0&&<div style={{fontSize:13,color:T.muted}}>No assets configured.</div>}
-          </div>
-        </Card>
-        <Card>
-          <div style={{fontSize:13,fontWeight:700,color:T.white,marginBottom:12}}>🔔 Duress Alarms Status</div>
-          {assets.filter(a=>a.type==="duress"||(a.name && a.name.toLowerCase().includes("duress"))).length===0 && (
-            <div style={{fontSize:13,color:T.muted}}>No duress alarms configured. Add them in Admin.</div>
-          )}
-          {assets.filter(a=>a.type==="duress"||(a.name && a.name.toLowerCase().includes("duress"))).map(a=>(
-            <div key={a.id} style={{padding:"8px 0",borderBottom:`1px solid ${T.border}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div>
-                <div style={{fontSize:13,fontWeight:700,color:T.text}}>{a.name}</div>
-                <div style={{fontSize:11,color:T.muted}}>{a.status==="out"?`Carried by ${a.assigned_to}`:"In storage"}</div>
-              </div>
-              <Badge label={a.status==="out"?"Active":"Available"} color={a.status==="out"?T.green:T.muted}/>
+      <Card>
+        <div style={{fontSize:13,fontWeight:700,color:T.white,marginBottom:12}}>Assets</div>
+        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+          {assets.map(a=>(
+            <div key={a.id} style={{background:T.surface,border:`1px solid ${a.status==="out"?T.red+"55":T.green+"44"}`,borderRadius:12,padding:"10px 14px",minWidth:150}}>
+              <div style={{fontSize:13,fontWeight:700,color:T.text}}>{a.name}</div>
+              <div style={{fontSize:11,color:T.muted,margin:"3px 0 6px"}}>{a.status==="out"?`With ${a.assigned_to}`:"Available"}</div>
+              <Badge label={a.status==="out"?"Out":"Available"} color={a.status==="out"?T.red:T.green}/>
             </div>
           ))}
-          {/* Staff on outreach with duress */}
-          {outreach.length>0&&(
-            <div style={{marginTop:10,paddingTop:10,borderTop:`1px solid ${T.border}`}}>
-              <div style={{fontSize:11,color:T.muted,marginBottom:6}}>Staff currently on outreach:</div>
-              {outreach.map(r=>(
-                <div key={r.id} style={{fontSize:12,color:T.text,marginBottom:4}}>
-                  • <strong>{r.staff_name}</strong>
-                  {r.duress_number&&<span style={{color:T.green}}> · Duress #{r.duress_number}</span>}
-                  {r.vehicle_rego&&<span style={{color:T.accent}}> · 🚗 {r.vehicle_rego}</span>}
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
-      </div>
+        </div>
       </Card>
     </div>
   );
 };
 
-// ─────────────────────────────────────────────────────────────
+// --------------------
 //  VISITORS TAB
-// ─────────────────────────────────────────────────────────────
+// --------------------
 const VisitorsTab = ({records,onSignOut,location}) => {
   const [prog,setProg]    = useState("all");
   const [search,setSearch]= useState("");
@@ -459,9 +482,9 @@ const VisitorsTab = ({records,onSignOut,location}) => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────
+// --------------------
 //  CONTRACTORS TAB
-// ─────────────────────────────────────────────────────────────
+// --------------------
 const ContractorsTab = ({records,onSignOut,location}) => {
   const [email,setEmail]=useState("");
   const contractors=records.filter(r=>r.type==="contractor"&&(!location||r.location===location));
@@ -511,9 +534,9 @@ const ContractorsTab = ({records,onSignOut,location}) => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────
+// --------------------
 //  STAFF TAB
-// ─────────────────────────────────────────────────────────────
+// --------------------
 const StaffTab = ({records,assets,onSignOut,onAssetAction,location}) => {
   const staff = records.filter(r=>r.type==="staff"&&(!location||r.location===location));
   const inCentre = staff.filter(r=>r.status==="on-site"&&r.staff_status!=="outreach");
@@ -598,12 +621,9 @@ const StaffTab = ({records,assets,onSignOut,onAssetAction,location}) => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────
+// --------------------
 //  DURESS ALARMS TAB
-// ─────────────────────────────────────────────────────────────
-  </script>
-  <!-- 2/5 Duress + Vehicles -->
-  <script type="text/babel">
+// --------------------
 const DuressTab = ({assets,setAssets,staffList,location}) => {
   const [checkoutModal,setCheckoutModal] = useState(null);
   const [form,setForm] = useState({staff:"",notes:"",loc:location||""});
@@ -711,9 +731,9 @@ const DuressTab = ({assets,setAssets,staffList,location}) => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────
+// --------------------
 //  VEHICLES TAB
-// ─────────────────────────────────────────────────────────────
+// --------------------
 const VehiclesTab = ({assets,setAssets,staffList,location}) => {
   const [checkoutModal,setCheckoutModal] = useState(null);
   const [returnModal,setReturnModal]     = useState(null);
@@ -854,12 +874,9 @@ const VehiclesTab = ({assets,setAssets,staffList,location}) => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────
+// --------------------
 //  EMERGENCY TAB
-// ─────────────────────────────────────────────────────────────
-  </script>
-  <!-- 3/5 Emergency + ReturnConfirm + Kiosk -->
-  <script type="text/babel">
+// --------------------
 const EmergencyTab = ({records,location}) => {
   const onSite=records.filter(r=>r.status==="on-site"&&(!location||r.location===location));
   return (
@@ -886,460 +903,9 @@ const EmergencyTab = ({records,location}) => {
   );
 };
 
-
-// ─────────────────────────────────────────────────────────────
-//  KIOSK TAB  — self-service sign in / sign out
-// ─────────────────────────────────────────────────────────────
-const ReturnConfirm = ({records, staffName, f, set}) => {
-  const prev = records.filter(r=>r.type==="staff"&&r.staff_name===staffName&&r.status==="on-site"&&r.staff_status==="outreach");
-  if(prev.length===0) return null;
-  const last = prev[0];
-  return (
-    <div style={{background:T.purple+"18",border:`2px solid ${T.purple}44`,borderRadius:12,padding:"14px 16px",marginBottom:14}}>
-      <div style={{fontSize:13,fontWeight:800,color:T.purple,marginBottom:8}}>📋 Returning from Outreach — Please Confirm</div>
-      {last.duress_number&&(
-        <div onClick={()=>set("returned_duress",!f.returned_duress)}
-          style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",marginBottom:8}}>
-          <div style={{width:22,height:22,borderRadius:6,border:`2px solid ${f.returned_duress?T.purple:T.muted}`,
-            background:f.returned_duress?T.purple:"transparent",display:"flex",alignItems:"center",
-            justifyContent:"center",fontSize:13,color:T.bg,flexShrink:0}}>{f.returned_duress?"✓":""}</div>
-          <div style={{fontSize:13,color:T.text}}>🔔 I have returned duress alarm #{last.duress_number}</div>
-        </div>
-      )}
-      {last.vehicle_rego&&(
-        <div onClick={()=>set("returned_vehicle",!f.returned_vehicle)}
-          style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer"}}>
-          <div style={{width:22,height:22,borderRadius:6,border:`2px solid ${f.returned_vehicle?T.purple:T.muted}`,
-            background:f.returned_vehicle?T.purple:"transparent",display:"flex",alignItems:"center",
-            justifyContent:"center",fontSize:13,color:T.bg,flexShrink:0}}>{f.returned_vehicle?"✓":""}</div>
-          <div style={{fontSize:13,color:T.text}}>🚗 I have returned vehicle {last.vehicle_rego}</div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-const KioskTab = ({records, onSignIn, onSignOut, location, staffList}) => {
-  const [kioskTab, setKioskTab] = useState("signin");
-  const [type, setType]         = useState("");
-  const [step, setStep]         = useState("select"); // select | form | contractor_check | forms | done
-  const [f, setF]               = useState({});
-  const [searchName, setSearchName] = useState("");
-  const [autoResetTimer, setAutoResetTimer] = useState(null);
-
-  // Keep-awake using Wake Lock API
-  useEffect(()=>{
-    let wakeLock = null;
-    const requestWake = async () => {
-      try {
-        if("wakeLock" in navigator){
-          wakeLock = await navigator.wakeLock.request("screen");
-        }
-      } catch(e){}
-    };
-    requestWake();
-    const onVisible = () => { if(document.visibilityState==="visible") requestWake(); };
-    document.addEventListener("visibilitychange", onVisible);
-    return () => {
-      document.removeEventListener("visibilitychange", onVisible);
-      if(wakeLock) wakeLock.release();
-    };
-  },[]);
-
-  // Auto-reset after 60s of inactivity on done screen
-  useEffect(()=>{
-    if(step==="done"){
-      const t = setTimeout(()=>reset(), 60000);
-      setAutoResetTimer(t);
-      return ()=>clearTimeout(t);
-    }
-  },[step]);
-
-  const programs = programsForLocation(location);
-  const allPrograms = [].concat(...Object.values(LOCATION_PROGRAMS));
-  const set = (k,v) => setF(p=>({...p,[k]:v}));
-  const reset = () => { setType(""); setStep("select"); setF({}); setSearchName(""); if(autoResetTimer) clearTimeout(autoResetTimer); };
-
-  const onSiteVisitors    = records.filter(r=>r.type==="visitor"   &&r.status==="on-site"&&(!location||r.location===location));
-  const onSiteContractors = records.filter(r=>r.type==="contractor"&&r.status==="on-site"&&(!location||r.location===location));
-  const onSiteStaff       = records.filter(r=>r.type==="staff"     &&r.status==="on-site"&&(!location||r.location===location));
-
-  const filteredOut = (list, nameField) => {
-    const s = searchName.toLowerCase();
-    return list.filter(r=>(r[nameField]||"").toLowerCase().includes(s));
-  };
-
-  const handleKioskSignIn = () => {
-    const valid = type==="visitor"
-      ? (f.name && f.program && f.visit_purpose)
-      : type==="contractor" ? (f.company && f.contact)
-      : f.staff;
-    if(!valid) return;
-    const rec = {
-      type, location: f.loc||location,
-      ...(type==="visitor"&&{name:f.name, phone:f.phone||"", program:f.program, visit_purpose:f.visit_purpose, purpose:f.purpose||"",
-        has_children:f.has_children||false,
-        children_names:f.has_children&&f.children?(f.children.filter(n=>n.trim()).join(", ")):""}),
-      ...(type==="contractor"&&{company:f.company, contact_name:f.contact, phone:f.phone||"", purpose:f.purpose||"", program:f.program||"", compliance:"valid",
-        has_insurance:f.has_insurance||false, has_code_of_conduct:f.has_code_of_conduct||false, has_safety_forms:f.has_safety_forms||false}),
-      ...(type==="staff"&&{staff_name:f.staff, staff_status:f.staff_mode||"in-centre",
-        outreach_purpose:f.outreach_purpose||(f.outreach_notes?f.outreach_purpose+" — "+f.outreach_notes:f.outreach_purpose)||"",
-        outreach_notes:f.outreach_notes||"",
-        has_duress:f.has_duress||false, duress_number:f.duress_number||"",
-        has_vehicle:f.has_vehicle||false, vehicle_rego:f.vehicle_rego||"",
-        program:f.program||""}),
-    };
-    onSignIn(rec);
-    setStep("done");
-  };
-
-
-
-  // ── Bigger type selector buttons
-  const TypeBtn = ({val,icon,label,color}) => (
-    <div onClick={()=>{
-        setType(val);
-        if(val==="contractor") setStep("contractor_check");
-        else { setStep("form"); setF({program:programs[0]||"",loc:location,staff_mode:"in-centre"}); }
-      }}
-      style={{flex:1,minWidth:160,background:T.surface,border:`3px solid ${T.border}`,borderRadius:20,
-        padding:"32px 20px",textAlign:"center",cursor:"pointer",transition:"all .15s"}}
-      onMouseEnter={e=>{e.currentTarget.style.borderColor=(color||T.accent);e.currentTarget.style.background=(color||T.accent)+"18";}}
-      onMouseLeave={e=>{e.currentTarget.style.borderColor=T.border;e.currentTarget.style.background=T.surface;}}>
-      <div style={{fontSize:52,marginBottom:12}}>{icon}</div>
-      <div style={{fontSize:20,fontWeight:800,color:T.white}}>{label}</div>
-    </div>
-  );
-
-  const tabBtn = (val,label) => (
-    <button onClick={()=>{setKioskTab(val);reset();}}
-      style={{flex:1,padding:"20px",fontSize:20,fontWeight:800,cursor:"pointer",border:"none",
-        borderRadius:14,background:kioskTab===val?T.accent:T.surface,
-        color:kioskTab===val?T.bg:T.muted}}>
-      {label}
-    </button>
-  );
-
-  // Checkbox component
-  const Check = ({label,val,k}) => (
-    <div onClick={()=>set(k,!val)}
-      style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",background:val?T.accent+"18":T.surface,
-        border:`2px solid ${val?T.accent:T.border}`,borderRadius:12,cursor:"pointer",marginBottom:10}}>
-      <div style={{width:24,height:24,borderRadius:6,border:`2px solid ${val?T.accent:T.muted}`,
-        background:val?T.accent:"transparent",display:"flex",alignItems:"center",justifyContent:"center",
-        fontSize:14,color:T.bg,flexShrink:0}}>{val?"✓":""}</div>
-      <div style={{fontSize:14,color:T.text,fontWeight:val?700:400}}>{label}</div>
-    </div>
-  );
-
-  return (
-    <div style={{maxWidth:580,margin:"0 auto",userSelect:"none"}}>
-      {/* Header */}
-      <div style={{textAlign:"center",marginBottom:20,padding:"16px 0"}}>
-        <div style={{fontSize:30,fontWeight:900,color:T.white,letterSpacing:1}}>NWQICSS</div>
-        <div style={{fontSize:14,color:T.muted}}>📍 {location} — {dateStr()} {nowStr()}</div>
-      </div>
-
-      {/* Sign In / Sign Out tabs */}
-      <div style={{display:"flex",gap:8,marginBottom:24,background:T.surface,padding:6,borderRadius:16}}>
-        {tabBtn("signin","✅ Sign In")}
-        {tabBtn("signout","🚪 Sign Out")}
-      </div>
-
-      {/* ── SIGN IN ── */}
-      {kioskTab==="signin" && <>
-
-        {/* STEP: Select type */}
-        {step==="select" && (
-          <div>
-            <div style={{fontSize:16,color:T.muted,textAlign:"center",marginBottom:20}}>Who is signing in today?</div>
-            <div style={{display:"flex",gap:16,flexWrap:"wrap",justifyContent:"center"}}>
-              <TypeBtn val="visitor"    icon="👤" label="Visitor"    color={T.accent}/>
-              <TypeBtn val="contractor" icon="🔧" label="Contractor" color={T.accent2}/>
-              <TypeBtn val="staff"      icon="👷" label="Staff"      color={T.amber}/>
-            </div>
-          </div>
-        )}
-
-        {/* STEP: Contractor compliance check */}
-        {step==="contractor_check" && (
-          <div style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:16,padding:24}}>
-            <div style={{fontSize:13,color:T.accent2,fontWeight:700,marginBottom:4,textTransform:"uppercase"}}>🔧 Contractor — Compliance Declaration</div>
-            <div style={{fontSize:12,color:T.muted,marginBottom:20}}>Please confirm the following before signing in</div>
-
-            <Check label="✅ I have current Public Liability Insurance and can provide a copy to NWQICSS" val={f.has_insurance||false} k="has_insurance"/>
-            <Check label="✅ I have received and signed the NWQICSS Code of Conduct" val={f.has_code_of_conduct||false} k="has_code_of_conduct"/>
-            <Check label="✅ I have completed and signed all safety forms required by NWQICSS" val={f.has_safety_forms||false} k="has_safety_forms"/>
-
-            {/* Warning if forms not signed */}
-            {(!f.has_insurance || !f.has_code_of_conduct || !f.has_safety_forms) && (
-              <div style={{background:T.red+"18",border:`1px solid ${T.red}44`,borderRadius:12,
-                padding:"14px 16px",marginTop:16,marginBottom:4}}>
-                <div style={{fontSize:14,fontWeight:800,color:T.red,marginBottom:4}}>
-                  ⚠️ Forms Not Completed
-                </div>
-                <div style={{fontSize:13,color:T.text,lineHeight:1.5}}>
-                  If required forms are not signed before commencing work, please contact reception before proceeding.
-                </div>
-              </div>
-            )}
-
-            <div style={{display:"flex",gap:10,marginTop:20,flexWrap:"wrap"}}>
-              <Btn onClick={()=>{setStep("form");setF(p=>({...p,program:programs[0]||"",loc:location}));}} color={T.green} style={{flex:1}}>
-                ✓ Proceed to Sign In
-              </Btn>
-              <Btn onClick={reset} color={T.muted} outline style={{flex:1}}>Back</Btn>
-            </div>
-          </div>
-        )}
-
-
-
-        {/* STEP: Regular sign-in form */}
-        {step==="form" && (
-          <div style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:16,padding:24}}>
-            <div style={{fontSize:12,color:T.accent,fontWeight:700,marginBottom:4,textTransform:"uppercase"}}>
-              {type==="visitor"?"👤 Visitor":type==="contractor"?"🔧 Contractor":"👷 Staff"} Sign In
-            </div>
-            <div style={{fontSize:11,color:T.muted,marginBottom:18}}>📍 {location} · {nowStr()}</div>
-
-            {type==="visitor" && <>
-              <Field label="Your Full Name *" value={f.name||""} onChange={v=>set("name",v)} placeholder="Enter your name"/>
-              <Field label="Phone (optional)" value={f.phone||""} onChange={v=>set("phone",v)} type="tel" placeholder="Mobile number"/>
-              <Field label="Program / Area *" value={f.program||""} onChange={v=>set("program",v)} options={programs.length?programs:allPrograms}/>
-              <Field label="Purpose of Visit *" value={f.visit_purpose||""} onChange={v=>set("visit_purpose",v)} options={VISIT_PURPOSES}/>
-              <Field label="Notes (optional)" value={f.purpose||""} onChange={v=>set("purpose",v)} textarea placeholder="Any additional details…"/>
-
-              {/* Children accompanying visitor */}
-              <div style={{marginBottom:14}}>
-                <div onClick={()=>set("has_children",!f.has_children)}
-                  style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",
-                    background:f.has_children?T.accent+"18":T.surface,
-                    border:`2px solid ${f.has_children?T.accent:T.border}`,
-                    borderRadius:12,cursor:"pointer",marginBottom:f.has_children?12:0}}>
-                  <div style={{width:24,height:24,borderRadius:6,border:`2px solid ${f.has_children?T.accent:T.muted}`,
-                    background:f.has_children?T.accent:"transparent",display:"flex",alignItems:"center",
-                    justifyContent:"center",fontSize:14,color:T.bg,flexShrink:0}}>
-                    {f.has_children?"✓":""}
-                  </div>
-                  <div style={{fontSize:14,color:T.text,fontWeight:f.has_children?700:400}}>
-                    🧒 Children are accompanying me today
-                  </div>
-                </div>
-                {f.has_children && (
-                  <div style={{background:T.surface,borderRadius:12,padding:"14px 16px",border:`1px solid ${T.border}`}}>
-                    <div style={{fontSize:11,color:T.muted,marginBottom:10,textTransform:"uppercase",letterSpacing:1}}>
-                      Children's Names (optional — up to 7)
-                    </div>
-                    {[0,1,2,3,4,5,6].map(i=>(
-                      <input key={i}
-                        value={(f.children&&f.children[i])||""}
-                        onChange={e=>{
-                          const arr = [...(f.children||["","","","","","",""])];
-                          arr[i] = e.target.value;
-                          set("children", arr);
-                        }}
-                        placeholder={`Child ${i+1} name`}
-                        style={{width:"100%",padding:"9px 12px",background:T.card,
-                          border:`1px solid ${T.border}`,borderRadius:8,color:T.text,
-                          fontSize:13,outline:"none",marginBottom:6,boxSizing:"border-box"}}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            </>}
-
-            {type==="contractor" && <>
-              <Field label="Company Name *" value={f.company||""} onChange={v=>set("company",v)} placeholder="Your company"/>
-              <Field label="Your Name *" value={f.contact||""} onChange={v=>set("contact",v)} placeholder="Contact person"/>
-              <Field label="Phone (optional)" value={f.phone||""} onChange={v=>set("phone",v)} type="tel"/>
-              <Field label="Purpose of Visit" value={f.purpose||""} onChange={v=>set("purpose",v)} options={["Maintenance","Cleaning","Delivery","IT Support","Inspection","Other"]}/>
-              <Field label="Program Area Visiting" value={f.program||""} onChange={v=>set("program",v)} options={PROGRAM_VISIT_PURPOSES}/>
-            </>}
-
-            {type==="staff" && <>
-              <Field label="Your Name *" value={f.staff||""} onChange={v=>set("staff",v)} options={staffList.map(s=>s.name)}/>
-              <div style={{marginBottom:14}}>
-                <FLabel text="Sign in type *"/>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-                  {[
-                    {val:"in-centre",icon:"🏢",label:"Staff In",sub:"Arriving / returning"},
-                    {val:"outreach", icon:"🚶",label:"Staff Out",sub:"Leaving for outreach"},
-                  ].map(opt=>(
-                    <div key={opt.val} onClick={()=>set("staff_mode",opt.val)}
-                      style={{padding:"14px",borderRadius:12,cursor:"pointer",textAlign:"center",
-                        border:`2px solid ${(f.staff_mode||"in-centre")===opt.val?T.accent:T.border}`,
-                        background:(f.staff_mode||"in-centre")===opt.val?T.accent+"18":T.surface}}>
-                      <div style={{fontSize:28,marginBottom:4}}>{opt.icon}</div>
-                      <div style={{fontSize:13,fontWeight:700,color:(f.staff_mode||"in-centre")===opt.val?T.accent:T.text}}>{opt.label}</div>
-                      <div style={{fontSize:11,color:T.muted}}>{opt.sub}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* ── OUTREACH specific fields ── */}
-              {(f.staff_mode||"in-centre")==="outreach" && (<>
-                {/* Outreach purpose tiles */}
-                <div style={{marginBottom:14}}>
-                  <FLabel text="Purpose of Outreach *"/>
-                  <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:8}}>
-                    {["Family Support","Centrelink","Health","Job Network","Housing","Home Visit","Meeting","NWQICSS Support"].map(p=>(
-                      <div key={p} onClick={()=>set("outreach_purpose",p)}
-                        style={{padding:"8px 14px",borderRadius:20,cursor:"pointer",fontSize:13,fontWeight:600,
-                          border:`2px solid ${f.outreach_purpose===p?T.accent:T.border}`,
-                          background:f.outreach_purpose===p?T.accent+"22":T.surface,
-                          color:f.outreach_purpose===p?T.accent:T.text}}>
-                        {p}
-                      </div>
-                    ))}
-                  </div>
-                  <input value={f.outreach_notes||""} onChange={e=>set("outreach_notes",e.target.value)}
-                    placeholder="Additional notes (optional)"
-                    style={{width:"100%",padding:"9px 12px",background:T.surface,border:`1px solid ${T.border}`,
-                      borderRadius:8,color:T.text,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
-                </div>
-
-                {/* Duress acknowledgement */}
-                <div style={{background:T.amber+"18",border:`2px solid ${T.amber}44`,borderRadius:12,padding:"14px 16px",marginBottom:14}}>
-                  <div style={{fontSize:13,fontWeight:800,color:T.amber,marginBottom:8}}>🔔 Duress Alarm</div>
-                  <div onClick={()=>set("has_duress",!f.has_duress)}
-                    style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",marginBottom:f.has_duress?10:0}}>
-                    <div style={{width:22,height:22,borderRadius:6,border:`2px solid ${f.has_duress?T.amber:T.muted}`,
-                      background:f.has_duress?T.amber:"transparent",display:"flex",alignItems:"center",
-                      justifyContent:"center",fontSize:13,color:T.bg,flexShrink:0}}>{f.has_duress?"✓":""}</div>
-                    <div style={{fontSize:13,color:T.text}}>I have a duress alarm with me</div>
-                  </div>
-                  {f.has_duress&&(
-                    <input value={f.duress_number||""} onChange={e=>set("duress_number",e.target.value)}
-                      placeholder="Duress alarm number / ID"
-                      style={{width:"100%",padding:"9px 12px",background:T.surface,border:`1px solid ${T.amber}44`,
-                        borderRadius:8,color:T.text,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
-                  )}
-                </div>
-
-                {/* Vehicle acknowledgement */}
-                <div style={{background:T.accent+"18",border:`2px solid ${T.accent}44`,borderRadius:12,padding:"14px 16px",marginBottom:14}}>
-                  <div style={{fontSize:13,fontWeight:800,color:T.accent,marginBottom:8}}>🚗 Vehicle</div>
-                  <div onClick={()=>set("has_vehicle",!f.has_vehicle)}
-                    style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",marginBottom:f.has_vehicle?10:0}}>
-                    <div style={{width:22,height:22,borderRadius:6,border:`2px solid ${f.has_vehicle?T.accent:T.muted}`,
-                      background:f.has_vehicle?T.accent:"transparent",display:"flex",alignItems:"center",
-                      justifyContent:"center",fontSize:13,color:T.bg,flexShrink:0}}>{f.has_vehicle?"✓":""}</div>
-                    <div style={{fontSize:13,color:T.text}}>I have a vehicle signed out</div>
-                  </div>
-                  {f.has_vehicle&&(
-                    <input value={f.vehicle_rego||""} onChange={e=>set("vehicle_rego",e.target.value)}
-                      placeholder="Vehicle registration (e.g. 123 ABC)"
-                      style={{width:"100%",padding:"9px 12px",background:T.surface,border:`1px solid ${T.accent}44`,
-                        borderRadius:8,color:T.text,fontSize:13,outline:"none",boxSizing:"border-box"}}/>
-                  )}
-                </div>
-              </>)}
-
-              {/* ── RETURNING from outreach acknowledgements ── */}
-              {(f.staff_mode||"in-centre")==="in-centre" && f.staff && <ReturnConfirm
-                records={records} staffName={f.staff} f={f} set={set}
-              />}
-
-              <Field label="Program Area" value={f.program||""} onChange={v=>set("program",v)} options={PROGRAM_VISIT_PURPOSES}/>
-            </>}
-
-            <div style={{display:"flex",gap:10,marginTop:8}}>
-              <Btn onClick={handleKioskSignIn} color={T.green} style={{flex:1,fontSize:16,padding:"14px"}}>✓ Confirm Sign In</Btn>
-              <Btn onClick={reset} color={T.muted} outline style={{flex:1}}>Back</Btn>
-            </div>
-          </div>
-        )}
-
-        {/* STEP: Done */}
-        {step==="done" && (
-          <div style={{textAlign:"center",padding:"48px 20px",background:T.card,borderRadius:16,border:`1px solid ${T.green}44`}}>
-            <div style={{fontSize:64,marginBottom:12}}>✅</div>
-            <div style={{fontSize:24,fontWeight:900,color:T.green,marginBottom:8}}>Signed In!</div>
-            <div style={{fontSize:14,color:T.muted,marginBottom:28}}>Your sign-in has been recorded. Screen resets in 60 seconds.</div>
-            <Btn onClick={reset} color={T.accent} style={{fontSize:16,padding:"14px 32px"}}>Sign In Another Person</Btn>
-          </div>
-        )}
-      </>}
-
-      {/* ── SIGN OUT ── */}
-      {kioskTab==="signout" && (
-        <div>
-          <div style={{fontSize:15,color:T.muted,textAlign:"center",marginBottom:16}}>Find your name and tap Sign Out</div>
-          <input value={searchName} onChange={e=>setSearchName(e.target.value)} placeholder="Search by name…"
-            style={{width:"100%",padding:"14px 16px",background:T.surface,border:`1.5px solid ${T.border}`,borderRadius:12,
-              color:T.text,fontSize:16,outline:"none",marginBottom:16,boxSizing:"border-box"}}/>
-
-          {filteredOut(onSiteVisitors,"name").length>0 && (
-            <div style={{marginBottom:16}}>
-              <div style={{fontSize:12,color:T.muted,letterSpacing:1,textTransform:"uppercase",marginBottom:8}}>👤 Visitors</div>
-              {filteredOut(onSiteVisitors,"name").map(r=>(
-                <div key={r.id} style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:14,padding:"16px 18px",
-                  marginBottom:10,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
-                  <div>
-                    <div style={{fontWeight:800,fontSize:16,color:T.white}}>{r.name}</div>
-                    <div style={{fontSize:12,color:T.muted}}>{r.program} · In {r.sign_in_time}</div>
-                  </div>
-                  <Btn onClick={()=>{onSignOut(r.id);setSearchName("");}} color={T.red} style={{fontSize:15,padding:"12px 20px"}}>Sign Out</Btn>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {filteredOut(onSiteContractors,"company").length>0 && (
-            <div style={{marginBottom:16}}>
-              <div style={{fontSize:12,color:T.muted,letterSpacing:1,textTransform:"uppercase",marginBottom:8}}>🔧 Contractors</div>
-              {filteredOut(onSiteContractors,"company").map(r=>(
-                <div key={r.id} style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:14,padding:"16px 18px",
-                  marginBottom:10,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
-                  <div>
-                    <div style={{fontWeight:800,fontSize:16,color:T.white}}>{r.company}</div>
-                    <div style={{fontSize:12,color:T.muted}}>{r.contact_name} · In {r.sign_in_time}</div>
-                  </div>
-                  <Btn onClick={()=>{onSignOut(r.id);setSearchName("");}} color={T.red} style={{fontSize:15,padding:"12px 20px"}}>Sign Out</Btn>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {filteredOut(onSiteStaff,"staff_name").length>0 && (
-            <div style={{marginBottom:16}}>
-              <div style={{fontSize:12,color:T.muted,letterSpacing:1,textTransform:"uppercase",marginBottom:8}}>👷 Staff</div>
-              {filteredOut(onSiteStaff,"staff_name").map(r=>(
-                <div key={r.id} style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:14,padding:"16px 18px",
-                  marginBottom:10,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
-                  <div>
-                    <div style={{fontWeight:800,fontSize:16,color:T.white}}>{r.staff_name}</div>
-                    <div style={{fontSize:12,color:T.muted}}>{r.staff_status==="outreach"?"On Outreach":"In Centre"} · In {r.sign_in_time}</div>
-                  </div>
-                  <Btn onClick={()=>{onSignOut(r.id);setSearchName("");}} color={T.red} style={{fontSize:15,padding:"12px 20px"}}>Sign Out</Btn>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {onSiteVisitors.length+onSiteContractors.length+onSiteStaff.length===0 && (
-            <div style={{textAlign:"center",color:T.muted,padding:40,fontSize:15}}>Nobody currently signed in at this location.</div>
-          )}
-          {searchName && filteredOut(onSiteVisitors,"name").length+filteredOut(onSiteContractors,"company").length+filteredOut(onSiteStaff,"staff_name").length===0 && (
-            <div style={{textAlign:"center",color:T.muted,padding:16,fontSize:13}}>No matches for "{searchName}"</div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
-
-
-
-// ─────────────────────────────────────────────────────────────
+// --------------------
 //  DAILY REPORT TAB
-// ─────────────────────────────────────────────────────────────
-  </script>
-  <!-- 4/5 Reports -->
-  <script type="text/babel">
+// --------------------
 const ReportTab = ({records,assets}) => {
   const [activeReport,setActiveReport] = useState("combined");
   const today       = records.filter(r=>r.date===todayISO());
@@ -1356,8 +922,8 @@ const ReportTab = ({records,assets}) => {
     const lines=[];
     lines.push(`NWQICSS — Combined Daily Site Report`);
     lines.push(`Date: ${dateStr()}   Generated: ${nowStr()}`);
-    lines.push(`Sent to: ${HR_EMAIL}, ${WHS_EMAIL}`);
-    lines.push(`${"─".repeat(50)}`);
+    lines.push(`Sent to: ${CEO_EMAIL}, ${HR_EMAIL}, ${WHS_EMAIL}`);
+    lines.push(`${"-".repeat(50)}`);
     lines.push(``);
     // by location
     ALL_LOCATIONS.forEach(loc=>{
@@ -1366,7 +932,7 @@ const ReportTab = ({records,assets}) => {
       const locContractors = contractors.filter(r=>r.location===loc);
       if(locVisitors.length+locStaff.length+locContractors.length===0) return;
       lines.push(`📍 ${loc.toUpperCase()}`);
-      lines.push(`─────────────────────────────────────────────`);
+      lines.push(`--------------------`);
       if(locVisitors.length>0){
         lines.push(`  Visitors (${locVisitors.length}):`);
         locVisitors.forEach(r=>lines.push(`    • ${r.name} | ${r.program} | ${r.visit_purpose||r.purpose} | In: ${r.sign_in_time} Out: ${r.sign_out_time||"Still on site"}`));
@@ -1401,8 +967,8 @@ const ReportTab = ({records,assets}) => {
     const lines=[];
     lines.push(`NWQICSS — Daily Program Report: ${prog}`);
     lines.push(`Date: ${dateStr()}   Generated: ${nowStr()}`);
-    lines.push(`Sent to: ${(recipient && recipient.manager)||"—"}, ${HR_EMAIL}, ${WHS_EMAIL}`);
-    lines.push(`${"─".repeat(50)}`);
+    lines.push(`Sent to: ${(recipient&&recipient.manager)||"—"}, ${HR_EMAIL}, ${WHS_EMAIL}`);
+    lines.push(`${"-".repeat(50)}`);
     lines.push(`Total visitors today: ${progVisitors.length}`);
     lines.push(``);
     if(progVisitors.length===0){
@@ -1424,7 +990,7 @@ const ReportTab = ({records,assets}) => {
   const emailCombined = () => {
     const subject = encodeURIComponent(`NWQICSS Combined Daily Report — ${dateStr()}`);
     const body    = encodeURIComponent(buildCombinedReport());
-    window.open(`mailto:${HR_EMAIL},${WHS_EMAIL}?subject=${subject}&body=${body}`);
+    window.open(`mailto:${CEO_EMAIL},${HR_EMAIL},${WHS_EMAIL}?subject=${subject}&body=${body}`);
   };
 
   const emailProgram = (prog) => {
@@ -1446,32 +1012,11 @@ const ReportTab = ({records,assets}) => {
 
   const reportText = activeReport==="combined" ? buildCombinedReport() : buildProgramReport(activeReport);
 
-  // ── Auto-send at 11:45 PM AEST ───────────────────────────
-  useEffect(()=>{
-    const checkTime = () => {
-      const now = new Date();
-      const timeStr = now.toLocaleTimeString("en-AU",{hour:"2-digit",minute:"2-digit",hour12:false,timeZone:"Australia/Brisbane"});
-      if(timeStr === "23:45"){
-        // Auto-send all program reports
-        Object.keys(PROGRAM_EMAILS).forEach(prog => {
-          const recipient = PROGRAM_EMAILS[prog];
-          if(!recipient) return;
-          const subject = encodeURIComponent(`NWQICSS Auto Report: ${prog} — ${dateStr()}`);
-          const body    = encodeURIComponent(buildProgramReport(prog));
-          const to      = [recipient.manager, HR_EMAIL, WHS_EMAIL].filter(Boolean).join(",");
-          window.open(`mailto:${to}?subject=${subject}&body=${body}`);
-        });
-      }
-    };
-    const interval = setInterval(checkTime, 60000); // check every minute
-    return () => clearInterval(interval);
-  },[records]);
-
   return (
     <div>
       <div style={{fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Daily Reports</div>
       <div style={{fontSize:24,fontWeight:900,color:T.white,marginBottom:4}}>End of Day Reports</div>
-      <div style={{fontSize:13,color:T.muted,marginBottom:20}}>Reports auto-send at 11:45 PM each day. Use buttons below to send manually any time.</div>
+      <div style={{fontSize:13,color:T.muted,marginBottom:20}}>Reports auto-send at midnight. Use buttons below to send manually any time.</div>
 
       {/* Summary stats */}
       <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:24}}>
@@ -1495,7 +1040,7 @@ const ReportTab = ({records,assets}) => {
         <div style={{fontSize:13,fontWeight:700,color:T.white,marginBottom:10}}>Select Report to Preview</div>
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
           <button onClick={()=>setActiveReport("combined")} style={{padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:700,cursor:"pointer",
-            background:activeReport==="combined"?HR_EMAIL?T.accent:T.accent:T.accent,color:T.bg,border:`1px solid ${T.accent}`,opacity:activeReport==="combined"?1:.5}}>
+            background:activeReport==="combined"?CEO_EMAIL?T.accent:T.accent:T.accent,color:T.bg,border:`1px solid ${T.accent}`,opacity:activeReport==="combined"?1:.5}}>
             📋 Combined Report
           </button>
           {Object.entries(PROGRAM_EMAILS).map(([prog,info])=>(
@@ -1561,7 +1106,7 @@ const ReportTab = ({records,assets}) => {
         </div>
         <div style={{marginTop:12,display:"flex",flexDirection:"column",gap:6}}>
           {[
-            {label:"Combined (all data)",to:`${HR_EMAIL}, ${WHS_EMAIL}`},
+            {label:"Combined (all data)",to:`${CEO_EMAIL}, ${HR_EMAIL}, ${WHS_EMAIL}`},
             ...Object.entries(PROGRAM_EMAILS).map(([prog,info])=>({label:prog,to:`${info.manager}, ${HR_EMAIL}, ${WHS_EMAIL}`}))
           ].map(({label,to})=>(
             <div key={label} style={{display:"flex",gap:10,fontSize:12,padding:"6px 0",borderBottom:`1px solid ${T.border}`}}>
@@ -1578,12 +1123,9 @@ const ReportTab = ({records,assets}) => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────
+// --------------------
 //  ADMIN TAB
-// ─────────────────────────────────────────────────────────────
-  </script>
-  <!-- 5/5 Admin + App -->
-  <script type="text/babel">
+// --------------------
 const AdminTab = ({staffList,setStaffList,assets,setAssets}) => {
   const [activeSection,setSection] = useState("staff");
   const [newStaff,setNewStaff]   = useState({name:"",role:"",email:"",phone:""});
@@ -1777,7 +1319,7 @@ const AdminTab = ({staffList,setStaffList,assets,setAssets}) => {
             <Card>
               <div style={{display:"flex",flexDirection:"column",gap:8}}>
                 {[
-                  {label:"Combined Report",to:`${HR_EMAIL}, ${WHS_EMAIL}`},
+                  {label:"Combined Report",to:`${CEO_EMAIL}, ${HR_EMAIL}, ${WHS_EMAIL}`},
                   ...Object.entries(PROGRAM_EMAILS).map(([prog,info])=>({label:prog,to:`${info.manager}, ${HR_EMAIL}, ${WHS_EMAIL}`}))
                 ].map(({label,to})=>(
                   <div key={label} style={{display:"flex",gap:10,fontSize:12,padding:"8px 0",borderBottom:`1px solid ${T.border}`,flexWrap:"wrap"}}>
@@ -1786,7 +1328,7 @@ const AdminTab = ({staffList,setStaffList,assets,setAssets}) => {
                   </div>
                 ))}
               </div>
-              <div style={{fontSize:11,color:T.muted,marginTop:12}}>To change any email address, edit the PROGRAM_EMAILS or HR_EMAIL/WHS_EMAIL/HR_EMAIL at the top of App.jsx.</div>
+              <div style={{fontSize:11,color:T.muted,marginTop:12}}>To change any email address, edit the PROGRAM_EMAILS or HR_EMAIL/WHS_EMAIL/CEO_EMAIL at the top of App.jsx.</div>
             </Card>
           </Section>
           <Section title="📍 Locations & Programs">
@@ -1805,28 +1347,24 @@ const AdminTab = ({staffList,setStaffList,assets,setAssets}) => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────
+// --------------------
 //  MAIN APP
-// ─────────────────────────────────────────────────────────────
-// ── Supabase config ──────────────────────────────────────────
+// --------------------
+// -- Supabase config --------------------
 const SUPABASE_URL = "https://kfxvkossvqlumdxwauak.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmeHZrb3NzdnFsdW1keHdhdWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwMDg3NzksImV4cCI6MjA4ODU4NDc3OX0.vzdKGA1LOgNjKYln7uEAVSjr4nFc9FbEiAgVGbi6SYc";
 
-// ── Sync helpers ─────────────────────────────────────────────
+// -- Sync helpers --------------------
 const dbFetch = async () => {
   try {
-    // Fetch today + yesterday to handle overnight shifts
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate()-1);
-    const yISO = yesterday.toLocaleDateString("en-CA",{timeZone:"Australia/Brisbane"});
     const tISO = new Date().toLocaleDateString("en-CA",{timeZone:"Australia/Brisbane"});
-    const url = SUPABASE_URL+"/rest/v1/records?or=(date.eq."+tISO+",date.eq."+yISO+")&order=id.desc&limit=1000";
-    const r = await fetch(url,{
+    const y = new Date(); y.setDate(y.getDate()-1);
+    const yISO = y.toLocaleDateString("en-CA",{timeZone:"Australia/Brisbane"});
+    const r = await fetch(SUPABASE_URL+"/rest/v1/records?or=(date.eq."+tISO+",date.eq."+yISO+")&order=id.desc&limit=1000",{
       headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Cache-Control":"no-cache"}
     });
-    if(r.ok){ const d=await r.json(); return d; }
-    console.error("dbFetch error:", r.status, await r.text());
-  } catch(e){ console.error("dbFetch exception:", e); }
+    if(r.ok) return await r.json();
+  } catch(e){}
   return null;
 };
 const dbInsert = async (record) => {
@@ -1848,17 +1386,12 @@ const dbUpdate = async (id, patch) => {
   } catch(e){}
 };
 
-const STAFF_PIN = "4825"; // ← Change this to your preferred PIN
-
 function App() {
-  const [tab,setTab]         = useState("kiosk");
+  const [tab,setTab]         = useState("dashboard");
   const [dbReady,setDbReady] = useState(false);
-  const [unlocked,setUnlocked]   = useState(false);
-  const [showPinModal,setShowPin]= useState(false);
-  const [pinEntry,setPinEntry]   = useState("");
-  const [pinErr,setPinErr]       = useState("");
   const [location,setLoc]    = useState("Mount Isa");
-  const [records,setRecs]    = useState(DEMO_RECORDS);
+  const [records,setRecs]    = useState([]);
+  const [dbReady,setDbReady] = useState(false);
   const [assets,setAssets]   = useState(DEFAULT_ASSETS);
   const [staffList,setStaff] = useState(DEFAULT_STAFF);
   const [modal,setModal]     = useState(null);
@@ -1866,70 +1399,47 @@ function App() {
 
   useEffect(()=>{const t=setInterval(()=>setTime(nowStr()),30000);return()=>clearInterval(t);},[]);
 
-  const doPinUnlock = () => {
-    if(pinEntry === STAFF_PIN){
-      setUnlocked(true);
-      setShowPin(false);
-      setPinEntry("");
-      setPinErr("");
-      setTab("dashboard");
-    } else {
-      setPinErr("Incorrect PIN.");
-      setPinEntry("");
-    }
-  };
-
   const handleSignIn = form => {
-    const t = form.type||modal;
     const newRec = {
-      id:Date.now(), type:t,
+      id:Date.now(), type:modal,
       sign_in_time:nowStr(), sign_out_time:null, status:"on-site",
       location:form.loc||location, date:todayISO(),
-      ...(t==="visitor"&&{
-        name:form.name, purpose:form.purpose||"", visit_purpose:form.visit_purpose||"",
-        program:form.program||"", phone:form.phone||""
+      ...(modal==="visitor"&&{
+        name:form.name, purpose:form.purpose, visit_purpose:form.visit_purpose,
+        program:form.program, phone:form.phone,
+        has_children:form.has_children||false,
+        children_names:form.has_children&&form.children?(form.children.filter(n=>n.trim()).join(", ")):""
       }),
-      ...(t==="contractor"&&{
-        company:form.company||"", contact_name:form.contact||form.contact_name||"",
-        purpose:form.purpose||"", phone:form.phone||"", program:form.program||"", compliance:"valid"
+      ...(modal==="contractor"&&{
+        company:form.company, contact_name:form.contact, program:form.program||"",
+        purpose:form.purpose, phone:form.phone, compliance:"valid",
+        has_insurance:form.has_insurance||false,
+        has_code_of_conduct:form.has_code_of_conduct||false,
+        has_safety_forms:form.has_safety_forms||false
       }),
-      ...(t==="staff"&&{
-        staff_name:form.staff||form.staff_name||"", staff_status:form.staff_mode||"in-centre",
-        outreach_purpose:form.outreach_purpose||"", program:form.program||""
+      ...(modal==="staff"&&{
+        staff_name:form.staff, staff_status:form.staff_mode,
+        outreach_purpose:form.outreach_purpose||"",
+        outreach_notes:form.outreach_notes||"",
+        has_duress:form.has_duress||false, duress_number:form.duress_number||"",
+        has_vehicle:form.has_vehicle||false, vehicle_rego:form.vehicle_rego||""
       }),
     };
     setRecs(p=>[...p, newRec]);
-    if(modal) setModal(null);
+    setModal(null);
     dbInsert(newRec);
   };
 
-  // ── Supabase Realtime sync ──────────────────────────────────
+  // -- Live sync from Supabase every 15s --------------------
   useEffect(()=>{
-    // Initial load
     const load = async () => {
       const data = await dbFetch();
-      if(data && Array.isArray(data)){
-        setRecs(data);
-        setDbReady(true);
-      } else {
-        setDbReady(true); // show app even if offline
-      }
+      if(data && Array.isArray(data)){setRecs(data);setDbReady(true);}
+      else setDbReady(true);
     };
     load();
-
-    // Realtime subscription via Supabase Postgres Changes
-    const channel = `realtime_${Math.random()}`;
-    let es = null;
-    try {
-      const realtimeUrl = SUPABASE_URL.replace('https://','wss://') +
-        '/realtime/v1/websocket?apikey=' + SUPABASE_KEY + '&vsn=1.0.0';
-      // Fallback: poll every 5 seconds for near-realtime
-      const iv = setInterval(load, 5000);
-      return () => clearInterval(iv);
-    } catch(e) {
-      const iv = setInterval(load, 5000);
-      return () => clearInterval(iv);
-    }
+    const iv = setInterval(load, 5000);
+    return () => clearInterval(iv);
   },[]);
 
   const handleSignOut = id => {
@@ -1960,7 +1470,6 @@ function App() {
     {id:"report",      icon:"📋",label:"Reports"},
     {id:"emergency",   icon:"🚨",label:"Emergency"},
     {id:"admin",       icon:"⚙️", label:"Admin"},
-    {id:"kiosk",       icon:"🖥️", label:"Kiosk"},
   ];
 
   return (
@@ -1977,27 +1486,15 @@ function App() {
             </div>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
-            {unlocked
-              ? <button onClick={()=>{setUnlocked(false);setTab("kiosk");}} title="Lock to Kiosk"
-                  style={{background:"none",border:`1px solid ${T.border}`,borderRadius:8,padding:"4px 10px",
-                    color:T.muted,fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",gap:4}}>
-                  🔓 Lock
-                </button>
-              : <button onClick={()=>{setShowPin(true);setPinErr("");setPinEntry("");}} title="Staff login"
-                  style={{background:"none",border:`1px solid ${T.border}`,borderRadius:8,padding:"4px 10px",
-                    color:T.muted,fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",gap:4}}>
-                  🔒 Staff
-                </button>
-            }
             <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12}}>
               <span style={{width:7,height:7,borderRadius:"50%",background:T.green,display:"inline-block",boxShadow:`0 0 6px ${T.green}`}}/>
               <span style={{color:T.green,fontWeight:700}}>{onSiteCount}</span>
               <span style={{color:T.muted}}>on site</span>
             </div>
-            <div style={{display:"flex",alignItems:"center",gap:4,fontSize:11}}>
+            <span style={{display:"flex",alignItems:"center",gap:4,fontSize:11}}>
               <span style={{width:6,height:6,borderRadius:"50%",background:dbReady?T.green:T.amber,display:"inline-block"}}/>
-              <span style={{color:dbReady?T.green:T.amber}}>{dbReady?"Live":"Connecting..."}</span>
-            </div>
+              <span style={{color:dbReady?T.green:T.amber}}>{dbReady?"Live":"..."}</span>
+            </span>
             <span style={{fontSize:11,color:T.muted}}>{time}</span>
           </div>
         </div>
@@ -2015,15 +1512,15 @@ function App() {
         </div>
       </div>
 
-      {/* Tab bar — only shown when unlocked */}
-      {unlocked && <div style={{background:T.surface,borderBottom:`1px solid ${T.border}`,padding:"0 16px",overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
+      {/* Tab bar */}
+      <div style={{background:T.surface,borderBottom:`1px solid ${T.border}`,padding:"0 16px",overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
         <div style={{maxWidth:1100,margin:"0 auto",display:"flex",gap:0}}>
           {TABS.map(t=>(
             <button key={t.id} onClick={()=>setTab(t.id)} style={{
-              padding:"14px 16px",background:"transparent",border:"none",
-              borderBottom:`3px solid ${tab===t.id?T.accent:"transparent"}`,
-              color:tab===t.id?T.accent:T.muted,fontWeight:700,fontSize:14,
-              cursor:"pointer",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:6,
+              padding:"11px 12px",background:"transparent",border:"none",
+              borderBottom:`2px solid ${tab===t.id?T.accent:"transparent"}`,
+              color:tab===t.id?T.accent:T.muted,fontWeight:700,fontSize:12,
+              cursor:"pointer",whiteSpace:"nowrap",display:"flex",alignItems:"center",gap:4,
               WebkitTapHighlightColor:"transparent"}}>
               {t.icon} {t.label}
               {t.id==="emergency"&&onSiteCount>0&&(
@@ -2032,39 +1529,12 @@ function App() {
             </button>
           ))}
         </div>
-      </div>}
+      </div>
 
       {/* Page content */}
       <div style={{maxWidth:1100,margin:"0 auto",padding:"20px 16px"}}>
-
-        {/* PIN unlock modal */}
-        {showPinModal&&(
-          <div style={{position:"fixed",inset:0,background:"#000d",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
-            <div style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:20,padding:32,width:"100%",maxWidth:320,textAlign:"center"}}>
-              <div style={{fontSize:40,marginBottom:12}}>&#128274;</div>
-              <div style={{fontSize:17,fontWeight:900,color:T.white,marginBottom:4}}>Staff Access</div>
-              <div style={{fontSize:12,color:T.muted,marginBottom:20}}>Enter your PIN to unlock the full app</div>
-              <input value={pinEntry} onChange={e=>setPinEntry(e.target.value.replace(/[^0-9]/g,"").slice(0,6))}
-                onKeyDown={e=>e.key==="Enter"&&doPinUnlock()}
-                type="password" inputMode="numeric" placeholder="• • • •"
-                style={{width:"100%",padding:"12px",background:T.surface,border:`1.5px solid ${T.border}`,
-                  borderRadius:10,color:T.white,fontSize:22,textAlign:"center",outline:"none",
-                  letterSpacing:8,marginBottom:10,boxSizing:"border-box"}}/>
-              {pinErr&&<div style={{color:T.red,fontSize:12,marginBottom:8}}>{pinErr}</div>}
-              <div style={{display:"flex",gap:8,marginTop:4}}>
-                <Btn onClick={doPinUnlock} color={T.green} style={{flex:1}}>Unlock</Btn>
-                <Btn onClick={()=>{setShowPin(false);setPinEntry("");setPinErr("");}} color={T.muted} outline style={{flex:1}}>Cancel</Btn>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Locked — show kiosk only */}
-        {!unlocked && <KioskTab records={records} onSignIn={handleSignIn} onSignOut={handleSignOut} location={location} staffList={staffList}/>}
-
-        {/* Unlocked — show all tabs */}
-        {unlocked && tab==="dashboard"   &&<Dashboard records={records} assets={assets} location={location}/>}
-        {unlocked && tab==="signin"      &&(
+        {tab==="dashboard"   &&<Dashboard records={records} assets={assets} location={location}/>}
+        {tab==="signin"      &&(
           <div>
             <div style={{fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Sign In Kiosk</div>
             <div style={{fontSize:22,fontWeight:900,color:T.white,marginBottom:4}}>Who's signing in today?</div>
@@ -2085,15 +1555,14 @@ function App() {
             </div>
           </div>
         )}
-        {unlocked && tab==="visitors"    &&<VisitorsTab records={records} onSignOut={handleSignOut} location={location}/>}
-        {unlocked && tab==="contractors" &&<ContractorsTab records={records} onSignOut={handleSignOut} location={location}/>}
-        {unlocked && tab==="staff"       &&<StaffTab records={records} assets={assets} onSignOut={handleSignOut} onAssetAction={handleAsset} location={location}/>}
-        {unlocked && tab==="duress"      &&<DuressTab assets={assets} setAssets={setAssets} staffList={staffList} location={location}/>}
-        {unlocked && tab==="vehicles"    &&<VehiclesTab assets={assets} setAssets={setAssets} staffList={staffList} location={location}/>}
-        {unlocked && tab==="report"      &&<ReportTab records={records} assets={assets}/>}
-        {unlocked && tab==="emergency"   &&<EmergencyTab records={records} location={location}/>}
-        {unlocked && tab==="kiosk"       &&<KioskTab records={records} onSignIn={handleSignIn} onSignOut={handleSignOut} location={location} staffList={staffList}/>}
-        {unlocked && tab==="admin"       &&<AdminTab staffList={staffList} setStaffList={setStaff} assets={assets} setAssets={setAssets}/>}
+        {tab==="visitors"    &&<VisitorsTab records={records} onSignOut={handleSignOut} location={location}/>}
+        {tab==="contractors" &&<ContractorsTab records={records} onSignOut={handleSignOut} location={location}/>}
+        {tab==="staff"       &&<StaffTab records={records} assets={assets} onSignOut={handleSignOut} onAssetAction={handleAsset} location={location}/>}
+        {tab==="duress"      &&<DuressTab assets={assets} setAssets={setAssets} staffList={staffList} location={location}/>}
+        {tab==="vehicles"    &&<VehiclesTab assets={assets} setAssets={setAssets} staffList={staffList} location={location}/>}
+        {tab==="report"      &&<ReportTab records={records} assets={assets}/>}
+        {tab==="emergency"   &&<EmergencyTab records={records} location={location}/>}
+        {tab==="admin"       &&<AdminTab staffList={staffList} setStaffList={setStaff} assets={assets} setAssets={setAssets}/>}
       </div>
 
       {modal&&<SignInModal type={modal} location={location} staffList={staffList} onClose={()=>setModal(null)} onSubmit={handleSignIn}/>}
@@ -2101,10 +1570,8 @@ function App() {
   );
 }
 
-  </script>
-
-  <script type="text/babel">
-    ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
   </script>
 </body>
 </html>

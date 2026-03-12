@@ -26,13 +26,12 @@
     }
     window.addEventListener('error', function(ev) {
       if(ev.target && (ev.target.tagName === 'SCRIPT' || ev.target.tagName === 'LINK')) {
-        showErr('RESOURCE LOAD FAILED: ' + (ev.target.src || ev.target.href));
-        return;
+        showErr('RESOURCE LOAD FAILED: ' + (ev.target.src || ev.target.href)); return;
       }
-      showErr('JS ERROR: ' + ev.message + '\nFile: ' + ev.filename + '\nLine: ' + ev.lineno + ':' + ev.colno + (ev.error ? '\n' + ev.error.stack : ''));
+      showErr('JS ERROR: ' + ev.message + '\nLine: ' + ev.lineno + ':' + ev.colno + (ev.error ? '\n' + ev.error.stack : ''));
     }, true);
     window.addEventListener('unhandledrejection', function(ev) {
-      showErr('PROMISE REJECTION: ' + (ev.reason ? (ev.reason.stack || ev.reason.message || String(ev.reason)) : 'unknown'));
+      showErr('PROMISE: ' + (ev.reason ? (ev.reason.stack || ev.reason.message || String(ev.reason)) : 'unknown'));
     });
   </script>
   <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js" crossorigin></script>
@@ -344,6 +343,32 @@ const SignInModal = ({type,location,staffList,onClose,onSubmit}) => {
                 placeholder: "Vehicle registration (e.g. 123 ABC)"    , style: {...inputSt,borderColor:T.accent+"44"},})
             )
           ))
+          /* Returning equipment for in-centre sign-in */
+          , f.staff_mode==="in-centre"&&(React.createElement(React.Fragment, null
+            , React.createElement('div', { style: {background:T.amber+"18",border:`2px solid ${T.amber}44`,borderRadius:10,padding:"12px 14px",marginBottom:12},}, "              "              , React.createElement('div', { style: {fontSize:12,fontWeight:700,color:T.amber,marginBottom:8},}, "🔔 Returning a Duress Alarm?"    )
+              , React.createElement('div', { onClick: ()=>set("has_duress",!f.has_duress),
+                style: {display:"flex",alignItems:"center",gap:10,cursor:"pointer",marginBottom:f.has_duress?8:0},}
+                , React.createElement('div', { style: {width:20,height:20,borderRadius:5,flexShrink:0,border:`2px solid ${f.has_duress?T.amber:T.muted}`,
+                  background:f.has_duress?T.amber:"transparent",display:"flex",alignItems:"center",justifyContent:"center",
+                  fontSize:12,color:"#07101f"},}, f.has_duress?"✓":"")
+                , React.createElement('span', { style: {fontSize:13,color:T.text},}, "Yes — I am returning a duress alarm"       )
+              )
+              , f.has_duress&&React.createElement('input', { value: f.duress_number||"", onChange: e=>set("duress_number",e.target.value),
+                placeholder: "Duress alarm number / ID"    , style: {...inputSt,borderColor:T.amber+"44"},})
+            )
+            , React.createElement('div', { style: {background:T.accent+"18",border:`2px solid ${T.accent}44`,borderRadius:10,padding:"12px 14px",marginBottom:12},}
+              , React.createElement('div', { style: {fontSize:12,fontWeight:700,color:T.accent,marginBottom:8},}, "🚗 Returning a Vehicle?"   )
+              , React.createElement('div', { onClick: ()=>set("has_vehicle",!f.has_vehicle),
+                style: {display:"flex",alignItems:"center",gap:10,cursor:"pointer",marginBottom:f.has_vehicle?8:0},}
+                , React.createElement('div', { style: {width:20,height:20,borderRadius:5,flexShrink:0,border:`2px solid ${f.has_vehicle?T.accent:T.muted}`,
+                  background:f.has_vehicle?T.accent:"transparent",display:"flex",alignItems:"center",justifyContent:"center",
+                  fontSize:12,color:"#07101f"},}, f.has_vehicle?"✓":"")
+                , React.createElement('span', { style: {fontSize:13,color:T.text},}, "Yes — I am returning a vehicle"      )
+              )
+              , f.has_vehicle&&React.createElement('input', { value: f.vehicle_rego||"", onChange: e=>set("vehicle_rego",e.target.value),
+                placeholder: "Vehicle registration (e.g. 123 ABC)"    , style: {...inputSt,borderColor:T.accent+"44"},})
+            )
+          ))
           , React.createElement(Field, { label: "Location", value: f.loc, onChange: v=>set("loc",v), options: ALL_LOCATIONS,})
         )
 
@@ -383,8 +408,8 @@ const Dashboard = ({records,assets,location}) => {
       , React.createElement('div', { style: {fontSize:13,color:T.accent,marginBottom:16},}, "📍 " , location)
 
       , React.createElement('div', { style: {display:"flex",gap:10,flexWrap:"wrap",marginBottom:20},}
-        , React.createElement(Stat, { icon: "🏢", val: onSite.length, label: "On Site" , color: T.green,})
-        , React.createElement(Stat, { icon: "👤", val: onSite.filter(r=>r.type==="visitor").length, label: "Visitors", color: T.accent,})
+        , React.createElement(Stat, { icon: "🏢", val: onSite.reduce((s,r)=>s+1+((r.type==="visitor"&&r.has_children&&r.children_names)?r.children_names.split(",").filter(n=>n.trim()).length:0),0), label: "On Site" , color: T.green,})
+        , React.createElement(Stat, { icon: "👤", val: onSite.filter(r=>r.type==="visitor").reduce((s,r)=>s+1+((r.has_children&&r.children_names)?r.children_names.split(",").filter(n=>n.trim()).length:0),0), label: "Visitors+Kids", color: T.accent,})
         , React.createElement(Stat, { icon: "🔧", val: onSite.filter(r=>r.type==="contractor").length, label: "Contractors", color: T.accent2,})
         , React.createElement(Stat, { icon: "🏢", val: onSite.filter(r=>r.type==="staff"&&r.staff_status!=="outreach").length, label: "Staff In" , color: T.amber,})
         , React.createElement(Stat, { icon: "🚶", val: outreach.length, label: "On Outreach" , color: T.purple,})
@@ -478,7 +503,10 @@ const VisitorsTab = ({records,onSignOut,location}) => {
       , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:20,flexWrap:"wrap",gap:10},}
         , React.createElement('div', null
           , React.createElement('div', { style: {fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4},}, "Visitor Register" )
-          , React.createElement('div', { style: {fontSize:24,fontWeight:900,color:T.white},}, visitors.filter(r=>r.status==="on-site").length, " On Site · "    , visitors.length, " Total Today"  )
+          , React.createElement('div', { style: {fontSize:24,fontWeight:900,color:T.white},}
+            , visitors.filter(r=>r.status==="on-site").reduce((s,r)=>s+1+((r.has_children&&r.children_names)?r.children_names.split(",").filter(n=>n.trim()).length:0),0), " On Site"
+            , " · ", visitors.reduce((s,r)=>s+1+((r.has_children&&r.children_names)?r.children_names.split(",").filter(n=>n.trim()).length:0),0), " Total Today"
+          )
         )
         , React.createElement(Btn, { onClick: exportCSV, color: T.green, small: true,}, "⬇ Export CSV"  )
       )
@@ -500,6 +528,8 @@ const VisitorsTab = ({records,onSignOut,location}) => {
                 , React.createElement('div', { style: {fontSize:14,fontWeight:800,color:T.white},}, r.name)
                 , React.createElement('div', { style: {fontSize:12,color:T.muted},}, r.program, " · "  , r.visit_purpose||r.purpose, " · In "   , r.sign_in_time, r.sign_out_time&&` · Out ${r.sign_out_time}`)
                 , r.purpose&&r.visit_purpose&&React.createElement('div', { style: {fontSize:11,color:T.muted,marginTop:2,fontStyle:"italic"},}, "Notes: " , r.purpose)
+                , r.has_children&&r.children_names&&React.createElement('div', { style: {fontSize:11,color:T.accent,marginTop:4},}, "🧒 Children: "  , r.children_names)
+                , r.has_children&&!r.children_names&&React.createElement('div', { style: {fontSize:11,color:T.accent,marginTop:4},}, "🧒 Children accompanying"  )
               )
               , React.createElement('div', { style: {display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"},}
                 , React.createElement(Badge, { label: r.status==="on-site"?"On Site":"Left", color: r.status==="on-site"?T.green:T.muted,})
@@ -969,6 +999,7 @@ const EmergencyTab = ({records,location}) => {
             , React.createElement('div', { style: {fontSize:11,color:T.muted,marginTop:2},}
               , r.type==="visitor"?`Visitor · ${r.program}`:r.type==="contractor"?`Contractor · ${r.contact_name}`:r.staff_status==="outreach"?"Staff · On Outreach":`Staff · ${r.location}`
             )
+            , r.type==="visitor"&&r.has_children&&r.children_names&&React.createElement('div', { style: {fontSize:10,color:T.accent,marginTop:1},}, "🧒 " , r.children_names.split(",").filter(n=>n.trim()).length, " child(ren)" )
             , React.createElement('div', { style: {fontSize:11,color:T.muted},}, "In: " , r.sign_in_time)
           )
         ))
@@ -1010,7 +1041,7 @@ const ReportTab = ({records,assets}) => {
       lines.push(`--------------------`);
       if(locVisitors.length>0){
         lines.push(`  Visitors (${locVisitors.length}):`);
-        locVisitors.forEach(r=>lines.push(`    • ${r.name} | ${r.program} | ${r.visit_purpose||r.purpose} | In: ${r.sign_in_time} Out: ${r.sign_out_time||"Still on site"}`));
+        locVisitors.forEach(r=>lines.push(`    • ${r.name} | ${r.program} | ${r.visit_purpose||r.purpose} | In: ${r.sign_in_time} Out: ${r.sign_out_time||"Still on site"}${r.has_children&&r.children_names?` | Children: ${r.children_names}`:r.has_children?" | Children accompanying":""}`));
       }
       if(locStaff.length>0){
         lines.push(`  Staff (${locStaff.length}):`);
@@ -1056,6 +1087,8 @@ const ReportTab = ({records,assets}) => {
         lines.push(`   Location: ${r.location}`);
         lines.push(`   Sign In: ${r.sign_in_time}   Sign Out: ${r.sign_out_time||"Still on site"}`);
         if(r.phone) lines.push(`   Phone: ${r.phone}`);
+        if(r.has_children&&r.children_names) lines.push(`   Children: ${r.children_names}`);
+        else if(r.has_children) lines.push(`   Children: Accompanying (names not recorded)`);
         lines.push(``);
       });
     }
@@ -1788,12 +1821,19 @@ function App() {
     dbInsert(newRec);
   };
 
-  // -- Live sync from Supabase every 15s --------------------
+  // -- Live sync from Supabase --------------------
   useEffect(()=>{
     const load = async () => {
       const data = await dbFetch();
-      if(data && Array.isArray(data)){setRecs(data);setDbReady(true);}
-      else setDbReady(true);
+      if(data && Array.isArray(data)){
+        // Merge: keep local records not yet in DB, update existing ones from DB
+        setRecs(prev => {
+          const dbIds = new Set(data.map(r=>r.id));
+          const localOnly = prev.filter(r=>!dbIds.has(r.id));
+          return [...data, ...localOnly];
+        });
+        setDbReady(true);
+      } else setDbReady(true);
     };
     load();
     const iv = setInterval(load, 5000);
@@ -1815,7 +1855,13 @@ function App() {
     }
   };
 
-  const onSiteCount = records.filter(r=>r.status==="on-site"&&(!location||r.location===location)).length;
+  const onSiteCount = records
+    .filter(r=>r.status==="on-site"&&(!location||r.location===location))
+    .reduce((sum,r)=>{
+      const kids = (r.type==="visitor"&&r.has_children&&r.children_names)
+        ? r.children_names.split(",").filter(n=>n.trim()).length : 0;
+      return sum + 1 + kids;
+    }, 0);
 
   const TABS = [
     {id:"dashboard",   icon:"📊", label:"Dashboard"},
@@ -1932,8 +1978,8 @@ function App() {
 }
 
 try {
-  if(typeof React === 'undefined') throw new Error('React failed to load from CDN');
-  if(typeof ReactDOM === 'undefined') throw new Error('ReactDOM failed to load from CDN');
+  if(typeof React === 'undefined') throw new Error('React CDN failed to load');
+  if(typeof ReactDOM === 'undefined') throw new Error('ReactDOM CDN failed to load');
   ReactDOM.createRoot(document.getElementById('root')).render(
     React.createElement(ErrorBoundary, null, React.createElement(App))
   );

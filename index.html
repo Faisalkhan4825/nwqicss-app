@@ -5,21 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
   <meta name="theme-color" content="#07101f"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-  <meta name="apple-mobile-web-app-title" content="NWQICSS"/>
   <title>NWQICSS Compliance Portal</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #07101f; color: #e2eaf6; font-family: 'Segoe UI', system-ui, sans-serif; }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #0f1d33; }
-    ::-webkit-scrollbar-thumb { background: #1a2d4a; border-radius: 3px; }
-    select, input, textarea, button { font-family: inherit; }
-    .spinner { width:40px;height:40px;border:3px solid #1a2d4a;border-top-color:#4a9eff;border-radius:50%;animation:spin 0.8s linear infinite; }
-    @keyframes spin { to { transform:rotate(360deg); } }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#07101f;color:#e2eaf6;font-family:'Segoe UI',system-ui,sans-serif}
+    ::-webkit-scrollbar{width:6px}
+    ::-webkit-scrollbar-track{background:#0f1d33}
+    ::-webkit-scrollbar-thumb{background:#1a2d4a;border-radius:3px}
+    select,input,textarea,button{font-family:inherit}
+    .spinner{width:40px;height:40px;border:3px solid #1a2d4a;border-top-color:#4a9eff;border-radius:50%;animation:spin 0.8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
@@ -30,21 +28,20 @@
     </div>
   </div>
   <script>
-    window.onerror = function(msg, src, line, col, err) {
+    window.onerror = function(msg,src,line) {
       document.getElementById("root").innerHTML =
-        '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:12px;padding:20px;text-align:center">' +
-        '<div style="font-size:40px">⚠️</div>' +
-        '<div style="color:#e2eaf6;font-size:18px;font-weight:700">Portal failed to load</div>' +
-        '<div style="color:#8ab;font-size:13px;max-width:400px">' + msg + '</div>' +
-        '<div style="color:#567;font-size:11px">Line ' + line + '</div>' +
-        '<button onclick="location.reload()" style="margin-top:12px;padding:12px 24px;background:#4a9eff;color:#fff;border:none;border-radius:8px;font-size:15px;cursor:pointer">🔄 Reload</button>' +
+        '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:16px;padding:24px;text-align:center">'+
+        '<div style="font-size:48px">⚠️</div>'+
+        '<div style="color:#e2eaf6;font-size:20px;font-weight:700">Portal failed to load</div>'+
+        '<pre style="color:#8ab;font-size:12px;max-width:500px;white-space:pre-wrap;background:#0f1d33;padding:12px;border-radius:8px;text-align:left">'+msg+'\nLine: '+line+'</pre>'+
+        '<button onclick="location.reload()" style="padding:14px 28px;background:#4a9eff;color:#fff;border:none;border-radius:8px;font-size:16px;cursor:pointer;font-weight:700">🔄 Reload</button>'+
         '</div>';
       return true;
     };
   </script>
 
-  <!-- Chunk 1/5 — Config, UI primitives, Dashboard, Visitors, Contractors, Staff -->
-  <script type="text/babel" data-presets="react">
+  <!-- 1/5 Config + UI + Dashboard + Visitors + Contractors + Staff -->
+  <script type="text/babel">
 const { useState, useEffect, useRef } = React;
 
 // ─────────────────────────────────────────────────────────────
@@ -370,10 +367,10 @@ const Dashboard = ({records,assets,location}) => {
         </Card>
         <Card>
           <div style={{fontSize:13,fontWeight:700,color:T.white,marginBottom:12}}>🔔 Duress Alarms Status</div>
-          {assets.filter(a=>a.type==="duress"||a.name?.toLowerCase().includes("duress")).length===0 && (
+          {assets.filter(a=>a.type==="duress"||(a.name && a.name.toLowerCase().includes("duress"))).length===0 && (
             <div style={{fontSize:13,color:T.muted}}>No duress alarms configured. Add them in Admin.</div>
           )}
-          {assets.filter(a=>a.type==="duress"||a.name?.toLowerCase().includes("duress")).map(a=>(
+          {assets.filter(a=>a.type==="duress"||(a.name && a.name.toLowerCase().includes("duress"))).map(a=>(
             <div key={a.id} style={{padding:"8px 0",borderBottom:`1px solid ${T.border}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <div>
                 <div style={{fontSize:13,fontWeight:700,color:T.text}}>{a.name}</div>
@@ -605,8 +602,8 @@ const StaffTab = ({records,assets,onSignOut,onAssetAction,location}) => {
 //  DURESS ALARMS TAB
 // ─────────────────────────────────────────────────────────────
   </script>
-  <!-- Chunk 2/5 — Duress, Vehicles -->
-  <script type="text/babel" data-presets="react">
+  <!-- 2/5 Duress + Vehicles -->
+  <script type="text/babel">
 const DuressTab = ({assets,setAssets,staffList,location}) => {
   const [checkoutModal,setCheckoutModal] = useState(null);
   const [form,setForm] = useState({staff:"",notes:"",loc:location||""});
@@ -699,7 +696,7 @@ const DuressTab = ({assets,setAssets,staffList,location}) => {
         <div style={{position:"fixed",inset:0,background:"#000c",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={()=>setCheckoutModal(null)}>
           <div style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:20,padding:28,width:"100%",maxWidth:420}} onClick={e=>e.stopPropagation()}>
             <div style={{fontSize:11,color:T.amber,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>🔔 Duress Alarm Checkout</div>
-            <div style={{fontSize:18,fontWeight:900,color:T.white,marginBottom:20}}>{assets.find(a=>a.id===checkoutModal)?.name}</div>
+            <div style={{fontSize:18,fontWeight:900,color:T.white,marginBottom:20}}>{(assets.find(a=>a.id===checkoutModal)||{}).name}</div>
             <Field label="Staff Member *" value={form.staff} onChange={v=>setForm(p=>({...p,staff:v}))} options={staffList.map(s=>s.name)}/>
             <Field label="Location" value={form.loc} onChange={v=>setForm(p=>({...p,loc:v}))} options={ALL_LOCATIONS}/>
             <Field label="Notes (optional)" value={form.notes} onChange={v=>setForm(p=>({...p,notes:v}))} placeholder="e.g. Field visit, home visit…"/>
@@ -827,7 +824,7 @@ const VehiclesTab = ({assets,setAssets,staffList,location}) => {
         <div style={{position:"fixed",inset:0,background:"#000c",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={()=>setCheckoutModal(null)}>
           <div style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:20,padding:28,width:"100%",maxWidth:440,maxHeight:"92vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
             <div style={{fontSize:11,color:T.accent2,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>🚗 Vehicle Sign Out</div>
-            <div style={{fontSize:18,fontWeight:900,color:T.white,marginBottom:20}}>{assets.find(a=>a.id===checkoutModal)?.name} — {assets.find(a=>a.id===checkoutModal)?.rego}</div>
+            <div style={{fontSize:18,fontWeight:900,color:T.white,marginBottom:20}}>{(assets.find(a=>a.id===checkoutModal)||{}).name} — {(assets.find(a=>a.id===checkoutModal)||{}).rego}</div>
             <Field label="Driver *" value={form.driver} onChange={v=>setForm(p=>({...p,driver:v}))} options={staffList.map(s=>s.name)}/>
             <Field label="Destination *" value={form.destination} onChange={v=>setForm(p=>({...p,destination:v}))} placeholder="e.g. Doomadgee, Mount Isa CBD…"/>
             <Field label="Purpose" value={form.purpose} onChange={v=>setForm(p=>({...p,purpose:v}))} options={["Community Visit","Client Transport","Field Work","Supply Run","Staff Travel","Meeting","Other"]}/>
@@ -843,7 +840,7 @@ const VehiclesTab = ({assets,setAssets,staffList,location}) => {
         <div style={{position:"fixed",inset:0,background:"#000c",zIndex:999,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={()=>setReturnModal(null)}>
           <div style={{background:T.card,border:`1px solid ${T.border}`,borderRadius:20,padding:28,width:"100%",maxWidth:420}} onClick={e=>e.stopPropagation()}>
             <div style={{fontSize:11,color:T.green,letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>🚗 Return Vehicle</div>
-            <div style={{fontSize:18,fontWeight:900,color:T.white,marginBottom:20}}>{assets.find(a=>a.id===returnModal)?.name}</div>
+            <div style={{fontSize:18,fontWeight:900,color:T.white,marginBottom:20}}>{(assets.find(a=>a.id===returnModal)||{}).name}</div>
             <Field label="Odometer on Return (km)" value={returnForm.odometer_in} onChange={v=>setReturnForm(p=>({...p,odometer_in:v}))} type="number" placeholder="e.g. 45680"/>
             <Field label="Any issues to report?" value={returnForm.notes} onChange={v=>setReturnForm(p=>({...p,notes:v}))} placeholder="e.g. No issues / Low fuel / Damage…"/>
             <div style={{display:"flex",gap:10}}>
@@ -861,8 +858,8 @@ const VehiclesTab = ({assets,setAssets,staffList,location}) => {
 //  EMERGENCY TAB
 // ─────────────────────────────────────────────────────────────
   </script>
-  <!-- Chunk 3/5 — Emergency, ReturnConfirm, Kiosk -->
-  <script type="text/babel" data-presets="react">
+  <!-- 3/5 Emergency + ReturnConfirm + Kiosk -->
+  <script type="text/babel">
 const EmergencyTab = ({records,location}) => {
   const onSite=records.filter(r=>r.status==="on-site"&&(!location||r.location===location));
   return (
@@ -1341,8 +1338,8 @@ const KioskTab = ({records, onSignIn, onSignOut, location, staffList}) => {
 //  DAILY REPORT TAB
 // ─────────────────────────────────────────────────────────────
   </script>
-  <!-- Chunk 4/5 — Reports -->
-  <script type="text/babel" data-presets="react">
+  <!-- 4/5 Reports -->
+  <script type="text/babel">
 const ReportTab = ({records,assets}) => {
   const [activeReport,setActiveReport] = useState("combined");
   const today       = records.filter(r=>r.date===todayISO());
@@ -1404,7 +1401,7 @@ const ReportTab = ({records,assets}) => {
     const lines=[];
     lines.push(`NWQICSS — Daily Program Report: ${prog}`);
     lines.push(`Date: ${dateStr()}   Generated: ${nowStr()}`);
-    lines.push(`Sent to: ${recipient?.manager||"—"}, ${HR_EMAIL}, ${WHS_EMAIL}`);
+    lines.push(`Sent to: ${(recipient && recipient.manager)||"—"}, ${HR_EMAIL}, ${WHS_EMAIL}`);
     lines.push(`${"─".repeat(50)}`);
     lines.push(`Total visitors today: ${progVisitors.length}`);
     lines.push(``);
@@ -1585,8 +1582,8 @@ const ReportTab = ({records,assets}) => {
 //  ADMIN TAB
 // ─────────────────────────────────────────────────────────────
   </script>
-  <!-- Chunk 5/5 — Admin, App -->
-  <script type="text/babel" data-presets="react">
+  <!-- 5/5 Admin + App -->
+  <script type="text/babel">
 const AdminTab = ({staffList,setStaffList,assets,setAssets}) => {
   const [activeSection,setSection] = useState("staff");
   const [newStaff,setNewStaff]   = useState({name:"",role:"",email:"",phone:""});
@@ -2103,10 +2100,11 @@ function App() {
     </div>
   );
 }
+
   </script>
-  <script type="text/babel" data-presets="react">
-    const domRoot = ReactDOM.createRoot(document.getElementById('root'));
-    domRoot.render(React.createElement(App));
+
+  <script type="text/babel">
+    ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
   </script>
 </body>
 </html>

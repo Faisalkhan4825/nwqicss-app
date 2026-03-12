@@ -8,8 +8,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="apple-mobile-web-app-title" content="NWQICSS"/>
   <title>NWQICSS Compliance Portal</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -20,17 +20,41 @@
     select, input, textarea, button { font-family: inherit; }
     .spinner { width:40px;height:40px;border:3px solid #1a2d4a;border-top-color:#4a9eff;border-radius:50%;animation:spin 0.8s linear infinite; }
     @keyframes spin { to { transform:rotate(360deg); } }
+    #load { display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:16px; }
   </style>
 </head>
 <body>
   <div id="root">
-    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:16px">
+    <div id="load">
       <div class="spinner"></div>
       <div style="color:#e2eaf6;font-size:16px">Loading NWQICSS Portal...</div>
+      <div id="load-status" style="color:#4a6a8a;font-size:13px">Initialising...</div>
     </div>
   </div>
+  <script>
+    // Show error if Babel takes too long or fails
+    window.onerror = function(msg, src, line, col, err) {
+      document.getElementById("root").innerHTML =
+        '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:12px;padding:20px;text-align:center">' +
+        '<div style="font-size:40px">⚠️</div>' +
+        '<div style="color:#e2eaf6;font-size:18px;font-weight:700">Portal failed to load</div>' +
+        '<div style="color:#4a6a8a;font-size:13px">Error: ' + msg + '</div>' +
+        '<div style="color:#4a6a8a;font-size:12px">Line: ' + line + '</div>' +
+        '<button onclick="location.reload()" style="margin-top:12px;padding:12px 24px;background:#4a9eff;color:#fff;border:none;border-radius:8px;font-size:15px;cursor:pointer">🔄 Reload</button>' +
+        '</div>';
+      return true;
+    };
+    setTimeout(function(){
+      var s = document.getElementById("load-status");
+      if(s) s.textContent = "Compiling app — this takes a few seconds...";
+    }, 1000);
+    setTimeout(function(){
+      var s = document.getElementById("load-status");
+      if(s) s.textContent = "Almost ready...";
+    }, 4000);
+  </script>
   <script type="text/babel" data-presets="react">
-const { useState, useEffect, useRef } = React;
+const { useState, useEffect, useRef, Component } = React;
 
 // ─────────────────────────────────────────────────────────────
 //  CONFIG
@@ -872,6 +896,35 @@ const EmergencyTab = ({records,location}) => {
 // ─────────────────────────────────────────────────────────────
 //  KIOSK TAB  — self-service sign in / sign out
 // ─────────────────────────────────────────────────────────────
+const ReturnConfirm = ({records, staffName, f, set}) => {
+  const prev = records.filter(r=>r.type==="staff"&&r.staff_name===staffName&&r.status==="on-site"&&r.staff_status==="outreach");
+  if(prev.length===0) return null;
+  const last = prev[0];
+  return (
+    <div style={{background:T.purple+"18",border:`2px solid ${T.purple}44`,borderRadius:12,padding:"14px 16px",marginBottom:14}}>
+      <div style={{fontSize:13,fontWeight:800,color:T.purple,marginBottom:8}}>📋 Returning from Outreach — Please Confirm</div>
+      {last.duress_number&&(
+        <div onClick={()=>set("returned_duress",!f.returned_duress)}
+          style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",marginBottom:8}}>
+          <div style={{width:22,height:22,borderRadius:6,border:`2px solid ${f.returned_duress?T.purple:T.muted}`,
+            background:f.returned_duress?T.purple:"transparent",display:"flex",alignItems:"center",
+            justifyContent:"center",fontSize:13,color:T.bg,flexShrink:0}}>{f.returned_duress?"✓":""}</div>
+          <div style={{fontSize:13,color:T.text}}>🔔 I have returned duress alarm #{last.duress_number}</div>
+        </div>
+      )}
+      {last.vehicle_rego&&(
+        <div onClick={()=>set("returned_vehicle",!f.returned_vehicle)}
+          style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer"}}>
+          <div style={{width:22,height:22,borderRadius:6,border:`2px solid ${f.returned_vehicle?T.purple:T.muted}`,
+            background:f.returned_vehicle?T.purple:"transparent",display:"flex",alignItems:"center",
+            justifyContent:"center",fontSize:13,color:T.bg,flexShrink:0}}>{f.returned_vehicle?"✓":""}</div>
+          <div style={{fontSize:13,color:T.text}}>🚗 I have returned vehicle {last.vehicle_rego}</div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const KioskTab = ({records, onSignIn, onSignOut, location, staffList}) => {
   const [kioskTab, setKioskTab] = useState("signin");
   const [type, setType]         = useState("");
@@ -1192,34 +1245,9 @@ const KioskTab = ({records, onSignIn, onSignOut, location, staffList}) => {
               </>)}
 
               {/* ── RETURNING from outreach acknowledgements ── */}
-              {(f.staff_mode||"in-centre")==="in-centre" && f.staff && (()=>{
-                const prev = records.filter(r=>r.type==="staff"&&r.staff_name===f.staff&&r.status==="on-site"&&r.staff_status==="outreach");
-                if(prev.length===0) return null;
-                const last = prev[0];
-                return (
-                  <div style={{background:T.purple+"18",border:`2px solid ${T.purple}44`,borderRadius:12,padding:"14px 16px",marginBottom:14}}>
-                    <div style={{fontSize:13,fontWeight:800,color:T.purple,marginBottom:8}}>📋 Returning from Outreach — Please Confirm</div>
-                    {last.duress_number&&(
-                      <div onClick={()=>set("returned_duress",!f.returned_duress)}
-                        style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",marginBottom:8}}>
-                        <div style={{width:22,height:22,borderRadius:6,border:`2px solid ${f.returned_duress?T.purple:T.muted}`,
-                          background:f.returned_duress?T.purple:"transparent",display:"flex",alignItems:"center",
-                          justifyContent:"center",fontSize:13,color:T.bg,flexShrink:0}}>{f.returned_duress?"✓":""}</div>
-                        <div style={{fontSize:13,color:T.text}}>🔔 I have returned duress alarm #{last.duress_number}</div>
-                      </div>
-                    )}
-                    {last.vehicle_rego&&(
-                      <div onClick={()=>set("returned_vehicle",!f.returned_vehicle)}
-                        style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer"}}>
-                        <div style={{width:22,height:22,borderRadius:6,border:`2px solid ${f.returned_vehicle?T.purple:T.muted}`,
-                          background:f.returned_vehicle?T.purple:"transparent",display:"flex",alignItems:"center",
-                          justifyContent:"center",fontSize:13,color:T.bg,flexShrink:0}}>{f.returned_vehicle?"✓":""}</div>
-                        <div style={{fontSize:13,color:T.text}}>🚗 I have returned vehicle {last.vehicle_rego}</div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
+              {(f.staff_mode||"in-centre")==="in-centre" && f.staff && <ReturnConfirm
+                records={records} staffName={f.staff} f={f} set={set}
+              />}
 
               <Field label="Program Area" value={f.program||""} onChange={v=>set("program",v)} options={PROGRAM_VISIT_PURPOSES}/>
             </>}

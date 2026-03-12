@@ -41,7 +41,7 @@
   <div id="err"></div>
   <div id="root"><div style="color:#e2eaf6;padding:40px;text-align:center;font-family:sans-serif;font-size:16px">Loading NWQICSS...</div></div>
   <script>
-const { useState, useEffect, useRef } = React;
+const { useState, useEffect, useRef, useCallback } = React;
 
 // --------------------
 //  CONFIG
@@ -50,7 +50,7 @@ const ORG_NAME  = "NWQICSS";
 const SITE_URL  = "https://nwqicsscompliance.org";
 const HR_EMAIL  = "hr@nwqicss.org";
 const WHS_EMAIL = "whs@nwqicss.org";
-const CEO_EMAIL = "ceo@nwqicss.org";
+const CEO_EMAIL = "fkhan@nwqicss.org";
 
 // Programs by location
 const LOCATION_PROGRAMS = {
@@ -70,19 +70,20 @@ const VISIT_PURPOSES = [
   "Diversion","Playgroup","Maternity","Hearing","Men's Shed","Women's Group","Volunteer","Other"
 ];
 
-// Per-program report recipients
+// Per-programme report recipients
+// Each entry: { to: [list of emails], label: display name }
 const PROGRAM_EMAILS = {
-  "CFC":                              {manager:"cfcmanager@nwqicss.org",    label:"CFC Manager"},
-  "Youth Hub":                        {manager:"youthhubmanager@nwqicss.org",label:"Youth Hub Manager"},
-  "APDC":                             {manager:"apdc@nwqicss.org",          label:"APDC Manager"},
-  "RAGOSS":                           {manager:"ragossmanager@nwqicss.org", label:"RAGOSS Manager"},
-  "RAGOSS Youth":                     {manager:"ragossmanager@nwqicss.org", label:"RAGOSS Manager"},
-  "Brilla Brilla":                    {manager:CEO_EMAIL,                   label:"CEO"},
-  "Main Office":                      {manager:CEO_EMAIL,                   label:"CEO"},
-  "AICC":                             {manager:"dhankin@nwqicss.org",       label:"D. Hankin"},
-  "Boulia Community Support Service": {manager:"jnorton@nwqicss.org",      label:"J. Norton"},
-  "Doomadgee Women's Shelter":        {manager:"clogan@nwqicss.org",        label:"C. Logan"},
-  "Doomadgee Community Justice Group":{manager:"clogan@nwqicss.org",        label:"C. Logan"},
+  "CFC":                              {to:["cfcmanager@nwqicss.org","hr@nwqicss.org"],              label:"CFC"},
+  "Youth Hub":                        {to:["youthhubmanager@nwqicss.org","hr@nwqicss.org"],          label:"Youth Hub"},
+  "APDC":                             {to:["apdcmanager@nwqicss.org","hr@nwqicss.org"],              label:"APDC"},
+  "RAGOSS":                           {to:["ragossmanager@nwqicss.org","hr@nwqicss.org"],            label:"RAGOSS"},
+  "RAGOSS Youth":                     {to:["hr@nwqicss.org"],                                        label:"RAGOSS Youth"},
+  "Brilla Brilla":                    {to:["slemson@nwqicss.org","hr@nwqicss.org"],                  label:"Brilla Brilla"},
+  "Main Office":                      {to:["fkhan@nwqicss.org","hr@nwqicss.org"],                    label:"Main Office"},
+  "AICC":                             {to:["dhankin@nwqicss.org","hr@nwqicss.org"],                  label:"AICC"},
+  "Boulia Community Support Service": {to:["jnorton@nwqicss.org","hr@nwqicss.org"],                 label:"Boulia CSS"},
+  "Doomadgee Women's Shelter":        {to:["clogan@nwqicss.org","hr@nwqicss.org"],                  label:"Doomadgee Shelter"},
+  "Doomadgee Community Justice Group":{to:["clogan@nwqicss.org","hr@nwqicss.org"],                  label:"Doomadgee CJG"},
 };
 
 // --------------------
@@ -1021,117 +1022,303 @@ const ReportTab = ({records,assets}) => {
   const stillOnSite = today.filter(r=>r.status==="on-site");
   const assetsOut   = assets.filter(a=>a.status==="out");
 
-  // All unique programs that had visitors today
-  const activePrograms = [...new Set(visitors.map(v=>v.program))];
+  // All programmes that have ANY activity today
+  const activePrograms = [...new Set([
+    ...visitors.map(v=>v.program),
+    ...staffRec.map(s=>s.programme||s.program),
+    ...contractors.map(c=>c.program),
+  ].filter(Boolean))];
 
+  // ── Build combined report (all programmes, ordered: Visitors → Staff → Contractors) ──
   const buildCombinedReport = () => {
     const lines=[];
     lines.push(`NWQICSS — Combined Daily Site Report`);
     lines.push(`Date: ${dateStr()}   Generated: ${nowStr()}`);
-    lines.push(`Sent to: ${CEO_EMAIL}, ${HR_EMAIL}, ${WHS_EMAIL}`);
-    lines.push(`${"-".repeat(50)}`);
+    lines.push(`Sent to: ${CEO_EMAIL}, ${HR_EMAIL}`);
+    lines.push(`${"=".repeat(60)}`);
     lines.push(``);
-    // by location
+
     ALL_LOCATIONS.forEach(loc=>{
-      const locVisitors = visitors.filter(r=>r.location===loc);
-      const locStaff    = staffRec.filter(r=>r.location===loc);
-      const locContractors = contractors.filter(r=>r.location===loc);
-      if(locVisitors.length+locStaff.length+locContractors.length===0) return;
+      const locV = visitors.filter(r=>r.location===loc);
+      const locS = staffRec.filter(r=>r.location===loc);
+      const locC = contractors.filter(r=>r.location===loc);
+      if(locV.length+locS.length+locC.length===0) return;
+
       lines.push(`📍 ${loc.toUpperCase()}`);
-      lines.push(`--------------------`);
-      if(locVisitors.length>0){
-        lines.push(`  Visitors (${locVisitors.length}):`);
-        locVisitors.forEach(r=>lines.push(`    • ${r.name} | ${r.program} | ${r.visit_purpose||r.purpose} | In: ${r.sign_in_time} Out: ${r.sign_out_time||"Still on site"}${r.has_children&&r.children_names?` | Children: ${r.children_names}`:r.has_children?" | Children accompanying":""}`));
+      lines.push(`${"─".repeat(40)}`);
+
+      // 1. Visitors first
+      if(locV.length>0){
+        lines.push(`  👤 VISITORS (${locV.reduce((s,r)=>s+1+((r.has_children&&r.children_names)?r.children_names.split(",").filter(n=>n.trim()).length:0),0)} people):`);
+        locV.forEach(r=>{
+          const kids = r.has_children&&r.children_names ? ` | Children: ${r.children_names}` : r.has_children?" | +children":"";
+          lines.push(`    • ${r.name} | ${r.program} | ${r.visit_purpose||r.purpose||"—"} | In: ${r.sign_in_time} | Out: ${r.sign_out_time||"Still on site"}${kids}`);
+        });
+        lines.push(``);
       }
-      if(locStaff.length>0){
-        lines.push(`  Staff (${locStaff.length}):`);
-        locStaff.forEach(r=>lines.push(`    • ${r.staff_name} | ${r.staff_status==="outreach"?"Outreach":"In Centre"} | In: ${r.sign_in_time} Out: ${r.sign_out_time||"Still on site"}${r.outreach_purpose?` | ${r.outreach_purpose}`:""}`));
+
+      // 2. Staff — split into OUT ON OUTREACH and STAFF IN
+      if(locS.length>0){
+        const staffOut = locS.filter(r=>r.staff_status==="outreach");
+        const staffIn  = locS.filter(r=>r.staff_status!=="outreach");
+        if(staffOut.length>0){
+          lines.push(`  🚶 STAFF OUT — ON OUTREACH (${staffOut.length}):`);
+          staffOut.forEach(r=>{
+            const purpose = r.outreach_purpose?` | Purpose: ${r.outreach_purpose}`:"";
+            const notes   = r.outreach_notes?` | Notes: ${r.outreach_notes}`:"";
+            const duress  = r.has_duress&&r.duress_number?` | Duress Alarm: ${r.duress_number}`:"";
+            const veh     = r.has_vehicle&&r.vehicle_rego?` | Vehicle: ${r.vehicle_rego}`:"";
+            const status  = r.sign_out_time?"Returned "+r.sign_out_time:"STILL OUT";
+            lines.push(`    • ${r.staff_name}${r.programme?` | ${r.programme}`:""}${purpose}${notes}${duress}${veh} | Left: ${r.sign_in_time} | ${status}`);
+          });
+          lines.push(``);
+        }
+        if(staffIn.length>0){
+          lines.push(`  🏢 STAFF IN — AT CENTRE (${staffIn.length}):`);
+          staffIn.forEach(r=>{
+            const ret_duress = r.has_duress&&r.duress_number?` | Returned Duress: ${r.duress_number}`:"";
+            const ret_veh    = r.has_vehicle&&r.vehicle_rego?` | Returned Vehicle: ${r.vehicle_rego}`:"";
+            const status     = r.sign_out_time?"Left "+r.sign_out_time:"Still in centre";
+            lines.push(`    • ${r.staff_name}${r.programme?` | ${r.programme}`:""}${ret_duress}${ret_veh} | Arrived: ${r.sign_in_time} | ${status}`);
+          });
+          lines.push(``);
+        }
       }
-      if(locContractors.length>0){
-        lines.push(`  Contractors (${locContractors.length}):`);
-        locContractors.forEach(r=>lines.push(`    • ${r.company} | ${r.contact_name} | Compliance: ${r.compliance||"?"} | In: ${r.sign_in_time}`));
+
+      // 3. Contractors third
+      if(locC.length>0){
+        lines.push(`  🔧 CONTRACTORS (${locC.length}):`);
+        locC.forEach(r=>{
+          const comp = [r.has_insurance?"✓ Insurance":"✗ Insurance", r.has_code_of_conduct?"✓ CoC":"✗ CoC", r.has_safety_forms?"✓ Safety":"✗ Safety"].join(" ");
+          lines.push(`    • ${r.company} | ${r.contact_name} | ${r.program||"—"} | ${comp} | In: ${r.sign_in_time} | Out: ${r.sign_out_time||"Still on site"}`);
+        });
+        lines.push(``);
       }
-      lines.push(``);
     });
+
     if(assetsOut.length>0){
-      lines.push(`ASSETS STILL OUT:`);
-      assetsOut.forEach(a=>lines.push(`  • ${a.name} — with ${a.assigned_to} since ${a.checked_out}`));
+      lines.push(`🚗 ASSETS STILL OUT (${assetsOut.length}):`);
+      assetsOut.forEach(a=>lines.push(`  • ${a.name}${a.rego?` (${a.rego})`:""} — with ${a.assigned_to} since ${a.checked_out}`));
       lines.push(``);
     }
+
+    lines.push(`${"=".repeat(60)}`);
     if(stillOnSite.length>0){
       lines.push(`⚠️  STILL ON SITE (${stillOnSite.length}):`);
-      stillOnSite.forEach(r=>lines.push(`  • ${r.name||r.company||r.staff_name} (${r.type}) in since ${r.sign_in_time}`));
+      stillOnSite.forEach(r=>lines.push(`  • ${r.name||r.company||r.staff_name} (${r.type}) — since ${r.sign_in_time}`));
     } else {
-      lines.push(`✓  All persons signed out.`);
+      lines.push(`✅  All persons signed out.`);
     }
     return lines.join("\n");
   };
 
+  // ── Build per-programme report (Visitors → Staff → Contractors for that programme) ──
   const buildProgramReport = (prog) => {
-    const progVisitors = visitors.filter(r=>r.program===prog);
-    const recipient    = PROGRAM_EMAILS[prog];
+    const info      = PROGRAM_EMAILS[prog]||{to:[HR_EMAIL],label:prog};
+    const progV     = visitors.filter(r=>r.program===prog);
+    const progS     = staffRec.filter(r=>(r.programme||r.program)===prog);
+    const progC     = contractors.filter(r=>r.program===prog);
+    const total     = progV.length+progS.length+progC.length;
+
     const lines=[];
-    lines.push(`NWQICSS — Daily Program Report: ${prog}`);
+    lines.push(`NWQICSS — Daily Programme Report`);
+    lines.push(`Programme: ${prog}`);
     lines.push(`Date: ${dateStr()}   Generated: ${nowStr()}`);
-    lines.push(`Sent to: ${(recipient&&recipient.manager)||"—"}, ${HR_EMAIL}, ${WHS_EMAIL}`);
-    lines.push(`${"-".repeat(50)}`);
-    lines.push(`Total visitors today: ${progVisitors.length}`);
+    lines.push(`Sent to: ${info.to.join(", ")}`);
+    lines.push(`${"=".repeat(60)}`);
     lines.push(``);
-    if(progVisitors.length===0){
-      lines.push(`No visitors recorded for ${prog} today.`);
+
+    if(total===0){
+      lines.push(`No activity recorded for ${prog} today.`);
+      return lines.join("\n");
+    }
+
+    // 1. VISITORS
+    lines.push(`👤 VISITORS — ${progV.reduce((s,r)=>s+1+((r.has_children&&r.children_names)?r.children_names.split(",").filter(n=>n.trim()).length:0),0)} people`);
+    lines.push(`${"─".repeat(40)}`);
+    if(progV.length===0){
+      lines.push(`  No visitors for this programme today.`);
     } else {
-      progVisitors.forEach((r,i)=>{
-        lines.push(`${i+1}. ${r.name}`);
-        lines.push(`   Purpose: ${r.visit_purpose||"—"}`);
-        if(r.purpose) lines.push(`   Notes: ${r.purpose}`);
-        lines.push(`   Location: ${r.location}`);
-        lines.push(`   Sign In: ${r.sign_in_time}   Sign Out: ${r.sign_out_time||"Still on site"}`);
-        if(r.phone) lines.push(`   Phone: ${r.phone}`);
-        if(r.has_children&&r.children_names) lines.push(`   Children: ${r.children_names}`);
-        else if(r.has_children) lines.push(`   Children: Accompanying (names not recorded)`);
-        lines.push(``);
+      progV.forEach((r,i)=>{
+        lines.push(`  ${i+1}. ${r.name}`);
+        lines.push(`     Purpose:   ${r.visit_purpose||"—"}`);
+        if(r.purpose) lines.push(`     Notes:     ${r.purpose}`);
+        lines.push(`     Location:  ${r.location}`);
+        lines.push(`     Sign In:   ${r.sign_in_time}   Sign Out: ${r.sign_out_time||"Still on site"}`);
+        if(r.phone) lines.push(`     Phone:     ${r.phone}`);
+        if(r.has_children&&r.children_names) lines.push(`     Children:  ${r.children_names}`);
+        else if(r.has_children) lines.push(`     Children:  Accompanying (names not recorded)`);
       });
     }
+    lines.push(``);
+
+    // 2. STAFF — split OUT ON OUTREACH vs STAFF IN
+    const staffOut = progS.filter(r=>r.staff_status==="outreach");
+    const staffIn  = progS.filter(r=>r.staff_status!=="outreach");
+    lines.push(`👷 STAFF MOVEMENT — ${progS.length} record(s) (${staffOut.length} out, ${staffIn.length} in)`);
+    lines.push(`${"─".repeat(40)}`);
+    if(progS.length===0){
+      lines.push(`  No staff sign-ins for this programme today.`);
+    } else {
+      if(staffOut.length>0){
+        lines.push(`  🚶 STAFF OUT — ON OUTREACH (${staffOut.length}):`);
+        staffOut.forEach((r,i)=>{
+          lines.push(`  ${i+1}. ${r.staff_name} — STAFF OUT`);
+          if(r.outreach_purpose) lines.push(`     Purpose:        ${r.outreach_purpose}`);
+          if(r.outreach_notes)   lines.push(`     Notes:          ${r.outreach_notes}`);
+          if(r.has_duress&&r.duress_number) lines.push(`     Duress Alarm:   ${r.duress_number}`);
+          if(r.has_vehicle&&r.vehicle_rego) lines.push(`     Vehicle (Rego): ${r.vehicle_rego}`);
+          lines.push(`     Left Centre:    ${r.sign_in_time}`);
+          lines.push(`     Returned:       ${r.sign_out_time||"NOT YET RETURNED ⚠️"}`);
+          lines.push(`     Location:       ${r.location}`);
+        });
+        lines.push(``);
+      }
+      if(staffIn.length>0){
+        lines.push(`  🏢 STAFF IN — AT CENTRE (${staffIn.length}):`);
+        staffIn.forEach((r,i)=>{
+          lines.push(`  ${i+1}. ${r.staff_name} — STAFF IN`);
+          if(r.has_duress&&r.duress_number) lines.push(`     Returned Duress Alarm:  ${r.duress_number}`);
+          if(r.has_vehicle&&r.vehicle_rego) lines.push(`     Returned Vehicle (Rego): ${r.vehicle_rego}`);
+          lines.push(`     Arrived:        ${r.sign_in_time}`);
+          lines.push(`     Departed:       ${r.sign_out_time||"Still in centre"}`);
+          lines.push(`     Location:       ${r.location}`);
+        });
+        lines.push(``);
+      }
+    }
+    lines.push(``);
+
+    // 3. CONTRACTORS
+    lines.push(`🔧 CONTRACTORS — ${progC.length} record(s)`);
+    lines.push(`${"─".repeat(40)}`);
+    if(progC.length===0){
+      lines.push(`  No contractors for this programme today.`);
+    } else {
+      progC.forEach((r,i)=>{
+        lines.push(`  ${i+1}. ${r.company} — ${r.contact_name}`);
+        lines.push(`     Purpose:   ${r.purpose||"—"}`);
+        lines.push(`     Insurance: ${r.has_insurance?"✓ Confirmed":"✗ Not confirmed"}`);
+        lines.push(`     Code of Conduct: ${r.has_code_of_conduct?"✓ Signed":"✗ Not signed"}`);
+        lines.push(`     Safety Forms:    ${r.has_safety_forms?"✓ Completed":"✗ Not completed"}`);
+        lines.push(`     Sign In:   ${r.sign_in_time}   Sign Out: ${r.sign_out_time||"Still on site"}`);
+        if(r.phone) lines.push(`     Phone:     ${r.phone}`);
+      });
+    }
+    lines.push(``);
+    lines.push(`${"=".repeat(60)}`);
+    lines.push(`NWQICSS Compliance Portal — ${SITE_URL}`);
     return lines.join("\n");
   };
 
+  // ── Email senders ──
   const emailCombined = () => {
     const subject = encodeURIComponent(`NWQICSS Combined Daily Report — ${dateStr()}`);
     const body    = encodeURIComponent(buildCombinedReport());
-    window.open(`mailto:${CEO_EMAIL},${HR_EMAIL},${WHS_EMAIL}?subject=${subject}&body=${body}`);
+    window.open(`mailto:${CEO_EMAIL},${HR_EMAIL}?subject=${subject}&body=${body}`);
   };
 
   const emailProgram = (prog) => {
-    const recipient = PROGRAM_EMAILS[prog];
-    if(!recipient) return;
+    const info = PROGRAM_EMAILS[prog];
+    if(!info) return;
     const subject = encodeURIComponent(`NWQICSS Daily Report: ${prog} — ${dateStr()}`);
     const body    = encodeURIComponent(buildProgramReport(prog));
-    const to      = [recipient.manager,HR_EMAIL,WHS_EMAIL].join(",");
-    window.open(`mailto:${to}?subject=${subject}&body=${body}`);
+    window.open(`mailto:${info.to.join(",")}?subject=${subject}&body=${body}`);
   };
 
+  // ── Auto send at 11:00 PM ────────────────────────────────────────────────
+  const lastAutoSendRef = React.useRef(null);
+
+  const sendAllReports = React.useCallback(() => {
+    const today = new Date().toLocaleDateString("en-CA",{timeZone:"Australia/Brisbane"});
+    if(lastAutoSendRef.current===today) return; // already sent today
+    lastAutoSendRef.current = today;
+    try { localStorage.setItem("nwq_last_report_sent", today); } catch(e){}
+
+    // 1. Combined report
+    const combinedSubject = encodeURIComponent(`NWQICSS Combined Daily Report — ${dateStr()}`);
+    const combinedBody    = encodeURIComponent(buildCombinedReport());
+    window.open(`mailto:${CEO_EMAIL},${HR_EMAIL}?subject=${combinedSubject}&body=${combinedBody}`);
+
+    // 2. One email per programme that had ANY activity today
+    const activeProgs = Object.keys(PROGRAM_EMAILS).filter(prog=>{
+      const v = records.filter(r=>r.date===todayISO()&&r.type==="visitor"&&r.program===prog).length;
+      const s = records.filter(r=>r.date===todayISO()&&r.type==="staff"&&(r.programme||r.program)===prog).length;
+      const c = records.filter(r=>r.date===todayISO()&&r.type==="contractor"&&r.program===prog).length;
+      return v+s+c > 0;
+    });
+
+    activeProgs.forEach((prog,i)=>{
+      setTimeout(()=>{
+        const info    = PROGRAM_EMAILS[prog]||{to:[HR_EMAIL]};
+        const subject = encodeURIComponent(`NWQICSS Daily Report: ${prog} — ${dateStr()}`);
+        const body    = encodeURIComponent(buildProgramReport(prog));
+        window.open(`mailto:${info.to.join(",")}?subject=${subject}&body=${body}`);
+      }, (i+1)*800); // stagger 800ms apart so browser doesn't block popups
+    });
+  }, [records]);
+
+  // Check every 60s — trigger at 11:00 PM Brisbane time
+  useEffect(()=>{
+    // Restore last sent date to avoid double-sending on refresh
+    try {
+      const lastSent = localStorage.getItem("nwq_last_report_sent");
+      if(lastSent) lastAutoSendRef.current = lastSent;
+    } catch(e){}
+
+    const check = () => {
+      const now = new Date();
+      const brisHour   = parseInt(now.toLocaleTimeString("en-AU",{timeZone:"Australia/Brisbane",hour:"2-digit",hour12:false}));
+      const brisMinute = parseInt(now.toLocaleTimeString("en-AU",{timeZone:"Australia/Brisbane",minute:"2-digit"}));
+      const today = now.toLocaleDateString("en-CA",{timeZone:"Australia/Brisbane"});
+      // Send at exactly 23:00 (11pm) if not already sent today
+      if(brisHour===23 && brisMinute===0 && lastAutoSendRef.current!==today){
+        sendAllReports();
+      }
+    };
+    const iv = setInterval(check, 60000);
+    return ()=>clearInterval(iv);
+  },[sendAllReports]);
+
   const exportCSV = () => {
-    const rows=[["Type","Name","Program","Purpose","Notes","Location","Sign In","Sign Out","Status"],
-      ...today.map(r=>[r.type,r.name||r.company||r.staff_name,r.program||"",r.visit_purpose||"",r.purpose||r.outreach_purpose||"",r.location,r.sign_in_time,r.sign_out_time||"On Site",r.status])];
+    const rows=[
+      ["Type","Name/Company","Programme","Purpose","Notes","Location","Sign In","Sign Out","Status","Children","Compliance"],
+      ...visitors.map(r=>[
+        "Visitor",r.name,r.program,r.visit_purpose||"",r.purpose||"",r.location,
+        r.sign_in_time,r.sign_out_time||"On Site",r.status,
+        r.has_children?(r.children_names||"Yes"):"",""
+      ]),
+      ...staffRec.map(r=>[
+        "Staff",r.staff_name,r.programme||"",r.staff_status==="outreach"?r.outreach_purpose||"Outreach":"In Centre",
+        r.outreach_notes||"",r.location,r.sign_in_time,r.sign_out_time||"On Site",r.status,"",
+        [r.has_duress?`Duress:${r.duress_number}`:"",r.has_vehicle?`Vehicle:${r.vehicle_rego}`:""].filter(Boolean).join(" ")
+      ]),
+      ...contractors.map(r=>[
+        "Contractor",r.company,r.program||"",r.purpose||"",r.contact_name||"",r.location,
+        r.sign_in_time,r.sign_out_time||"On Site",r.status,"",
+        [r.has_insurance?"Ins✓":"Ins✗",r.has_code_of_conduct?"CoC✓":"CoC✗",r.has_safety_forms?"Safety✓":"Safety✗"].join(" ")
+      ]),
+    ];
     const a=document.createElement("a");
-    a.href="data:text/csv;charset=utf-8,"+encodeURI(rows.map(r=>r.map(c=>`"${c||""}"`).join(",")).join("\n"));
+    a.href="data:text/csv;charset=utf-8,"+encodeURI(rows.map(r=>r.map(c=>`"${(c||"").toString().replace(/"/g,"'")}"`).join(",")).join("\n"));
     a.download=`NWQICSS_Report_${todayISO()}.csv`;a.click();
   };
 
   const reportText = activeReport==="combined" ? buildCombinedReport() : buildProgramReport(activeReport);
+  const allPrograms = Object.keys(PROGRAM_EMAILS);
 
   return (
     React.createElement('div', null
       , React.createElement('div', { style: {fontSize:11,color:T.muted,letterSpacing:2,textTransform:"uppercase",marginBottom:4},}, "Daily Reports" )
       , React.createElement('div', { style: {fontSize:24,fontWeight:900,color:T.white,marginBottom:4},}, "End of Day Reports"   )
-      , React.createElement('div', { style: {fontSize:13,color:T.muted,marginBottom:20},}, "Reports auto-send at midnight. Use buttons below to send manually any time."           )
+      , React.createElement('div', { style: {fontSize:13,color:T.muted,marginBottom:20},}, "Select a report to preview, then email it directly to the relevant manager."            )
 
       /* Summary stats */
       , React.createElement('div', { style: {display:"flex",gap:10,flexWrap:"wrap",marginBottom:24},}
         , [
-          {icon:"👤",val:visitors.length,label:"Visitors",color:T.accent},
-          {icon:"🔧",val:contractors.length,label:"Contractors",color:T.accent2},
+          {icon:"👤",val:visitors.reduce((s,r)=>s+1+((r.has_children&&r.children_names)?r.children_names.split(",").filter(n=>n.trim()).length:0),0),label:"Visitors+Kids",color:T.accent},
           {icon:"👷",val:staffRec.length,label:"Staff",color:T.amber},
+          {icon:"🔧",val:contractors.length,label:"Contractors",color:T.accent2},
           {icon:"⚠️",val:stillOnSite.length,label:"Still On Site",color:stillOnSite.length>0?T.red:T.green},
           {icon:"🚗",val:assetsOut.length,label:"Assets Out",color:assetsOut.length>0?T.red:T.green},
         ].map(({icon,val,label,color})=>(
@@ -1145,92 +1332,137 @@ const ReportTab = ({records,assets}) => {
 
       /* Report selector */
       , React.createElement('div', { style: {marginBottom:16},}
-        , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.white,marginBottom:10},}, "Select Report to Preview"   )
+        , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.white,marginBottom:10},}, "Select Report to Preview & Send"     )
         , React.createElement('div', { style: {display:"flex",gap:8,flexWrap:"wrap"},}
-          , React.createElement('button', { onClick: ()=>setActiveReport("combined"), style: {padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:700,cursor:"pointer",
-            background:activeReport==="combined"?CEO_EMAIL?T.accent:T.accent:T.accent,color:T.bg,border:`1px solid ${T.accent}`,opacity:activeReport==="combined"?1:.5},}, "📋 Combined Report"
+          , React.createElement('button', { onClick: ()=>setActiveReport("combined"),
+            style: {padding:"7px 16px",borderRadius:20,fontSize:12,fontWeight:700,cursor:"pointer",
+              background:activeReport==="combined"?T.accent:"transparent",
+              color:activeReport==="combined"?T.bg:T.muted,
+              border:`2px solid ${activeReport==="combined"?T.accent:T.border}`},}, "📋 Combined (All)"
 
           )
-          , Object.entries(PROGRAM_EMAILS).map(([prog,info])=>(
-            React.createElement('button', { key: prog, onClick: ()=>setActiveReport(prog), style: {padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:600,cursor:"pointer",
-              background:activeReport===prog?T.accent2:"transparent",color:activeReport===prog?T.bg:T.muted,border:`1px solid ${activeReport===prog?T.accent2:T.border}`},}
-              , prog
-            )
-          ))
+          , allPrograms.map(prog=>{
+            const v=visitors.filter(r=>r.program===prog).length;
+            const s=staffRec.filter(r=>(r.programme||r.program)===prog).length;
+            const c=contractors.filter(r=>r.program===prog).length;
+            const total=v+s+c;
+            const active=activeReport===prog;
+            return (
+              React.createElement('button', { key: prog, onClick: ()=>setActiveReport(prog),
+                style: {padding:"7px 16px",borderRadius:20,fontSize:12,fontWeight:600,cursor:"pointer",
+                  background:active?T.accent2:"transparent",
+                  color:active?T.bg:total>0?T.text:T.muted,
+                  border:`2px solid ${active?T.accent2:total>0?T.border+"88":T.border}`},}
+                , prog, " " , total>0&&React.createElement('span', { style: {background:active?"rgba(0,0,0,.2)":T.accent2+"33",borderRadius:10,padding:"1px 6px",fontSize:10,marginLeft:4},}, total)
+              )
+            );
+          })
         )
       )
 
-      /* Preview */
+      /* Preview box */
       , React.createElement(Card, { style: {marginBottom:20},}
-        , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,flexWrap:"wrap",gap:8},}
-          , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.white},}
-            , activeReport==="combined"?"Combined Report Preview":`${activeReport} — Report Preview`
+        , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,flexWrap:"wrap",gap:8},}
+          , React.createElement('div', null
+            , React.createElement('div', { style: {fontSize:13,fontWeight:800,color:T.white},}
+              , activeReport==="combined"?"📋 Combined Report — All Programmes":`📄 ${activeReport} Programme Report`
+            )
+            , React.createElement('div', { style: {fontSize:11,color:T.muted,marginTop:2},}
+              , activeReport==="combined"
+                ? `To: ${CEO_EMAIL}, ${HR_EMAIL}`
+                : `To: ${(PROGRAM_EMAILS[activeReport]||{to:[]}).to.join(", ")}`
+            )
           )
-          , activeReport!=="combined"&&PROGRAM_EMAILS[activeReport]&&(
-            React.createElement('div', { style: {fontSize:12,color:T.muted},}, "Sent to: "
-                , React.createElement('span', { style: {color:T.accent},}, PROGRAM_EMAILS[activeReport].manager), " + HR + WHS"
+          , React.createElement('div', { style: {display:"flex",gap:8},}
+            , React.createElement(Btn, { onClick: ()=>activeReport==="combined"?emailCombined():emailProgram(activeReport),
+              color: T.accent, small: true,}, "📧 Email This Report"
+
             )
           )
         )
         , React.createElement('pre', { style: {fontSize:11,color:T.text,lineHeight:1.7,whiteSpace:"pre-wrap",fontFamily:"monospace",
-          background:T.surface,padding:16,borderRadius:10,maxHeight:300,overflowY:"auto"},}
+          background:T.surface,padding:16,borderRadius:10,maxHeight:380,overflowY:"auto"},}
           , reportText
         )
       )
 
-      /* Action buttons */
-      , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.white,marginBottom:10},}, "Send Reports" )
-      , React.createElement('div', { style: {display:"flex",gap:10,flexWrap:"wrap",marginBottom:20},}
-        , React.createElement(Btn, { onClick: emailCombined, color: T.accent, style: {flex:1,minWidth:200},}, "📧 Email Combined Report → CEO + HR + WHS"
+      /* Send all reports block */
+      , React.createElement('div', { style: {background:T.accent+"18",border:`2px solid ${T.accent}44`,borderRadius:14,padding:"18px 20px",marginBottom:20},}
+        , React.createElement('div', { style: {fontSize:14,fontWeight:900,color:T.white,marginBottom:4},}, "📬 Send Tonight's Reports"   )
+        , React.createElement('div', { style: {fontSize:12,color:T.muted,marginBottom:14},}, "Auto-sends at "
+            , React.createElement('strong', { style: {color:T.accent},}, "11:00 PM Brisbane time"   ), " every night."  , React.createElement('br', null), "Sends combined report to CEO + HR, plus individual programme reports to each manager."
+                       , React.createElement('br', null), "Only programmes with activity today will receive a report."
 
         )
-        , React.createElement(Btn, { onClick: exportCSV, color: T.green, style: {flex:1,minWidth:200},}, "📊 Export Full CSV"
+        , React.createElement('div', { style: {display:"flex",gap:10,flexWrap:"wrap"},}
+          , React.createElement(Btn, { onClick: sendAllReports, color: T.accent, style: {minWidth:240,fontWeight:800},}, "🚀 Send All Reports Now (Combined + All Programmes)"
+
+          )
+          , React.createElement(Btn, { onClick: emailCombined, color: T.muted, outline: true, style: {minWidth:200},}, "📧 Send Combined Only → CEO + HR"
+
+          )
+          , React.createElement(Btn, { onClick: exportCSV, color: T.green, style: {minWidth:160},}, "📊 Export CSV"
+
+          )
+        )
+        , React.createElement('div', { style: {fontSize:11,color:T.muted,marginTop:12,padding:"8px 12px",background:T.surface,borderRadius:8},}, "⚠️ Reports open in your email client (Mail/Outlook). You must press Send in each email window. Your browser may ask permission to open multiple tabs — please allow it."
+
 
         )
       )
 
-      /* Per-program send buttons */
-      , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.white,marginBottom:10},}, "Send Program Reports"  )
-      , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:10,marginBottom:24},}
-        , Object.entries(PROGRAM_EMAILS).map(([prog,info])=>{
-          const count = visitors.filter(v=>v.program===prog).length;
+      /* Per-programme send grid */
+      , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.white,marginBottom:10},}, "Send Individual Programme Reports"   )
+      , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:10,marginBottom:24},}
+        , allPrograms.map(prog=>{
+          const info = PROGRAM_EMAILS[prog]||{to:[HR_EMAIL],label:prog};
+          const vCount = visitors.filter(r=>r.program===prog).length;
+          const sCount = staffRec.filter(r=>(r.programme||r.program)===prog).length;
+          const cCount = contractors.filter(r=>r.program===prog).length;
+          const total  = vCount+sCount+cCount;
           return (
-            React.createElement('div', { key: prog, style: {background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:"12px 14px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8},}
-              , React.createElement('div', null
-                , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.white},}, prog)
-                , React.createElement('div', { style: {fontSize:11,color:T.muted},}, info.manager, " · "  , count, " visitor" , count!==1?"s":"", " today" )
+            React.createElement('div', { key: prog, style: {
+              background:T.surface,border:`1px solid ${total>0?T.accent+"44":T.border}`,
+              borderRadius:12,padding:"12px 14px",
+              borderLeft:`4px solid ${total>0?T.accent:T.border}`},}
+              , React.createElement('div', { style: {display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6},}
+                , React.createElement('div', { style: {fontSize:13,fontWeight:800,color:T.white},}, prog)
+                , total>0&&React.createElement('span', { style: {background:T.accent+"33",color:T.accent,borderRadius:10,fontSize:10,fontWeight:700,padding:"2px 8px"},}, total, " records" )
               )
-              , React.createElement(Btn, { onClick: ()=>emailProgram(prog), color: count>0?T.accent2:T.muted, outline: true, small: true,}, "Send")
+              , React.createElement('div', { style: {fontSize:11,color:T.muted,marginBottom:4},}
+                , vCount>0&&React.createElement('span', { style: {marginRight:8},}, "👤 " , vCount, " visitor" , vCount!==1?"s":"")
+                , sCount>0&&React.createElement('span', { style: {marginRight:8},}, "👷 " , sCount, " staff" )
+                , cCount>0&&React.createElement('span', null, "🔧 " , cCount, " contractor" , cCount!==1?"s":"")
+                , total===0&&React.createElement('span', null, "No activity today"  )
+              )
+              , React.createElement('div', { style: {fontSize:10,color:T.accent,marginBottom:10,wordBreak:"break-all"},}, info.to.join(", "))
+              , React.createElement(Btn, { onClick: ()=>emailProgram(prog), color: total>0?T.accent2:T.muted, small: true, full: true,}, "📧 Email "
+                  , prog, " Report"
+              )
             )
           );
         })
       )
 
-      /* Auto-send info */
-      , React.createElement(Card, null
-        , React.createElement('div', { style: {fontSize:13,fontWeight:700,color:T.amber,marginBottom:8},}, "🕛 Automatic Midnight Reports"   )
-        , React.createElement('div', { style: {fontSize:12,color:T.text,lineHeight:1.8},}, "Once you connect the app to a database (Supabase), all reports will be sent automatically at "
-                          , React.createElement('strong', { style: {color:T.accent},}, "12:00 AM every night"   ), " to the relevant recipients below:"
-        )
-        , React.createElement('div', { style: {marginTop:12,display:"flex",flexDirection:"column",gap:6},}
-          , [
-            {label:"Combined (all data)",to:`${CEO_EMAIL}, ${HR_EMAIL}, ${WHS_EMAIL}`},
-            ...Object.entries(PROGRAM_EMAILS).map(([prog,info])=>({label:prog,to:`${info.manager}, ${HR_EMAIL}, ${WHS_EMAIL}`}))
-          ].map(({label,to})=>(
-            React.createElement('div', { key: label, style: {display:"flex",gap:10,fontSize:12,padding:"6px 0",borderBottom:`1px solid ${T.border}`},}
-              , React.createElement('span', { style: {color:T.text,minWidth:220,fontWeight:600},}, label)
-              , React.createElement('span', { style: {color:T.accent},}, to)
+      /* Email directory */
+      , React.createElement(Section, { title: "📮 Report Email Directory"   ,}
+        , React.createElement('div', { style: {display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))",gap:8},}
+          , React.createElement('div', { style: {background:T.surface,borderRadius:10,padding:"10px 14px",border:`1px solid ${T.border}`},}
+            , React.createElement('div', { style: {fontSize:12,fontWeight:800,color:T.accent,marginBottom:4},}, "Combined Report" )
+            , React.createElement('div', { style: {fontSize:11,color:T.text},}, CEO_EMAIL)
+            , React.createElement('div', { style: {fontSize:11,color:T.text},}, HR_EMAIL)
+          )
+          , Object.entries(PROGRAM_EMAILS).map(([prog,info])=>(
+            React.createElement('div', { key: prog, style: {background:T.surface,borderRadius:10,padding:"10px 14px",border:`1px solid ${T.border}`},}
+              , React.createElement('div', { style: {fontSize:12,fontWeight:800,color:T.accent2,marginBottom:4},}, prog)
+              , info.to.map(e=>React.createElement('div', { key: e, style: {fontSize:11,color:T.text},}, e))
             )
           ))
-        )
-        , React.createElement('div', { style: {fontSize:11,color:T.muted,marginTop:12},}, "To enable auto-send: connect the app to Supabase using the Setup Guide, then set up a scheduled function. I can walk you through this step by step."
-
         )
       )
     )
   );
-};
-
+}
 // --------------------
 //  ADMIN TAB
 // --------------------
